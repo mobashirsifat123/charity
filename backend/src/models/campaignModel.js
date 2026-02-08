@@ -138,6 +138,40 @@ const updateRaisedAmount = async (campaignId, amount) => {
     return result.rows[0];
 };
 
+/**
+ * Update a campaign (Admin)
+ * @param {number} id - Campaign ID
+ * @param {Object} data - Fields to update
+ * @returns {Promise<Object|null>} Updated campaign or null if not found
+ */
+const updateCampaign = async (id, { title, description, goal_amount, image_url, category }) => {
+    const query = `
+        UPDATE campaigns
+        SET 
+            title = COALESCE($2, title),
+            description = COALESCE($3, description),
+            goal_amount = COALESCE($4, goal_amount),
+            image_url = COALESCE($5, image_url),
+            category = COALESCE($6, category)
+        WHERE id = $1
+        RETURNING id, title, description, goal_amount, raised_amount, image_url, category, created_at
+    `;
+    const values = [id, title, description, goal_amount, image_url, category];
+    const result = await pool.query(query, values);
+    return result.rows[0] || null;
+};
+
+/**
+ * Delete a campaign (Admin)
+ * @param {number} id - Campaign ID
+ * @returns {Promise<boolean>} True if deleted, false if not found
+ */
+const deleteCampaign = async (id) => {
+    const query = `DELETE FROM campaigns WHERE id = $1 RETURNING id`;
+    const result = await pool.query(query, [id]);
+    return result.rowCount > 0;
+};
+
 module.exports = {
     getAllCampaigns,
     getCampaignsWithFilters,
@@ -145,4 +179,6 @@ module.exports = {
     getCampaignById,
     createCampaign,
     updateRaisedAmount,
+    updateCampaign,
+    deleteCampaign,
 };

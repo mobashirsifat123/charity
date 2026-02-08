@@ -139,9 +139,106 @@ const createCampaign = async (req, res) => {
     }
 };
 
+/**
+ * Update a campaign (Admin only)
+ * PUT /campaigns/:id
+ */
+const updateCampaign = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, goal_amount, image_url, category } = req.body;
+
+        // Validate ID
+        if (!id || isNaN(parseInt(id))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Valid campaign ID is required.',
+            });
+        }
+
+        // Validate goal_amount if provided
+        if (goal_amount !== undefined) {
+            const goalAmount = parseFloat(goal_amount);
+            if (isNaN(goalAmount) || goalAmount <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Goal amount must be a positive number.',
+                });
+            }
+        }
+
+        const updatedCampaign = await campaignModel.updateCampaign(parseInt(id), {
+            title: title || undefined,
+            description: description !== undefined ? description : undefined,
+            goal_amount: goal_amount ? parseFloat(goal_amount) : undefined,
+            image_url: image_url !== undefined ? image_url : undefined,
+            category: category !== undefined ? category : undefined,
+        });
+
+        if (!updatedCampaign) {
+            return res.status(404).json({
+                success: false,
+                message: 'Campaign not found.',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Campaign updated successfully.',
+            data: updatedCampaign,
+        });
+    } catch (error) {
+        console.error('Update campaign error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An error occurred while updating the campaign.',
+        });
+    }
+};
+
+/**
+ * Delete a campaign (Admin only)
+ * DELETE /campaigns/:id
+ */
+const deleteCampaign = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate ID
+        if (!id || isNaN(parseInt(id))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Valid campaign ID is required.',
+            });
+        }
+
+        const deleted = await campaignModel.deleteCampaign(parseInt(id));
+
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: 'Campaign not found.',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Campaign deleted successfully.',
+        });
+    } catch (error) {
+        console.error('Delete campaign error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'An error occurred while deleting the campaign.',
+        });
+    }
+};
+
 module.exports = {
     getAllCampaigns,
     getCategories,
     getCampaignById,
     createCampaign,
+    updateCampaign,
+    deleteCampaign,
 };

@@ -31,4 +31,18 @@ router.get('/:id', campaignController.getCampaignById);
  */
 router.post('/', verifyToken, requireAdmin, campaignController.createCampaign);
 
+/**
+ * @route   PUT /campaigns/:id
+ * @desc    Update a campaign
+ * @access  Private (Admin only)
+ */
+router.put('/:id', verifyToken, requireAdmin, campaignController.updateCampaign);
+
+/**
+ * @route   DELETE /campaigns/:id
+ * @desc    Delete a campaign
+ * @access  Private (Admin only)
+ */
+router.delete('/:id', verifyToken, requireAdmin, campaignController.deleteCampaign);
+
 module.exports = router;
