@@ -389,6 +389,57 @@ CMD ["node", "server.js"]
 
 ---
 
+## 📅 Development History
+
+A step-by-step record of how this project was built.
+
+### Phase 1: Project Foundation
+- [x] Initialize Next.js 15 frontend with App Router
+- [x] Set up Express.js backend with modular structure
+- [x] Design PostgreSQL database schema (`users`, `campaigns`, `donations`)
+- [x] Configure project structure (controllers, routes, middleware, models)
+
+### Phase 2: Authentication System
+- [x] Implement user registration with bcrypt password hashing
+- [x] Implement JWT-based login authentication
+- [x] Create auth middleware for protected routes
+- [x] Add role-based access control (admin vs user)
+
+### Phase 3: Campaign Management
+- [x] Build campaign CRUD operations (Create, Read, Update, Delete)
+- [x] Implement admin-only campaign creation/editing
+- [x] Add campaign image upload functionality (Multer)
+- [x] Create campaign listing with progress tracking
+
+### Phase 4: Payment Integration
+- [x] Integrate Stripe checkout sessions
+- [x] Implement donation processing flow
+- [x] Add Stripe webhook handling for payment confirmation
+- [x] Create donation history tracking
+
+### Phase 5: Discovery System
+- [x] Add search functionality for campaigns
+- [x] Implement category-based filtering
+- [x] Add pagination for campaign listings
+- [x] Create `useCampaigns` hook for URL-synced state
+
+### Phase 6: Frontend Pages & UI
+- [x] Build responsive layouts with Bootstrap 5
+- [x] Add AOS scroll animations
+- [x] Create multiple homepage variations (5 layouts)
+- [x] Implement all static pages (About, Team, Blog, Events, Contact)
+- [x] Build admin dashboard interface
+- [x] Create user dashboard with donation history
+
+### 🔮 Future Enhancements (Planned)
+- [ ] Email notifications for donations
+- [ ] Social media sharing for campaigns
+- [ ] Campaign updates/comments system
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
+
+---
+
 ## 🤝 Contributing
 
 Contributions are what make the open-source community amazing! Any contributions you make are **greatly appreciated**.
