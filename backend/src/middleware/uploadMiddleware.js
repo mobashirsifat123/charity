@@ -2,18 +2,8 @@ const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
 
-// Configure storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        // Generate unique filename: timestamp-randomstring.extension
-        const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(6).toString('hex');
-        const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `image-${uniqueSuffix}${ext}`);
-    }
-});
+// Configure storage - Use memory storage for direct upload to Supabase
+const storage = multer.memoryStorage();
 
 // File filter - only allow images
 const fileFilter = (req, file, cb) => {
