@@ -186,7 +186,7 @@ function CampaignListContent() {
                                                             <img
                                                                 src={campaign.image_url.startsWith('http')
                                                                     ? campaign.image_url
-                                                                    : `${process.env.NEXT_PUBLIC_API_URL}${campaign.image_url}`}
+                                                                    : `${process.env.NEXT_PUBLIC_API_URL || ""}${campaign.image_url}`}
                                                                 alt={campaign.title}
                                                                 className="rounded me-3"
                                                                 style={{ width: '50px', height: '50px', objectFit: 'cover' }}

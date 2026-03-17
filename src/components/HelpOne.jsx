@@ -16,9 +16,9 @@ const HelpOne = () => {
 
                 <div className="row g-4">
                     {[
-                        { title: 'Make a Donation', desc: 'Provide financial support to fund our global initiatives and immediate relief efforts.', icon: 'fa-hand-holding-dollar', color: '#4e9af1', link: '/donate-us', btnText: 'Donate' },
+                        { title: 'Make a Donation', desc: 'Provide financial support to fund our global initiatives and immediate relief efforts.', icon: 'fa-hand-holding-dollar', color: '#4e9af1', link: '/donation', btnText: 'Donate' },
                         { title: 'Become a Volunteer', desc: 'Join our team on the ground or help us remotely with your skills and expertise.', icon: 'fa-hands-holding-child', color: '#4caf7d', link: '/become-volunteer', btnText: 'Join Us' },
-                        { title: 'Start a Fundraiser', desc: 'Create your own campaign and rally your friends and family for a cause you love.', icon: 'fa-bullhorn', color: '#f0a500', link: '/our-causes', btnText: 'Start Now' },
+                        { title: 'Start a Fundraiser', desc: 'Create your own campaign and rally your friends and family for a cause you love.', icon: 'fa-bullhorn', color: '#f0a500', link: '/#campaigns', btnText: 'Start Now' },
                     ].map((item, i) => (
                         <div key={item.title} className="col-lg-4" data-aos="fade-up" data-aos-delay={i * 100}>
                             <div className="card text-center h-100 border-0 shadow-sm rounded-4 p-4"

@@ -99,7 +99,7 @@ const ImageUploader = ({ value, onChange, placeholder = "Click or drag to upload
         if (!url) return '';
         if (url.startsWith('http')) return url;
         // Prepend backend URL for relative paths
-        return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+        return `${process.env.NEXT_PUBLIC_API_URL || ""}${url}`;
     };
 
     return (

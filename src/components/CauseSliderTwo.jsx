@@ -47,7 +47,7 @@ const CauseSliderTwo = () => {
                                         </div>
                                         <div className="d-flex align-items-center justify-content-between">
                                             <small className="text-muted"><i className="fa-solid fa-users me-1" />{cause.donors} donors</small>
-                                            <Link href="/our-causes" className="btn btn-sm rounded-pill px-3 fw-semibold text-white"
+                                            <Link href="/#campaigns" className="btn btn-sm rounded-pill px-3 fw-semibold text-white"
                                                 style={{ background: cause.color }}>
                                                 Donate
                                             </Link>
@@ -60,7 +60,7 @@ const CauseSliderTwo = () => {
                 </div>
 
                 <div className="text-center mt-5" data-aos="fade-up">
-                    <Link href="/our-causes" className="btn btn-success btn-lg rounded-pill px-5">
+                    <Link href="/#campaigns" className="btn btn-success btn-lg rounded-pill px-5">
                         View All Causes <i className="fa-solid fa-arrow-right ms-2" />
                     </Link>
                 </div>

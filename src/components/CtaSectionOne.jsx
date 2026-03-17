@@ -28,10 +28,10 @@ const CtaSectionOne = () => {
                     </div>
                     <div className="col-lg-4 text-lg-end" data-aos="fade-left">
                         <div className="d-flex flex-wrap gap-3 justify-content-lg-end">
-                            <Link href="/donate-us" className="btn btn-dark btn-lg fw-bold px-5 rounded-pill">
+                            <Link href="/donation" className="btn btn-dark btn-lg fw-bold px-5 rounded-pill">
                                 Donate Now <i className="fa-solid fa-heart ms-2" />
                             </Link>
-                            <Link href="/our-causes" className="btn btn-outline-light btn-lg px-4 rounded-pill">
+                            <Link href="/#campaigns" className="btn btn-outline-light btn-lg px-4 rounded-pill">
                                 Browse Causes
                             </Link>
                         </div>

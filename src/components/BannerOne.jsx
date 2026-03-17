@@ -34,10 +34,10 @@ const BannerOne = () => {
                             Join thousands of donors supporting meaningful causes around the world. Every contribution counts — no matter how small.
                         </p>
                         <div className="d-flex flex-wrap gap-3">
-                            <Link href="/our-causes" className="btn btn-warning btn-lg fw-bold px-5 rounded-pill">
+                            <Link href="/#campaigns" className="btn btn-warning btn-lg fw-bold px-5 rounded-pill">
                                 Explore Causes <i className="fa-solid fa-arrow-right ms-2" />
                             </Link>
-                            <Link href="/donate-us" className="btn btn-outline-light btn-lg px-5 rounded-pill">
+                            <Link href="/donation" className="btn btn-outline-light btn-lg px-5 rounded-pill">
                                 Donate Now
                             </Link>
                         </div>

@@ -25,7 +25,7 @@ const CampaignCard = ({ campaign, onDonate }) => {
     const getImageUrl = (url) => {
         if (!url) return '/assets/img/cause/default-cause.jpg';
         if (url.startsWith('http')) return url;
-        return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+        return `${process.env.NEXT_PUBLIC_API_URL || ""}${url}`;
     };
 
     return (
@@ -138,7 +138,7 @@ function CampaignDiscoveryContent() {
     };
 
     return (
-        <section className="campaign-discovery py-5">
+        <section id="campaigns" className="campaign-discovery py-5">
             <div className="container">
                 {/* Header */}
                 <div className="text-center mb-5">
@@ -278,7 +278,7 @@ function CampaignDiscoveryContent() {
 export default function CampaignDiscovery() {
     return (
         <Suspense fallback={
-            <section className="campaign-discovery py-5">
+            <section id="campaigns" className="campaign-discovery py-5">
                 <div className="container">
                     <div className="text-center py-5">
                         <div className="spinner-border text-primary" role="status">

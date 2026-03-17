@@ -178,7 +178,7 @@ const HeaderOne = () => {
                           <Link href='/about-us'>About Us</Link>
                         </li>
                         <li
-                          className={`navbar__item navbar__item--has-children nav-fade ${["/our-causes", "/cause-details"].includes(pathname)
+                          className={`navbar__item navbar__item--has-children nav-fade ${["/#campaigns", "/cause-details"].includes(pathname)
                             ? "active"
                             : ""
                             }`}
@@ -193,12 +193,12 @@ const HeaderOne = () => {
                           <ul className='navbar__sub-menu'>
                             <li
                               className={
-                                ["/our-causes"].includes(pathname)
+                                ["/#campaigns"].includes(pathname)
                                   ? "active"
                                   : ""
                               }
                             >
-                              <Link href='/our-causes'>Our Causes</Link>
+                              <Link href='/#campaigns'>Our Causes</Link>
                             </li>
                             <li
                               className={
@@ -230,7 +230,7 @@ const HeaderOne = () => {
                         <li
                           className={`navbar__item navbar__item--has-children nav-fade ${[
                             "/faq",
-                            "/donate-us",
+                            "/donation",
                             "/become-volunteer",
                             "/events",
                             "/event-details",
@@ -260,12 +260,12 @@ const HeaderOne = () => {
                             </li>
                             <li
                               className={
-                                ["/donate-us"].includes(pathname)
+                                ["/donation"].includes(pathname)
                                   ? "active"
                                   : ""
                               }
                             >
-                              <Link href='/donate-us'>Donate Us</Link>
+                              <Link href='/donation'>Donate Us</Link>
                             </li>
                             <li
                               className={
@@ -557,7 +557,7 @@ const HeaderOne = () => {
                       )}
 
                       <Link
-                        href='/donate-us'
+                        href='/donation'
                         className='btn--primary d-none d-lg-none'
                       >
                         Donate Now <i className='fa-solid fa-arrow-right' />
@@ -635,7 +635,7 @@ const HeaderOne = () => {
           <div className='mobile-menu__list' ref={mobileMenuListRef}></div>
 
           <div className='mobile-menu__cta nav-fade d-block d-md-none'>
-            <Link href='/donate-us' className='btn--primary '>
+            <Link href='/donation' className='btn--primary '>
               Donate Now <i className='fa-solid fa-arrow-right' />
             </Link>
           </div>

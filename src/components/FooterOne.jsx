@@ -32,8 +32,8 @@ const FooterOne = () => {
                         <ul className="list-unstyled">
                             <li className="mb-2"><Link href="/" className="text-light opacity-75 text-decoration-none">Home</Link></li>
                             <li className="mb-2"><Link href="/about-us" className="text-light opacity-75 text-decoration-none">About Us</Link></li>
-                            <li className="mb-2"><Link href="/our-causes" className="text-light opacity-75 text-decoration-none">Our Causes</Link></li>
-                            <li className="mb-2"><Link href="/donate-us" className="text-light opacity-75 text-decoration-none">Donate</Link></li>
+                            <li className="mb-2"><Link href="/#campaigns" className="text-light opacity-75 text-decoration-none">Our Causes</Link></li>
+                            <li className="mb-2"><Link href="/donation" className="text-light opacity-75 text-decoration-none">Donate</Link></li>
                             <li className="mb-2"><Link href="/contact-us" className="text-light opacity-75 text-decoration-none">Contact</Link></li>
                         </ul>
                     </div>
@@ -42,7 +42,7 @@ const FooterOne = () => {
                         <ul className="list-unstyled">
                             {['Education', 'Medical', 'Environment', 'Community', 'Crisis'].map(cat => (
                                 <li key={cat} className="mb-2">
-                                    <Link href={`/our-causes?category=${cat}`} className="text-light opacity-75 text-decoration-none">{cat}</Link>
+                                    <Link href={`/#campaigns?category=${cat}`} className="text-light opacity-75 text-decoration-none">{cat}</Link>
                                 </li>
                             ))}
                         </ul>

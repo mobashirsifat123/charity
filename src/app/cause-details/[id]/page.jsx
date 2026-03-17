@@ -99,7 +99,7 @@ export default function CauseDetailPage() {
                         <p className="text-muted mb-4">
                             The campaign you're looking for doesn't exist or has been removed.
                         </p>
-                        <Link href="/our-causes" className="btn btn-primary">
+                        <Link href="/#campaigns" className="btn btn-primary">
                             <i className="fa-solid fa-arrow-left me-2"></i>
                             Browse All Campaigns
                         </Link>
@@ -118,7 +118,7 @@ export default function CauseDetailPage() {
                 title={campaign.title || 'Campaign Details'}
                 links={[
                     { name: "Home", link: "/" },
-                    { name: "Causes", link: "/our-causes" },
+                    { name: "Causes", link: "/#campaigns" },
                     { name: campaign.title || 'Details', link: "#" }
                 ]}
             />
@@ -135,7 +135,7 @@ export default function CauseDetailPage() {
                                         <img
                                             src={campaign.image_url.startsWith('http')
                                                 ? campaign.image_url
-                                                : `${process.env.NEXT_PUBLIC_API_URL}${campaign.image_url}`}
+                                                : `${process.env.NEXT_PUBLIC_API_URL || ""}${campaign.image_url}`}
                                             alt={campaign.title}
                                             className="w-100 rounded-4"
                                             style={{ maxHeight: '500px', objectFit: 'cover' }}
@@ -231,7 +231,7 @@ export default function CauseDetailPage() {
                                             Your donation can make a real difference in someone's life.
                                         </p>
                                         <Link
-                                            href={`/donate-us?campaign=${campaignId}`}
+                                            href={`/donation?campaign=${campaignId}`}
                                             className="btn btn-primary btn-lg w-100 py-3"
                                         >
                                             <i className="fa-solid fa-heart me-2"></i>
