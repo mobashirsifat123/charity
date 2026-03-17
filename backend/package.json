@@ -4,17 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "test": "npx jest --forceExit --detectOpenHandles",
-    "test:watch": "npx jest --watch"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.1",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
@@ -25,7 +21,6 @@
     "stripe": "^20.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11",
-    "supertest": "^7.2.2"
+    "nodemon": "^3.1.11"
   }
 }

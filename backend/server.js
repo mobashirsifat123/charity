@@ -14,14 +14,8 @@ const stripeRoutes = require('./src/routes/stripeRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS — restrict to frontend domain in production
-const corsOptions = {
-    origin: process.env.NODE_ENV === 'production'
-        ? process.env.FRONTEND_URL
-        : '*',
-    credentials: true,
-};
-app.use(cors(corsOptions));
+// Middleware
+app.use(cors());
 app.use(express.json());
 
 // Serve uploaded files statically
