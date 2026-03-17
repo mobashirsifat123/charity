@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -20,17 +20,25 @@ export default function CauseDetailPage() {
             try {
                 setLoading(true);
                 setError(null);
-                const response = await api.get(`/campaigns/${campaignId}`);
-                if (response.data.success) {
-                    setCampaign(response.data.data);
+                
+                const { data, error: fetchError } = await supabase
+                    .from('campaigns')
+                    .select('*')
+                    .eq('id', campaignId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+                
+                if (data) {
+                    setCampaign(data);
                 } else {
                     setError('Campaign not found');
                 }
             } catch (err) {
-                if (err.response?.status === 404) {
+                if (err.code === 'PGRST116') { // no rows returned
                     setError('Campaign not found');
                 } else {
-                    setError(err.response?.data?.message || 'Failed to load campaign');
+                    setError(err.message || 'Failed to load campaign');
                 }
             } finally {
                 setLoading(false);

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -30,12 +30,22 @@ export default function DashboardPage() {
 
     const fetchDonations = async () => {
         try {
-            const response = await api.get('/donations/my-donations');
-            if (response.data.success) {
-                setDonations(response.data.data);
-            }
+            const { data, error: fetchError } = await supabase
+                .from('donations')
+                .select('*, campaigns(title)')
+                .eq('donor_email', user.email)
+                .order('created_at', { ascending: false });
+                
+            if (fetchError) throw fetchError;
+            
+            const formattedDonations = (data || []).map(d => ({
+               ...d,
+               campaign_title: d.campaigns?.title || 'Unknown Campaign'
+            }));
+            
+            setDonations(formattedDonations);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to load donation history');
+            setError(err.message || 'Failed to load donation history');
         } finally {
             setLoading(false);
         }

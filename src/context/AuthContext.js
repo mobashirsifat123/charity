@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 // Create the Auth Context
 const AuthContext = createContext(null);
@@ -11,40 +12,53 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    // Check for existing token on app mount
     useEffect(() => {
-        const checkAuth = () => {
+        // Initial session fetch
+        const initializeAuth = async () => {
             try {
-                const storedToken = localStorage.getItem('token');
-                const storedUser = localStorage.getItem('user');
-
-                if (storedToken && storedUser) {
-                    setUser(JSON.parse(storedUser));
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                if (session) {
+                    // Check if we also have user metadata from the DB
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('email', session.user.email)
+                        .single();
+                        
+                    setUser({ ...session.user, ...userData });
                 }
             } catch (error) {
-                console.error('Error checking auth:', error);
-                // Clear invalid data
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                console.error('Error fetching Supabase session:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        checkAuth();
+        initializeAuth();
+
+        // Listen for Auth changes (login, logout)
+        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session) {
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', session.user.email)
+                    .single();
+                setUser({ ...session.user, ...userData });
+            } else {
+                setUser(null);
+            }
+        });
+
+        return () => {
+            authListener?.subscription.unsubscribe();
+        };
     }, []);
 
-    // Login function - saves user data and token
-    const login = (userData, token) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-    };
-
-    // Logout function - clears state and storage
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    // Logout function - clears Supabase session
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
         router.push('/');
     };
@@ -62,7 +76,6 @@ export function AuthProvider({ children }) {
     const value = {
         user,
         loading,
-        login,
         logout,
         isAuthenticated,
         isAdmin,

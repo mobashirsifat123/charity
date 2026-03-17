@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -37,9 +37,16 @@ function EditCampaignForm() {
         try {
             setLoading(true);
             setError('');
-            const response = await api.get(`/campaigns/${campaignId}`);
-            if (response.data.success) {
-                const campaign = response.data.data;
+            
+            const { data: campaign, error: fetchError } = await supabase
+                .from('campaigns')
+                .select('*')
+                .eq('id', campaignId)
+                .single();
+                
+            if (fetchError) throw fetchError;
+            
+            if (campaign) {
                 setFormData({
                     title: campaign.title || '',
                     description: campaign.description || '',
@@ -49,10 +56,10 @@ function EditCampaignForm() {
                 });
             }
         } catch (err) {
-            if (err.response?.status === 404) {
+            if (err.code === 'PGRST116') { // not found
                 setNotFound(true);
             } else {
-                setError(err.response?.data?.message || 'Failed to load campaign');
+                setError(err.message || 'Failed to load campaign');
             }
         } finally {
             setLoading(false);
@@ -87,24 +94,27 @@ function EditCampaignForm() {
         }
 
         try {
-            const response = await api.put(`/campaigns/${campaignId}`, {
-                title: formData.title.trim(),
-                description: formData.description.trim(),
-                goal_amount: parseFloat(formData.goal_amount),
-                image_url: formData.image_url.trim() || null,
-                category: formData.category || null,
-            });
+            const { error: updateError } = await supabase
+                .from('campaigns')
+                .update({
+                    title: formData.title.trim(),
+                    description: formData.description.trim(),
+                    goal_amount: parseFloat(formData.goal_amount),
+                    image_url: formData.image_url.trim() || null,
+                    category: formData.category || null,
+                })
+                .eq('id', campaignId);
 
-            if (response.data.success) {
+            if (!updateError) {
                 setSuccess(true);
                 setTimeout(() => {
                     router.push('/admin/campaigns');
                 }, 1500);
             } else {
-                setError(response.data.message || 'Failed to update campaign');
+                setError(updateError.message || 'Failed to update campaign');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred while updating the campaign');
+            setError(err.message || 'An error occurred while updating the campaign');
         } finally {
             setSaving(false);
         }

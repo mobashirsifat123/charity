@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -52,15 +52,17 @@ function CreateCampaignForm() {
         }
 
         try {
-            const response = await api.post('/campaigns', {
-                title: formData.title.trim(),
-                description: formData.description.trim(),
-                goal_amount: parseFloat(formData.goal_amount),
-                image_url: formData.image_url.trim() || null,
-                category: formData.category || null,
-            });
+            const { error: insertError } = await supabase
+                .from('campaigns')
+                .insert({
+                    title: formData.title.trim(),
+                    description: formData.description.trim(),
+                    goal_amount: parseFloat(formData.goal_amount),
+                    image_url: formData.image_url.trim() || null,
+                    category: formData.category || null,
+                });
 
-            if (response.data.success) {
+            if (!insertError) {
                 setSuccess(true);
                 setFormData({ title: '', description: '', goal_amount: '', image_url: '', category: '' });
 
@@ -69,10 +71,10 @@ function CreateCampaignForm() {
                     router.push('/admin/dashboard');
                 }, 2000);
             } else {
-                setError(response.data.message || 'Failed to create campaign');
+                setError(insertError.message || 'Failed to create campaign');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred while creating the campaign');
+            setError(err.message || 'An error occurred while creating the campaign');
         } finally {
             setLoading(false);
         }

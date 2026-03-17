@@ -3,7 +3,6 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/utils/api';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 
@@ -38,20 +37,25 @@ function DonationSuccessContent() {
 
     const verifyDonation = async () => {
         try {
-            const response = await api.post('/stripe/verify-donation', {
-                sessionId: sessionId,
+            const response = await fetch('/api/stripe/verify-donation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ sessionId: sessionId })
             });
+            const data = await response.json();
 
-            if (response.data.success) {
+            if (data.success) {
                 setStatus('success');
-                setDonation(response.data.data);
+                setDonation(data.data);
             } else {
                 setStatus('error');
-                setError(response.data.message || 'Verification failed');
+                setError(data.message || 'Verification failed');
             }
         } catch (err) {
             setStatus('error');
-            setError(err.response?.data?.message || 'Failed to verify donation');
+            setError(err.message || 'Failed to verify donation');
         }
     };
 

@@ -3,10 +3,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/utils/api';
 
-// Initialize Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY);
+// Initialize Stripe - only if key is available (avoids crash if not configured)
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
 /**
  * DonateModal - Reusable donation modal with Stripe Checkout
@@ -48,23 +49,32 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
         setLoading(true);
 
         try {
-            // Create Stripe Checkout Session
-            const response = await api.post('/stripe/create-checkout-session', {
-                amount: donationAmount,
-                campaignTitle: campaignTitle,
-                campaignId: campaignId,
+            // Create Stripe Checkout Session via Next.js API Route
+            const response = await fetch('/api/stripe/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount: donationAmount,
+                    campaignTitle: campaignTitle,
+                    campaignId: campaignId,
+                    userEmail: user.email,
+                    userName: user.user_metadata?.full_name || user.email,
+                    userId: user.id
+                })
             });
+            const data = await response.json();
 
-            if (response.data.success) {
+            if (data.success) {
                 // Redirect to Stripe Checkout
-                const { url } = response.data.data;
-                window.location.href = url;
+                window.location.href = data.url;
             } else {
-                setError(response.data.message || 'Failed to create checkout session');
+                setError(data.message || 'Failed to create checkout session');
                 setLoading(false);
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred while processing your request');
+            setError(err.message || 'An error occurred while processing your request');
             setLoading(false);
         }
     };

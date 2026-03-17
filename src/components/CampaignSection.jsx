@@ -1,14 +1,16 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import DonateModal from './DonateModal';
 import ProgressBar from '../helper/ProgressBar';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 /**
  * CampaignSection - Displays campaigns from API with donate modal
  */
 const CampaignSection = () => {
+    const { settings } = useSiteSettings();
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -19,10 +21,14 @@ const CampaignSection = () => {
 
     const fetchCampaigns = async () => {
         try {
-            const response = await api.get('/campaigns');
-            if (response.data.success) {
-                setCampaigns(response.data.data);
-            }
+            const { data, error: fetchError } = await supabase
+                .from('campaigns')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(6);
+                
+            if (fetchError) throw fetchError;
+            setCampaigns(data || []);
         } catch (err) {
             setError('Failed to load campaigns');
             console.error('Fetch campaigns error:', err);
@@ -110,7 +116,7 @@ const CampaignSection = () => {
             <section
                 className="cause"
                 style={{
-                    backgroundImage: "url(/assets/images/cause/cause-bg.png)",
+                    background: settings.cause_bg_image ? `url(${settings.cause_bg_image}) center/cover no-repeat` : 'url(/assets/images/cause/cause-bg.png)',
                 }}
             >
                 <div className="container">
@@ -134,7 +140,7 @@ const CampaignSection = () => {
                                 <div className="cause__slider-inner">
                                     <div className="cause__slider-single">
                                         <div className="thumb">
-                                            <Link href={`/cause-details?id=${campaign.id}`}>
+                                            <Link href={`/cause-details/${campaign.id}`}>
                                                 <img
                                                     src={campaign.image_url || '/assets/images/cause/one.png'}
                                                     alt={campaign.title}
@@ -144,7 +150,7 @@ const CampaignSection = () => {
                                         </div>
                                         <div className="content">
                                             <h6>
-                                                <Link href={`/cause-details?id=${campaign.id}`}>
+                                                <Link href={`/cause-details/${campaign.id}`}>
                                                     {campaign.title}
                                                 </Link>
                                             </h6>

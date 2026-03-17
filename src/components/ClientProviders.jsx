@@ -1,10 +1,13 @@
 "use client";
 import { AuthProvider } from "@/context/AuthContext";
+import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 
 export default function ClientProviders({ children }) {
     return (
-        <AuthProvider>
-            {children}
-        </AuthProvider>
+        <SiteSettingsProvider>
+            <AuthProvider>
+                {children}
+            </AuthProvider>
+        </SiteSettingsProvider>
     );
 }

@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -16,7 +15,6 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { login } = useAuth();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -33,20 +31,18 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/login', {
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email: formData.email,
                 password: formData.password,
             });
 
-            if (response.data.success) {
-                const { user, token } = response.data.data;
-                login(user, token);
+            if (authError) {
+                setError(authError.message || 'Login failed');
+            } else if (data.session) {
                 router.push('/dashboard');
-            } else {
-                setError(response.data.message || 'Login failed');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred during login');
+            setError(err.message || 'An error occurred during login');
         } finally {
             setLoading(false);
         }

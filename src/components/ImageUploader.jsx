@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from 'react';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 
 /**
  * ImageUploader - File upload component with preview
@@ -39,27 +39,30 @@ const ImageUploader = ({ value, onChange, placeholder = "Click or drag to upload
         setPreview(localPreview);
 
         try {
-            // Create form data
-            const formData = new FormData();
-            formData.append('image', file);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+            
+            const { error: uploadError } = await supabase.storage
+                .from('campaign-images')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
 
-            // Upload to server
-            const response = await api.post('/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (response.data.success) {
-                const imageUrl = response.data.data.url;
-                setPreview(imageUrl);
-                onChange(imageUrl);
-            } else {
-                setError(response.data.message || 'Upload failed');
+            if (uploadError) {
+                setError(uploadError.message || 'Upload failed');
                 setPreview('');
+            } else {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('campaign-images')
+                    .getPublicUrl(filePath);
+                
+                setPreview(publicUrl);
+                onChange(publicUrl);
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to upload image');
+            setError(err.message || 'Failed to upload image');
             setPreview('');
         } finally {
             setUploading(false);

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const HeaderOne = () => {
   let pathname = usePathname();
@@ -10,6 +11,7 @@ const HeaderOne = () => {
   let [mobileMenu, setMobileMenu] = useState(false);
   const [scroll, setScroll] = useState(false);
   const { user, logout, loading } = useAuth();
+  const { settings } = useSiteSettings();
   const handleSearch = () => {
     setSearch(!search);
   };
@@ -102,8 +104,12 @@ const HeaderOne = () => {
               <div className='main-header__menu-box'>
                 <nav className='navbar p-0'>
                   <div className='navbar-logo'>
-                    <Link href='/'>
-                      <img src='/assets/images/logo.png' alt='Image_inner' />
+                    <Link href='/' className='text-decoration-none'>
+                      {settings.site_logo_url ? (
+                        <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} style={{ maxHeight: '45px' }} />
+                      ) : (
+                        <h3 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'ChariFund'}</h3>
+                      )}
                     </Link>
                   </div>
                   <div className='navbar__menu-wrapper'>
@@ -122,84 +128,42 @@ const HeaderOne = () => {
                           </Link>
                           <ul className='navbar__sub-menu mega-menu'>
                             <li>
-                              <div className='mega-content-wrapper'>
-                                <img
-                                  src='/assets/images/home-one.png'
-                                  alt='Image_inner'
-                                />
+                              <div className='mega-content-wrapper p-3'>
                                 <div className='mega-content'>
-                                  <Link href='/' className='btn--primary'>
-                                    Demo
-                                  </Link>
+                                  <Link href='/' className='btn--primary'>Demo</Link>
                                 </div>
                               </div>
                               <Link href='/'>Home One</Link>
                             </li>
                             <li>
-                              <div className='mega-content-wrapper'>
-                                <img
-                                  src='/assets/images/home-two.png'
-                                  alt='Image_inner'
-                                />
+                              <div className='mega-content-wrapper p-3'>
                                 <div className='mega-content'>
-                                  <Link
-                                    href='/index-two'
-                                    className='btn--secondary'
-                                  >
-                                    Demo
-                                  </Link>
+                                  <Link href='/index-two' className='btn--secondary'>Demo</Link>
                                 </div>
                               </div>
                               <Link href='/index-two'>Home Two</Link>
                             </li>
                             <li>
-                              <div className='mega-content-wrapper'>
-                                <img
-                                  src='/assets/images/home-three.png'
-                                  alt='Image_inner'
-                                />
+                              <div className='mega-content-wrapper p-3'>
                                 <div className='mega-content'>
-                                  <Link
-                                    href='/index-three'
-                                    className='btn--primary'
-                                  >
-                                    Demo
-                                  </Link>
+                                  <Link href='/index-three' className='btn--primary'>Demo</Link>
                                 </div>
                               </div>
                               <Link href='/index-three'>Home Three</Link>
                             </li>
                             <li>
-                              <div className='mega-content-wrapper'>
-                                <img
-                                  src='/assets/images/home-four.png'
-                                  alt='Image_inner'
-                                />
+                              <div className='mega-content-wrapper p-3'>
                                 <div className='mega-content'>
-                                  <Link
-                                    href='/index-four'
-                                    className='btn--primary'
-                                  >
-                                    Demo
-                                  </Link>
+                                  <Link href='/index-four' className='btn--primary'>Demo</Link>
                                 </div>
                                 <span className='new'>New</span>
                               </div>
                               <Link href='/index-four'>Home Four</Link>
                             </li>
                             <li>
-                              <div className='mega-content-wrapper'>
-                                <img
-                                  src='/assets/images/home-five.png'
-                                  alt='Image_inner'
-                                />
+                              <div className='mega-content-wrapper p-3'>
                                 <div className='mega-content'>
-                                  <Link
-                                    href='/index-five'
-                                    className='btn--primary'
-                                  >
-                                    Demo
-                                  </Link>
+                                  <Link href='/index-five' className='btn--primary'>Demo</Link>
                                 </div>
                                 <span className='new'>New</span>
                               </div>
@@ -246,6 +210,22 @@ const HeaderOne = () => {
                               <Link href='/cause-details'>Cause Details</Link>
                             </li>
                           </ul>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${["/blog-grid"].includes(pathname)
+                            ? "active"
+                            : ""
+                            }`}
+                        >
+                          <Link href='/blog-grid'>Blogs</Link>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${["/fatwa"].includes(pathname)
+                            ? "active"
+                            : ""
+                            }`}
+                        >
+                          <Link href='/fatwa'>Fatwa</Link>
                         </li>
                         <li
                           className={`navbar__item navbar__item--has-children nav-fade ${[
@@ -640,8 +620,8 @@ const HeaderOne = () => {
         <nav className='mobile-menu__wrapper'>
           <div className='mobile-menu__header nav-fade'>
             <div className='logo'>
-              <Link href='/' aria-label='home page' title='logo'>
-                <img src='assets/images/logo.png' alt='Image_inner' />
+              <Link href='/' className='text-decoration-none'>
+                 <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'ChariFund'}</h4>
               </Link>
             </div>
             <button

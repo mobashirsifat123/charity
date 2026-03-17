@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -24,19 +24,38 @@ function AdminDashboardContent() {
 
     const fetchData = async () => {
         try {
-            // Fetch stats
-            const statsResponse = await api.get('/admin/stats');
-            if (statsResponse.data.success) {
-                setStats(statsResponse.data.data);
-            }
-
-            // Fetch all donations
-            const donationsResponse = await api.get('/admin/donations');
-            if (donationsResponse.data.success) {
-                setDonations(donationsResponse.data.data);
-            }
+            const { count: campaignsCount } = await supabase.from('campaigns').select('*', { count: 'exact', head: true });
+            const { count: donorsCount } = await supabase.from('users').select('*', { count: 'exact', head: true }); 
+            const { data: donationsData, error: donationsError } = await supabase.from('donations').select(`
+                *,
+                campaigns(title),
+                users(name, email)
+            `);
+            
+            if (donationsError) throw donationsError;
+            
+            const totalRaised = donationsData
+                .filter(d => d.payment_status === 'completed')
+                .reduce((sum, d) => sum + Number(d.amount), 0);
+            
+            setStats({
+               totalRaised,
+               totalDonors: donorsCount || 0,
+               totalCampaigns: campaignsCount || 0,
+               totalDonations: donationsData.length || 0,
+            });
+            
+            const formattedDonations = donationsData.map(d => ({
+               ...d,
+               campaign_title: d.campaigns?.title || 'Unknown Campaign',
+               donor_name: d.users?.name || 'Anonymous',
+               donor_email: d.users?.email || 'N/A'
+            }));
+            
+            formattedDonations.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            setDonations(formattedDonations);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to load admin data');
+            setError(err.message || 'Failed to load admin data');
         } finally {
             setLoading(false);
         }
@@ -93,7 +112,23 @@ function AdminDashboardContent() {
                         </h2>
                         <p className="text-muted mb-0">Manage campaigns and monitor donations</p>
                     </div>
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 flex-wrap justify-content-end">
+                        <Link href="/admin/blogs" className="btn btn-outline-dark btn-lg">
+                            <i className="fa-solid fa-pen-nib me-2"></i>
+                            Blogs
+                        </Link>
+                        <Link href="/admin/fatwas" className="btn btn-outline-dark btn-lg">
+                            <i className="fa-solid fa-scale-balanced me-2"></i>
+                            Fatwas
+                        </Link>
+                        <Link href="/admin/team" className="btn btn-outline-dark btn-lg">
+                            <i className="fa-solid fa-users-viewfinder me-2"></i>
+                            Team
+                        </Link>
+                        <Link href="/admin/settings" className="btn btn-outline-dark btn-lg">
+                            <i className="fa-solid fa-gear me-2"></i>
+                            Settings
+                        </Link>
                         <Link href="/admin/campaigns" className="btn btn-outline-primary btn-lg">
                             <i className="fa-solid fa-list me-2"></i>
                             Manage Campaigns

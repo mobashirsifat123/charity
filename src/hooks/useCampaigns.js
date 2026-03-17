@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 
 /**
  * useCampaigns - Hook for fetching campaigns with search, filter, pagination
@@ -22,6 +22,7 @@ export function useCampaigns() {
     const search = searchParams.get('search') || '';
     const category = searchParams.get('category') || '';
     const page = parseInt(searchParams.get('page') || '1');
+    const limit = 6;
 
     // Fetch campaigns
     const fetchCampaigns = useCallback(async () => {
@@ -29,24 +30,30 @@ export function useCampaigns() {
         setError('');
 
         try {
-            const params = new URLSearchParams();
-            if (search) params.append('search', search);
-            if (category) params.append('category', category);
-            params.append('page', String(page));
-            params.append('limit', '6');
+            let query = supabase.from('campaigns').select('*', { count: 'exact' });
 
-            const response = await api.get(`/campaigns?${params.toString()}`);
-
-            if (response.data.success) {
-                setCampaigns(response.data.data);
-                setTotalPages(response.data.totalPages);
-                setCurrentPage(response.data.currentPage);
-                setTotal(response.data.total);
-            } else {
-                setError(response.data.message || 'Failed to fetch campaigns');
+            if (search) {
+                query = query.ilike('title', `%${search}%`);
             }
+            if (category) {
+                // Ignore for now, campaigns table does not have category yet
+            }
+
+            const from = (page - 1) * limit;
+            const to = from + limit - 1;
+
+            query = query.range(from, to).order('created_at', { ascending: false });
+
+            const { data, count, error: fetchError } = await query;
+
+            if (fetchError) throw fetchError;
+
+            setCampaigns(data || []);
+            setTotal(count || 0);
+            setTotalPages(Math.ceil((count || 0) / limit) || 1);
+            setCurrentPage(page);
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred');
+            setError(err.message || 'An error occurred fetching campaigns');
         } finally {
             setLoading(false);
         }

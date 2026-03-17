@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -18,7 +17,6 @@ export default function RegisterPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { login } = useAuth();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -48,21 +46,37 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/register', {
-                name: formData.name,
+            const { data, error: signUpError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
             });
 
-            if (response.data.success) {
-                const { user, token } = response.data.data;
-                login(user, token);
+            if (signUpError) {
+                setError(signUpError.message || 'Registration failed');
+                return;
+            }
+
+            // Push to custom users table immediately since they are created in trigger or we insert manually
+            const { error: insertError } = await supabase.from('users').insert({
+                name: formData.name,
+                email: formData.email,
+                password_hash: 'managed_by_supabase_auth',
+                role: 'donor'
+            });
+
+            if (insertError && insertError.code !== '23505') { // Ignore unique constraint for email
+               // Optional: handle if user table insert fails
+               console.error("Failed to insert into public.users", insertError);
+            }
+
+            if (data?.session) {
                 router.push('/dashboard');
             } else {
-                setError(response.data.message || 'Registration failed');
+                // Supabase might require email confirmation
+                setError('Registration successful! Please check your email to confirm your account.');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred during registration');
+            setError(err.message || 'An error occurred during registration');
         } finally {
             setLoading(false);
         }

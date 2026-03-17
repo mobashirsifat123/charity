@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import api from '@/utils/api';
+import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
@@ -23,13 +23,19 @@ function CampaignListContent() {
         try {
             setLoading(true);
             setError('');
-            const params = searchTerm ? `?search=${encodeURIComponent(searchTerm)}&limit=100` : '?limit=100';
-            const response = await api.get(`/campaigns${params}`);
-            if (response.data.success) {
-                setCampaigns(response.data.data);
+            
+            let query = supabase.from('campaigns').select('*').order('created_at', { ascending: false });
+            
+            if (searchTerm) {
+                query = query.ilike('title', `%${searchTerm}%`);
             }
+            
+            const { data, error: fetchError } = await query;
+            
+            if (fetchError) throw fetchError;
+            setCampaigns(data || []);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to load campaigns');
+            setError(err.message || 'Failed to load campaigns');
         } finally {
             setLoading(false);
         }
@@ -45,13 +51,17 @@ function CampaignListContent() {
 
         try {
             setDeleting(true);
-            const response = await api.delete(`/campaigns/${deleteModal.campaign.id}`);
-            if (response.data.success) {
-                setCampaigns(prev => prev.filter(c => c.id !== deleteModal.campaign.id));
-                setDeleteModal({ show: false, campaign: null });
-            }
+            const { error: deleteError } = await supabase
+                .from('campaigns')
+                .delete()
+                .eq('id', deleteModal.campaign.id);
+                
+            if (deleteError) throw deleteError;
+            
+            setCampaigns(prev => prev.filter(c => c.id !== deleteModal.campaign.id));
+            setDeleteModal({ show: false, campaign: null });
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to delete campaign');
+            setError(err.message || 'Failed to delete campaign');
         } finally {
             setDeleting(false);
         }
