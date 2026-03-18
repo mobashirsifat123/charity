@@ -4,6 +4,17 @@ import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 const BannerOne = () => {
     const { settings } = useSiteSettings();
+    const stats = [
+        { value: settings.hero_stat_1_value || 'New', label: settings.hero_stat_1_label || 'Fatwas & Guidance' },
+        { value: settings.hero_stat_2_value || 'Weekly', label: settings.hero_stat_2_label || 'Articles & Reminders' },
+        { value: settings.hero_stat_3_value || 'Active', label: settings.hero_stat_3_label || 'Community Causes' },
+    ];
+    const cards = [
+        { icon: 'fa-book-open', title: settings.hero_card_1_title || 'Articles', color: '#4e9af1', meta: settings.hero_card_1_meta || 'Reflections & learning' },
+        { icon: 'fa-scale-balanced', title: settings.hero_card_2_title || 'Fatwas', color: '#e0b04c', meta: settings.hero_card_2_meta || 'Trusted answers' },
+        { icon: 'fa-mosque', title: settings.hero_card_3_title || 'Dawah', color: '#4caf7d', meta: settings.hero_card_3_meta || 'Community benefit' },
+        { icon: 'fa-hand-holding-heart', title: settings.hero_card_4_title || 'Causes', color: '#f0a500', meta: settings.hero_card_4_meta || 'Support in action' },
+    ];
 
     return (
         <section
@@ -25,30 +36,32 @@ const BannerOne = () => {
                 <div className="row align-items-center gy-5">
                     <div className="col-lg-6" data-aos="fade-right">
                         <span className="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-semibold">
-                            🌟 {settings.hero_subtitle || 'Fundraising'}
+                            Featured Mission: {settings.hero_subtitle || 'Dawah, Guidance, and Giving'}
                         </span>
                         <h1 className="text-white fw-bold mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', lineHeight: 1.2 }}>
-                            {settings.hero_title || 'Help the Poor, They Need You'}
+                            {settings.hero_title || 'Knowledge That Guides, Causes That Matter'}
                         </h1>
                         <p className="text-white opacity-75 mb-5" style={{ fontSize: '1.1rem', maxWidth: 520 }}>
-                            Join thousands of donors supporting meaningful causes around the world. Every contribution counts — no matter how small.
+                            {settings.hero_description || 'Build a stronger Muslim community through beneficial articles, trusted fatwas, and causes that turn faith into action.'}
                         </p>
                         <div className="d-flex flex-wrap gap-3">
-                            <Link href="/#campaigns" className="btn btn-warning btn-lg fw-bold px-5 rounded-pill">
-                                Explore Causes <i className="fa-solid fa-arrow-right ms-2" />
+                            <Link href={settings.hero_primary_cta_link || '/fatwa'} className="btn btn-warning btn-lg fw-bold px-5 rounded-pill">
+                                {settings.hero_primary_cta_text || 'Explore Fatwas'} <i className="fa-solid fa-arrow-right ms-2" />
                             </Link>
-                            <Link href="/donation" className="btn btn-outline-light btn-lg px-5 rounded-pill">
-                                Donate Now
+                            <Link href={settings.hero_secondary_cta_link || '/blog-grid'} className="btn btn-outline-light btn-lg px-5 rounded-pill">
+                                {settings.hero_secondary_cta_text || 'Read Articles'}
+                            </Link>
+                        </div>
+
+                        <div className="d-flex flex-wrap gap-3 mt-4">
+                            <Link href={settings.hero_support_cta_link || '/#campaigns'} className="text-white text-decoration-none fw-semibold">
+                                {settings.hero_support_cta_text || 'Support our causes'} <i className="fa-solid fa-arrow-right ms-2" />
                             </Link>
                         </div>
 
                         {/* Stats */}
                         <div className="row mt-5 gy-3">
-                            {[
-                                { value: '$2M+', label: 'Total Raised' },
-                                { value: '10K+', label: 'Donors' },
-                                { value: '150+', label: 'Campaigns' },
-                            ].map(stat => (
+                            {stats.map(stat => (
                                 <div key={stat.label} className="col-4">
                                     <h3 className="text-warning fw-bold mb-0">{stat.value}</h3>
                                     <small className="text-white opacity-60">{stat.label}</small>
@@ -59,12 +72,7 @@ const BannerOne = () => {
 
                     <div className="col-lg-6" data-aos="fade-left">
                         <div className="row g-3">
-                            {[
-                                { icon: 'fa-graduation-cap', title: 'Education', color: '#4e9af1', count: '45 Campaigns' },
-                                { icon: 'fa-heart-pulse', title: 'Medical', color: '#e05c5c', count: '32 Campaigns' },
-                                { icon: 'fa-leaf', title: 'Environment', color: '#4caf7d', count: '28 Campaigns' },
-                                { icon: 'fa-people-group', title: 'Community', color: '#f0a500', count: '51 Campaigns' },
-                            ].map(card => (
+                            {cards.map(card => (
                                 <div key={card.title} className="col-6">
                                     <div
                                         className="rounded-4 p-4 text-center"
@@ -77,7 +85,7 @@ const BannerOne = () => {
                                             <i className={`fa-solid ${card.icon} fs-4`} style={{ color: card.color }} />
                                         </div>
                                         <h6 className="text-white fw-bold mb-1">{card.title}</h6>
-                                        <small style={{ color: card.color }}>{card.count}</small>
+                                        <small style={{ color: card.color }}>{card.meta}</small>
                                     </div>
                                 </div>
                             ))}

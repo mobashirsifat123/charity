@@ -14,6 +14,7 @@ export default function CauseDetailPage() {
     const [campaign, setCampaign] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         const fetchCampaign = async () => {
@@ -65,6 +66,37 @@ export default function CauseDetailPage() {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(amount || 0);
+    };
+
+    const campaignUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/cause-details/${campaignId}`
+        : '';
+
+    const handleShare = async (platform) => {
+        if (!campaign) return;
+
+        const title = campaign.title || 'IRWA Campaign';
+        const encodedUrl = encodeURIComponent(campaignUrl);
+        const encodedTitle = encodeURIComponent(title);
+
+        const shareTargets = {
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+            twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+            whatsapp: `https://wa.me/?text=${encodeURIComponent(`${title} ${campaignUrl}`)}`,
+        };
+
+        if (platform === 'copy') {
+            try {
+                await navigator.clipboard.writeText(campaignUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (copyError) {
+                console.error('Failed to copy campaign link:', copyError);
+            }
+            return;
+        }
+
+        window.open(shareTargets[platform], '_blank', 'noopener,noreferrer,width=640,height=720');
     };
 
     // Loading state
@@ -270,19 +302,20 @@ export default function CauseDetailPage() {
                                     <div className="card-body p-4 text-center">
                                         <h6 className="fw-bold mb-3">Share This Campaign</h6>
                                         <div className="d-flex justify-content-center gap-2">
-                                            <button className="btn btn-outline-primary btn-sm" title="Share on Facebook">
+                                            <button type="button" className="btn btn-outline-primary btn-sm" title="Share on Facebook" onClick={() => handleShare('facebook')}>
                                                 <i className="fa-brands fa-facebook-f"></i>
                                             </button>
-                                            <button className="btn btn-outline-info btn-sm" title="Share on Twitter">
+                                            <button type="button" className="btn btn-outline-info btn-sm" title="Share on Twitter" onClick={() => handleShare('twitter')}>
                                                 <i className="fa-brands fa-twitter"></i>
                                             </button>
-                                            <button className="btn btn-outline-success btn-sm" title="Share on WhatsApp">
+                                            <button type="button" className="btn btn-outline-success btn-sm" title="Share on WhatsApp" onClick={() => handleShare('whatsapp')}>
                                                 <i className="fa-brands fa-whatsapp"></i>
                                             </button>
-                                            <button className="btn btn-outline-secondary btn-sm" title="Copy Link">
+                                            <button type="button" className="btn btn-outline-secondary btn-sm" title="Copy Link" onClick={() => handleShare('copy')}>
                                                 <i className="fa-solid fa-link"></i>
                                             </button>
                                         </div>
+                                        {copied ? <p className="small text-success mt-2 mb-0">Campaign link copied.</p> : null}
                                     </div>
                                 </div>
                             </div>

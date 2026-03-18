@@ -7,15 +7,40 @@ import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
+import { readSavedContent } from '@/lib/content-utils';
 
 export default function DashboardPage() {
     const [donations, setDonations] = useState([]);
+    const [savedContent, setSavedContent] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
+        const fetchDonations = async () => {
+            try {
+                const { data, error: fetchError } = await supabase
+                    .from('donations')
+                    .select('*, campaigns(title)')
+                    .eq('donor_email', user.email)
+                    .order('created_at', { ascending: false });
+                    
+                if (fetchError) throw fetchError;
+                
+                const formattedDonations = (data || []).map(d => ({
+                   ...d,
+                   campaign_title: d.campaigns?.title || 'Unknown Campaign'
+                }));
+                
+                setDonations(formattedDonations);
+            } catch (err) {
+                setError(err.message || 'Failed to load donation history');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         // Redirect to login if not authenticated
         if (!authLoading && !user) {
             router.push('/login');
@@ -25,31 +50,9 @@ export default function DashboardPage() {
         // Fetch donations when authenticated
         if (user) {
             fetchDonations();
+            setSavedContent(readSavedContent(user.id || 'guest'));
         }
     }, [user, authLoading, router]);
-
-    const fetchDonations = async () => {
-        try {
-            const { data, error: fetchError } = await supabase
-                .from('donations')
-                .select('*, campaigns(title)')
-                .eq('donor_email', user.email)
-                .order('created_at', { ascending: false });
-                
-            if (fetchError) throw fetchError;
-            
-            const formattedDonations = (data || []).map(d => ({
-               ...d,
-               campaign_title: d.campaigns?.title || 'Unknown Campaign'
-            }));
-            
-            setDonations(formattedDonations);
-        } catch (err) {
-            setError(err.message || 'Failed to load donation history');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Format date
     const formatDate = (dateString) => {
@@ -133,7 +136,7 @@ export default function DashboardPage() {
                                     <div className="col-md-8">
                                         <h2 className="fw-bold mb-2">
                                             <i className="fa-solid fa-hand-wave me-2"></i>
-                                            Welcome back, {user.name}!
+                                            Welcome back, {user.name || user.email}!
                                         </h2>
                                         <p className="mb-0 opacity-75">
                                             Thank you for your generous contributions to our causes.
@@ -187,6 +190,41 @@ export default function DashboardPage() {
                                     {user.created_at ? formatDate(user.created_at) : 'N/A'}
                                 </h4>
                                 <p className="text-muted mb-0">Member Since</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="row mb-4">
+                    <div className="col-lg-6 mb-3">
+                        <div className="card border-0 shadow-sm rounded-4 h-100">
+                            <div className="card-body p-4">
+                                <h5 className="fw-bold mb-3">Profile Overview</h5>
+                                <p className="mb-2"><strong>Name:</strong> {user.name || 'IRWA Member'}</p>
+                                <p className="mb-2"><strong>Email:</strong> {user.email}</p>
+                                <p className="mb-0"><strong>Role:</strong> {user.role || 'donor'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-lg-6 mb-3">
+                        <div className="card border-0 shadow-sm rounded-4 h-100">
+                            <div className="card-body p-4">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 className="fw-bold mb-0">Saved Content</h5>
+                                    <span className="badge bg-primary rounded-pill">{savedContent.length}</span>
+                                </div>
+                                {savedContent.length ? (
+                                    savedContent.slice(0, 5).map((item) => (
+                                        <div key={`${item.type}-${item.id}`} className="border-bottom pb-2 mb-2">
+                                            <Link href={item.href} className="fw-semibold text-decoration-none d-block">
+                                                {item.title}
+                                            </Link>
+                                            <small className="text-muted">{item.category}</small>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-muted mb-0">Save articles and fatwas to revisit them later.</p>
+                                )}
                             </div>
                         </div>
                     </div>

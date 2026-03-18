@@ -1,305 +1,143 @@
 "use client";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
-import HeaderOne from '@/components/HeaderOne';
-import FooterOne from '@/components/FooterOne';
-import BreadcrumbOne from '@/components/BreadcrumbOne';
-import AdminGuard from '@/components/AdminGuard';
+import { adminFetchJson } from '@/lib/adminApi';
 
-function AdminDashboardContent() {
+export default function AdminDashboard() {
     const [stats, setStats] = useState({
         totalRaised: 0,
-        totalDonors: 0,
-        totalCampaigns: 0,
-        totalDonations: 0,
+        activeCampaigns: 0,
+        recentDonations: [],
+        totalBlogs: 0,
+        totalFatwas: 0,
+        totalTeamMembers: 0,
     });
-    const [donations, setDonations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchData();
+        async function fetchStats() {
+            try {
+                const result = await adminFetchJson('/api/admin/dashboard');
+                setStats(result.data);
+            } catch (err) {
+                console.error("Dashboard error:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchStats();
     }, []);
 
-    const fetchData = async () => {
-        try {
-            const { count: campaignsCount } = await supabase.from('campaigns').select('*', { count: 'exact', head: true });
-            const { count: donorsCount } = await supabase.from('users').select('*', { count: 'exact', head: true }); 
-            const { data: donationsData, error: donationsError } = await supabase.from('donations').select(`
-                *,
-                campaigns(title),
-                users(name, email)
-            `);
-            
-            if (donationsError) throw donationsError;
-            
-            const totalRaised = donationsData
-                .filter(d => d.payment_status === 'completed')
-                .reduce((sum, d) => sum + Number(d.amount), 0);
-            
-            setStats({
-               totalRaised,
-               totalDonors: donorsCount || 0,
-               totalCampaigns: campaignsCount || 0,
-               totalDonations: donationsData.length || 0,
-            });
-            
-            const formattedDonations = donationsData.map(d => ({
-               ...d,
-               campaign_title: d.campaigns?.title || 'Unknown Campaign',
-               donor_name: d.users?.name || 'Anonymous',
-               donor_email: d.users?.email || 'N/A'
-            }));
-            
-            formattedDonations.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-            setDonations(formattedDonations);
-        } catch (err) {
-            setError(err.message || 'Failed to load admin data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-        }).format(amount || 0);
-    };
-
-    // Format date
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
-
-    // Get status badge class
-    const getStatusBadge = (status) => {
-        switch (status?.toLowerCase()) {
-            case 'completed': return 'bg-success';
-            case 'pending': return 'bg-warning';
-            case 'failed': return 'bg-danger';
-            default: return 'bg-secondary';
-        }
-    };
+    if (loading) return <div>Loading dashboard data...</div>;
 
     return (
-        <section className="page-wrapper">
-            <HeaderOne />
-            <BreadcrumbOne
-                title="Admin Dashboard"
-                links={[
-                    { name: "Home", link: "/" },
-                    { name: "Admin Dashboard", link: "/admin/dashboard" }
-                ]}
-            />
-
-            <div className="container py-5">
-                {/* Header with Create Button */}
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 className="fw-bold mb-1">
-                            <i className="fa-solid fa-shield-halved text-primary me-2"></i>
-                            Platform Overview
-                        </h2>
-                        <p className="text-muted mb-0">Manage campaigns and monitor donations</p>
-                    </div>
-                    <div className="d-flex gap-2 flex-wrap justify-content-end">
-                        <Link href="/admin/blogs" className="btn btn-outline-dark btn-lg">
-                            <i className="fa-solid fa-pen-nib me-2"></i>
-                            Blogs
-                        </Link>
-                        <Link href="/admin/fatwas" className="btn btn-outline-dark btn-lg">
-                            <i className="fa-solid fa-scale-balanced me-2"></i>
-                            Fatwas
-                        </Link>
-                        <Link href="/admin/team" className="btn btn-outline-dark btn-lg">
-                            <i className="fa-solid fa-users-viewfinder me-2"></i>
-                            Team
-                        </Link>
-                        <Link href="/admin/settings" className="btn btn-outline-dark btn-lg">
-                            <i className="fa-solid fa-gear me-2"></i>
-                            Settings
-                        </Link>
-                        <Link href="/admin/campaigns" className="btn btn-outline-primary btn-lg">
-                            <i className="fa-solid fa-list me-2"></i>
-                            Manage Campaigns
-                        </Link>
-                        <Link href="/admin/create-campaign" className="btn btn-primary btn-lg">
-                            <i className="fa-solid fa-plus me-2"></i>
-                            Create Campaign
-                        </Link>
-                    </div>
-                </div>
-
-                {error && (
-                    <div className="alert alert-danger">{error}</div>
-                )}
-
-                {/* Stats Cards */}
-                <div className="row mb-5">
-                    <div className="col-md-3 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white">
-                            <div className="card-body p-4">
-                                <div className="d-flex align-items-center mb-3">
-                                    <div className="rounded-circle bg-white bg-opacity-25 p-3 me-3">
-                                        <i className="fa-solid fa-dollar-sign fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small className="opacity-75">Total Raised</small>
-                                        <h3 className="mb-0 fw-bold">
-                                            {loading ? '...' : formatCurrency(stats.totalRaised)}
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <div className="d-flex align-items-center mb-3">
-                                    <div className="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-                                        <i className="fa-solid fa-users text-success fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small className="text-muted">Total Donors</small>
-                                        <h3 className="mb-0 fw-bold text-success">
-                                            {loading ? '...' : stats.totalDonors}
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <div className="d-flex align-items-center mb-3">
-                                    <div className="rounded-circle bg-info bg-opacity-10 p-3 me-3">
-                                        <i className="fa-solid fa-bullhorn text-info fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small className="text-muted">Campaigns</small>
-                                        <h3 className="mb-0 fw-bold text-info">
-                                            {loading ? '...' : stats.totalCampaigns}
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <div className="d-flex align-items-center mb-3">
-                                    <div className="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                                        <i className="fa-solid fa-heart text-warning fs-4"></i>
-                                    </div>
-                                    <div>
-                                        <small className="text-muted">Donations</small>
-                                        <h3 className="mb-0 fw-bold text-warning">
-                                            {loading ? '...' : stats.totalDonations}
-                                        </h3>
-                                    </div>
-                                </div>
-                            </div>
+        <div>
+            <h2 className="mb-4">IRWA Dashboard</h2>
+            
+            <div className="row mb-5">
+                <div className="col-md-6 col-xl-3 mb-3">
+                    <div className="card bg-primary text-white h-100 shadow-sm">
+                        <div className="card-body">
+                            <h5 className="card-title">Total Donations Raised</h5>
+                            <h2 className="display-4 fw-bold">${stats.totalRaised.toFixed(2)}</h2>
                         </div>
                     </div>
                 </div>
-
-                {/* All Donations Table */}
-                <div className="card border-0 shadow-sm rounded-4">
-                    <div className="card-header bg-white border-0 p-4">
-                        <h5 className="mb-0 fw-bold">
-                            <i className="fa-solid fa-list me-2 text-primary"></i>
-                            All Donations
-                        </h5>
+                <div className="col-md-6 col-xl-3 mb-3">
+                    <div className="card bg-success text-white h-100 shadow-sm">
+                        <div className="card-body">
+                            <h5 className="card-title">Active Campaigns</h5>
+                            <h2 className="display-4 fw-bold">{stats.activeCampaigns}</h2>
+                        </div>
                     </div>
-                    <div className="card-body p-4 pt-0">
-                        {loading ? (
-                            <div className="text-center py-5">
-                                <div className="spinner-border text-primary" role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                        ) : donations.length === 0 ? (
-                            <div className="text-center py-5">
-                                <i className="fa-solid fa-inbox text-muted mb-3" style={{ fontSize: '4rem' }}></i>
-                                <h5>No donations yet</h5>
-                                <p className="text-muted">Donations will appear here once users start contributing.</p>
-                            </div>
-                        ) : (
-                            <div className="table-responsive">
-                                <table className="table table-hover align-middle mb-0">
-                                    <thead className="table-light">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Donor</th>
-                                            <th>Campaign</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                            <th>Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {donations.map((donation) => (
-                                            <tr key={donation.id}>
-                                                <td>
-                                                    <span className="badge bg-light text-dark">
-                                                        #{donation.id}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div>
-                                                        <strong>{donation.donor_name}</strong>
-                                                        <br />
-                                                        <small className="text-muted">{donation.donor_email}</small>
-                                                    </div>
-                                                </td>
-                                                <td>{donation.campaign_title}</td>
-                                                <td>
-                                                    <span className="fw-bold text-success">
-                                                        {formatCurrency(donation.amount)}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span className={`badge ${getStatusBadge(donation.payment_status)}`}>
-                                                        {donation.payment_status}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <small className="text-muted">
-                                                        {formatDate(donation.created_at)}
-                                                    </small>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                </div>
+                <div className="col-md-6 col-xl-3 mb-3">
+                    <div className="card bg-dark text-white h-100 shadow-sm">
+                        <div className="card-body">
+                            <h5 className="card-title">Articles & Fatwas</h5>
+                            <h2 className="display-6 fw-bold">{stats.totalBlogs} / {stats.totalFatwas}</h2>
+                            <small>Blogs / Fatwas</small>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-md-6 col-xl-3 mb-3">
+                    <div className="card bg-warning text-dark h-100 shadow-sm">
+                        <div className="card-body">
+                            <h5 className="card-title">Team Members</h5>
+                            <h2 className="display-4 fw-bold">{stats.totalTeamMembers}</h2>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <FooterOne />
-        </section>
-    );
-}
-
-export default function AdminDashboardPage() {
-    return (
-        <AdminGuard>
-            <AdminDashboardContent />
-        </AdminGuard>
+            <div className="row">
+                <div className="col-md-8">
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-header bg-white">
+                            <h5 className="mb-0 py-2">Recent Donations</h5>
+                        </div>
+                        <div className="card-body p-0">
+                            <table className="table table-hover mb-0">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>Donor</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stats.recentDonations.length > 0 ? stats.recentDonations.map(d => (
+                                        <tr key={d.id}>
+                                            <td>{d.donor_name || 'Anonymous'}</td>
+                                            <td className="fw-bold">${parseFloat(d.amount).toFixed(2)}</td>
+                                            <td>
+                                                <span className={`badge bg-${d.payment_status === 'completed' ? 'success' : 'warning'}`}>
+                                                    {d.payment_status}
+                                                </span>
+                                            </td>
+                                            <td>{new Date(d.created_at).toLocaleDateString()}</td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="4" className="text-center py-3">No recent donations found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-md-4">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-white">
+                            <h5 className="mb-0 py-2">Quick Links</h5>
+                        </div>
+                        <div className="card-body">
+                            <div className="d-grid gap-2">
+                                <Link href="/admin/campaigns" className="btn btn-outline-primary text-start">
+                                    <i className="fa-solid fa-list me-2"></i> Manage Campaigns
+                                </Link>
+                                <Link href="/admin/blogs" className="btn btn-outline-primary text-start">
+                                    <i className="fa-solid fa-newspaper me-2"></i> Manage Articles
+                                </Link>
+                                <Link href="/admin/fatwas" className="btn btn-outline-primary text-start">
+                                    <i className="fa-solid fa-scale-balanced me-2"></i> Manage Fatwas
+                                </Link>
+                                <Link href="/admin/team" className="btn btn-outline-primary text-start">
+                                    <i className="fa-solid fa-users me-2"></i> Manage Team
+                                </Link>
+                                <Link href="/admin/images" className="btn btn-outline-primary text-start">
+                                    <i className="fa-regular fa-images me-2"></i> Update Images
+                                </Link>
+                                <Link href="/admin/content" className="btn btn-outline-primary text-start">
+                                    <i className="fa-solid fa-pen-to-square me-2"></i> Edit Site Content
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

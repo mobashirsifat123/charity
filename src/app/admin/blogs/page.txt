@@ -1,0 +1,389 @@
+"use client";
+import React, { useEffect, useState, useMemo } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import AdminGuard from '@/components/AdminGuard';
+import Link from 'next/link';
+
+function AdminBlogsContent() {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Filters & Sorting
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  
+  // Bulk Actions
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  
+  // Toast Notification
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  async function fetchBlogs() {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.from('blogs').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setBlogs(data || []);
+    } catch (err) {
+      showToast('Error fetching articles: ' + err.message, 'danger');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ show: true, message: msg, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 4000);
+  };
+
+  const handleToggleStatus = async (blog) => {
+    const newStatus = blog.status === 'published' ? 'draft' : 'published';
+    try {
+      const { error } = await supabase.from('blogs').update({ status: newStatus }).eq('id', blog.id);
+      if (error) throw error;
+      setBlogs(blogs.map(b => b.id === blog.id ? { ...b, status: newStatus } : b));
+      showToast(`Article status updated to ${newStatus}`);
+    } catch (err) {
+      showToast('Failed to update status', 'danger');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you absolutely sure you want to delete this article?')) return;
+    try {
+      const { error } = await supabase.from('blogs').delete().eq('id', id);
+      if (error) throw error;
+      setBlogs(blogs.filter(b => b.id !== id));
+      setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+      showToast('Article deleted successfully');
+    } catch (err) {
+      showToast('Failed to delete article', 'danger');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.size} selected articles?`)) return;
+    
+    try {
+      const { error } = await supabase.from('blogs').delete().in('id', Array.from(selectedIds));
+      if (error) throw error;
+      
+      setBlogs(blogs.filter(b => !selectedIds.has(b.id)));
+      setSelectedIds(new Set());
+      showToast(`Deleted ${selectedIds.size} articles successfully`);
+      setCurrentPage(1);
+    } catch (err) {
+      showToast('Failed to delete selected articles', 'danger');
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === currentBlogs.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(currentBlogs.map(b => b.id)));
+    }
+  };
+
+  const toggleSelect = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  // Derived state (Filter & Sort & Pagination)
+  const filteredAndSortedBlogs = useMemo(() => {
+    let result = [...blogs];
+    
+    // Status Filter
+    if (statusFilter !== 'all') {
+      result = result.filter(b => b.status === statusFilter);
+    }
+    
+    // Search Filter
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      result = result.filter(b => 
+        (b.title && b.title.toLowerCase().includes(lower)) || 
+        (b.content && b.content.toLowerCase().includes(lower))
+      );
+    }
+    
+    // Sorting
+    result.sort((a, b) => {
+      if (sortOrder === 'newest') return new Date(b.created_at) - new Date(a.created_at);
+      if (sortOrder === 'oldest') return new Date(a.created_at) - new Date(b.created_at);
+      if (sortOrder === 'az') return (a.title || '').localeCompare(b.title || '');
+      if (sortOrder === 'za') return (b.title || '').localeCompare(a.title || '');
+      return 0;
+    });
+    
+    return result;
+  }, [blogs, searchTerm, statusFilter, sortOrder]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedBlogs.length / itemsPerPage));
+  const currentBlogs = filteredAndSortedBlogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Stats for the Hero Row
+  const totalCount = blogs.length;
+  const publishedCount = blogs.filter(b => b.status === 'published').length;
+  const draftCount = totalCount - publishedCount;
+
+  return (
+    <section className="bg-light pb-5 min-vh-100 position-relative">
+      {/* Toast Notification Container */}
+      <div className="toast-container position-fixed bottom-0 end-0 p-3" style={{ zIndex: 1055 }}>
+        <div className={`toast align-items-center text-bg-${toast.type} border-0 ${toast.show ? 'show' : 'hide'}`} role="alert">
+          <div className="d-flex">
+            <div className="toast-body fw-medium">
+              {toast.message}
+            </div>
+            <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setToast({ ...toast, show: false })}></button>
+          </div>
+        </div>
+      </div>
+
+      <div className="container py-4">
+        {/* Header Section */}
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+          <div>
+            <h2 className="fw-bold mb-1"><i className="fa-solid fa-pen-nib text-primary me-2"></i>Article Management</h2>
+            <p className="text-muted mb-0">Create, edit, and organize all your community articles and insights.</p>
+          </div>
+          <div>
+            <Link href="/admin/blogs/new" className="btn btn-primary btn-lg shadow-sm fw-bold">
+              <i className="fa-solid fa-plus me-2"></i> Write New Article
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="row g-3 mb-4">
+          <div className="col-md-4">
+            <div className="card border-0 shadow-sm rounded-4">
+              <div className="card-body d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                  <i className="fa-solid fa-layer-group fs-4"></i>
+                </div>
+                <div>
+                  <h6 className="text-muted mb-0">Total Articles</h6>
+                  <h3 className="fw-bold mb-0">{totalCount}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+             <div className="card border-0 shadow-sm rounded-4">
+              <div className="card-body d-flex align-items-center">
+                <div className="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                  <i className="fa-solid fa-check-circle fs-4"></i>
+                </div>
+                <div>
+                  <h6 className="text-muted mb-0">Published</h6>
+                  <h3 className="fw-bold mb-0">{publishedCount}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+             <div className="card border-0 shadow-sm rounded-4">
+              <div className="card-body d-flex align-items-center">
+                <div className="bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3">
+                  <i className="fa-solid fa-clock fs-4"></i>
+                </div>
+                <div>
+                  <h6 className="text-muted mb-0">Drafts / Hidden</h6>
+                  <h3 className="fw-bold mb-0">{draftCount}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Advanced Filters Card */}
+        <div className="card border-0 shadow-sm rounded-4 mb-4">
+          <div className="card-body bg-white rounded-4 p-4">
+            <div className="row g-3 align-items-center">
+              <div className="col-lg-5">
+                 <div className="input-group">
+                    <span className="input-group-text bg-light border-end-0 text-muted"><i className="fa-solid fa-search"></i></span>
+                    <input 
+                      type="text" 
+                      className="form-control bg-light border-start-0 ps-0" 
+                      placeholder="Search articles by title or content..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                 </div>
+              </div>
+              <div className="col-lg-4">
+                <div className="d-flex gap-2">
+                   <select className="form-select bg-light focus-ring-none" value={statusFilter} onChange={(e) => {setStatusFilter(e.target.value); setCurrentPage(1);}}>
+                     <option value="all">All Statuses</option>
+                     <option value="published">Published Only</option>
+                     <option value="draft">Drafts Only</option>
+                   </select>
+                   <select className="form-select bg-light" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                     <option value="newest">Newest First</option>
+                     <option value="oldest">Oldest First</option>
+                     <option value="az">Title (A-Z)</option>
+                     <option value="za">Title (Z-A)</option>
+                   </select>
+                </div>
+              </div>
+              {selectedIds.size > 0 && (
+                <div className="col-lg-3 text-lg-end">
+                   <button onClick={handleBulkDelete} className="btn btn-outline-danger w-100">
+                     <i className="fa-solid fa-trash me-2"></i> Delete {selectedIds.size} Selected
+                   </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
+          <div className="card-body p-0">
+            {loading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary shadow-sm" style={{width: '3rem', height: '3rem'}} role="status"></div>
+                <p className="mt-3 text-muted fw-medium">Fetching article data...</p>
+              </div>
+            ) : currentBlogs.length === 0 ? (
+              <div className="text-center py-5">
+                <div className="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                    <i className="fa-regular fa-folder-open text-muted" style={{ fontSize: '3rem' }}></i>
+                </div>
+                <h5 className="fw-bold">No Articles Found</h5>
+                <p className="text-muted">Adjust your search or filters, or create a new article.</p>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="px-4 py-3" style={{width: '50px'}}>
+                        <input 
+                           type="checkbox" 
+                           className="form-check-input"
+                           checked={selectedIds.size > 0 && selectedIds.size === currentBlogs.length}
+                           onChange={toggleSelectAll}
+                        />
+                      </th>
+                      <th className="py-3">Title & Overview</th>
+                      <th className="py-3 text-center">Status</th>
+                      <th className="py-3">Date Published</th>
+                      <th className="px-4 py-3 text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentBlogs.map((blog) => (
+                      <tr key={blog.id} className={selectedIds.has(blog.id) ? 'bg-primary bg-opacity-10' : ''}>
+                        <td className="px-4 py-3">
+                           <input 
+                             type="checkbox" 
+                             className="form-check-input"
+                             checked={selectedIds.has(blog.id)}
+                             onChange={() => toggleSelect(blog.id)}
+                           />
+                        </td>
+                        <td className="py-3">
+                           <div className="d-flex align-items-center gap-3">
+                               {blog.image_url ? (
+                                  <div className="bg-light rounded text-center overflow-hidden" style={{width: '60px', height: '40px'}}>
+                                      <img src={blog.image_url} alt="thumbnail" className="w-100 h-100 object-fit-cover" />
+                                  </div>
+                               ) : (
+                                  <div className="bg-light rounded text-center d-flex align-items-center justify-content-center" style={{width: '60px', height: '40px'}}>
+                                      <i className="fa-solid fa-image text-muted"></i>
+                                  </div>
+                               )}
+                               <div>
+                                   <div className="fw-bold text-dark">{blog.title?.slice(0, 50)}{blog.title?.length > 50 && '...'}</div>
+                                   <div className="text-muted small">ID: {blog.id.split('-')[0]}...</div>
+                               </div>
+                           </div>
+                        </td>
+                        <td className="py-3 text-center">
+                           <button 
+                             onClick={() => handleToggleStatus(blog)}
+                             className={`btn btn-sm px-3 rounded-pill fw-medium border-0 bg-${blog.status === 'published' ? 'success' : 'warning text-dark'} bg-opacity-10 text-${blog.status === 'published' ? 'success' : 'warning text-dark'}`}
+                             title="Click to toggle status"
+                           >
+                              {blog.status === 'published' ? <><i className="fa-solid fa-eye me-1"></i> Published</> : <><i className="fa-solid fa-eye-slash me-1"></i> Draft</>}
+                           </button>
+                        </td>
+                        <td className="py-3 text-muted fw-medium">
+                          <i className="fa-regular fa-calendar me-2"></i>
+                          {new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </td>
+                        <td className="px-4 py-3 text-end">
+                          <div className="d-flex gap-2 justify-content-end">
+                            <Link href={`/admin/blogs/edit/${blog.id}`} className="btn btn-sm btn-light border-secondary text-primary" title="Edit">
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </Link>
+                            <button onClick={() => handleDelete(blog.id)} className="btn btn-sm btn-light border-secondary text-danger" title="Delete">
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+          
+          {/* Advanced Pagination Footer */}
+          {!loading && currentBlogs.length > 0 && (
+             <div className="card-footer bg-white border-0 p-4">
+                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                     <span className="text-muted small">
+                         Showing <span className="fw-bold text-dark">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="fw-bold text-dark">{Math.min(currentPage * itemsPerPage, filteredAndSortedBlogs.length)}</span> of <span className="fw-bold text-dark">{filteredAndSortedBlogs.length}</span> entries
+                     </span>
+                     <nav>
+                         <ul className="pagination pagination-sm mb-0 shadow-sm">
+                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                 <button className="page-link" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>Previous</button>
+                             </li>
+                             {Array.from({ length: totalPages }, (_, i) => (
+                                 <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                                     <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                                 </li>
+                             ))}
+                             <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                 <button className="page-link" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>Next</button>
+                             </li>
+                         </ul>
+                     </nav>
+                 </div>
+             </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function AdminBlogsPage() {
+    return (
+        <AdminGuard>
+            <AdminBlogsContent />
+        </AdminGuard>
+    );
+}

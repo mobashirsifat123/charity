@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { isMissingColumnError } from '@/lib/content-utils';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
+const stripe = new Stripe(stripeSecretKey);
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -36,10 +38,17 @@ export async function POST(req) {
 
         if (donationId) {
             // Update donation status to completed
-            await supabase
+            let donationUpdate = await supabase
                 .from('donations')
                 .update({ payment_status: 'completed', stripe_session_id: session.id })
                 .eq('id', donationId);
+
+            if (donationUpdate.error && isMissingColumnError(donationUpdate.error)) {
+                donationUpdate = await supabase
+                    .from('donations')
+                    .update({ payment_status: 'completed' })
+                    .eq('id', donationId);
+            }
 
             // Update campaign raised amount natively
             if (campaignId) {

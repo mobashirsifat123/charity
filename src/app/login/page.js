@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
@@ -13,8 +14,17 @@ export default function LoginPage() {
         password: '',
     });
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [nextPath, setNextPath] = useState('/dashboard');
     const router = useRouter();
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        setNextPath(params.get('next') || '/dashboard');
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -22,14 +32,47 @@ export default function LoginPage() {
             ...prev,
             [name]: value
         }));
-        setError(''); // Clear error on input change
+        setError('');
+        setSuccessMessage('');
+    };
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        
+        // Ensure email is provided
+        if (!formData.email) {
+            setError("Please enter your email address in the Email field to reset your password.");
+            return;
+        }
+
+        setError('');
+        setSuccessMessage('');
+        setLoading(true);
+
+        try {
+            // Using supabase to send the reset email
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
+                redirectTo: `${window.location.origin}/dashboard`,
+            });
+
+            if (resetError) throw resetError;
+            
+            setSuccessMessage("Password reset email sent! Please check your inbox.");
+        } catch (err) {
+            console.error("Reset Password Error:", err);
+            setError(err.message || 'Failed to send password reset email');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMessage('');
         setLoading(true);
 
+        // Explicit error bounds on signInWithPassword
         try {
             const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email: formData.email,
@@ -37,12 +80,15 @@ export default function LoginPage() {
             });
 
             if (authError) {
-                setError(authError.message || 'Login failed');
-            } else if (data.session) {
-                router.push('/dashboard');
+                throw authError;
+            }
+
+            if (data?.session) {
+                router.push(nextPath);
             }
         } catch (err) {
             setError(err.message || 'An error occurred during login');
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -80,6 +126,18 @@ export default function LoginPage() {
                                         ></button>
                                     </div>
                                 )}
+                                
+                                {successMessage && (
+                                    <div className="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i className="fa-solid fa-check-circle me-2"></i>
+                                        {successMessage}
+                                        <button
+                                            type="button"
+                                            className="btn-close"
+                                            onClick={() => setSuccessMessage('')}
+                                        ></button>
+                                    </div>
+                                )}
 
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-4">
@@ -104,23 +162,38 @@ export default function LoginPage() {
                                     </div>
 
                                     <div className="mb-4">
-                                        <label htmlFor="password" className="form-label fw-semibold">
-                                            Password
-                                        </label>
+                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                            <label htmlFor="password" className="form-label fw-semibold mb-0">
+                                                Password
+                                            </label>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link text-decoration-none small text-primary p-0"
+                                                onClick={handleResetPassword}
+                                            >
+                                                Forgot Password?
+                                            </button>
+                                        </div>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
                                                 <i className="fa-solid fa-lock text-muted"></i>
                                             </span>
                                             <input
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 className="form-control border-start-0 ps-0"
                                                 id="password"
                                                 name="password"
                                                 placeholder="Enter your password"
                                                 value={formData.password}
                                                 onChange={handleChange}
-                                                required
                                             />
+                                            <button
+                                                type="button"
+                                                className="input-group-text bg-light border-start-0"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                            >
+                                                <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -132,7 +205,7 @@ export default function LoginPage() {
                                         {loading ? (
                                             <>
                                                 <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                Signing in...
+                                                Processing...
                                             </>
                                         ) : (
                                             <>

@@ -35,7 +35,7 @@ const TeamOne = () => {
             <div className="container py-4">
                 <div className="text-center mb-5" data-aos="fade-up">
                     <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3 fw-semibold">
-                        Our Team
+                        {settings.team_badge || 'Our Team'}
                     </span>
                     <h2 className="fw-bold">{settings.team_title || 'Meet the Changemakers'}</h2>
                     <p className="text-muted">{settings.team_subtitle || 'Dedicated professionals working tirelessly behind the scenes to maximize impact.'}</p>

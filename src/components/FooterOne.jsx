@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
+import NewsletterSignup from '@/components/NewsletterSignup';
 
 const FooterOne = () => {
     const { settings } = useSiteSettings();
@@ -24,21 +25,26 @@ const FooterOne = () => {
                                 <Link href={settings.social_facebook || 'https://www.facebook.com/'} target="_blank" aria-label="facebook" className="text-light opacity-75"><i className="fa-brands fa-facebook-f" /></Link>
                                 <Link href={settings.social_twitter || 'https://x.com/'} target="_blank" aria-label="twitter" className="text-light opacity-75"><i className="fa-brands fa-twitter" /></Link>
                                 <Link href={settings.social_instagram || 'https://www.instagram.com/'} target="_blank" aria-label="instagram" className="text-light opacity-75"><i className="fa-brands fa-instagram" /></Link>
+                                <Link href={settings.social_linkedin || 'https://www.linkedin.com/'} target="_blank" aria-label="linkedin" className="text-light opacity-75"><i className="fa-brands fa-linkedin-in" /></Link>
+                            </div>
+                            <div className="mt-4">
+                                <NewsletterSignup compact />
                             </div>
                         </div>
                     </div>
                     <div className="col-lg-2 col-md-6">
-                        <h6 className="text-white fw-semibold mb-3">Quick Links</h6>
+                        <h6 className="text-white fw-semibold mb-3">{settings.footer_quick_links_heading || 'Quick Links'}</h6>
                         <ul className="list-unstyled">
-                            <li className="mb-2"><Link href="/" className="text-light opacity-75 text-decoration-none">Home</Link></li>
-                            <li className="mb-2"><Link href="/about-us" className="text-light opacity-75 text-decoration-none">About Us</Link></li>
-                            <li className="mb-2"><Link href="/#campaigns" className="text-light opacity-75 text-decoration-none">Our Causes</Link></li>
-                            <li className="mb-2"><Link href="/donation" className="text-light opacity-75 text-decoration-none">Donate</Link></li>
-                            <li className="mb-2"><Link href="/contact-us" className="text-light opacity-75 text-decoration-none">Contact</Link></li>
+                            <li className="mb-2"><Link href="/" className="text-light opacity-75 text-decoration-none">{settings.footer_home_label || 'Home'}</Link></li>
+                            <li className="mb-2"><Link href="/about-us" className="text-light opacity-75 text-decoration-none">{settings.footer_about_label || 'About Us'}</Link></li>
+                            <li className="mb-2"><Link href="/#campaigns" className="text-light opacity-75 text-decoration-none">{settings.footer_causes_label || 'Our Causes'}</Link></li>
+                            <li className="mb-2"><Link href="/donation" className="text-light opacity-75 text-decoration-none">{settings.footer_donate_label || 'Donate'}</Link></li>
+                            <li className="mb-2"><Link href="/request-fatwa" className="text-light opacity-75 text-decoration-none">{settings.footer_request_fatwa_label || 'Request Fatwa'}</Link></li>
+                            <li className="mb-2"><Link href="/contact-us" className="text-light opacity-75 text-decoration-none">{settings.footer_contact_label || 'Contact'}</Link></li>
                         </ul>
                     </div>
                     <div className="col-lg-3 col-md-6">
-                        <h6 className="text-white fw-semibold mb-3">Causes</h6>
+                        <h6 className="text-white fw-semibold mb-3">{settings.footer_causes_heading || 'Causes'}</h6>
                         <ul className="list-unstyled">
                             {['Education', 'Medical', 'Environment', 'Community', 'Crisis'].map(cat => (
                                 <li key={cat} className="mb-2">
@@ -48,9 +54,9 @@ const FooterOne = () => {
                         </ul>
                     </div>
                     <div className="col-lg-3 col-md-6">
-                        <h6 className="text-white fw-semibold mb-3">Contact</h6>
+                        <h6 className="text-white fw-semibold mb-3">{settings.footer_contact_heading || 'Contact'}</h6>
                         <ul className="list-unstyled text-light opacity-75">
-                            <li className="mb-2"><i className="fa-solid fa-location-dot me-2" />123 Charity Lane, NY 10001</li>
+                            <li className="mb-2"><i className="fa-solid fa-location-dot me-2" />{settings.contact_address || '123 Charity Lane, NY 10001'}</li>
                             <li className="mb-2"><i className="fa-solid fa-phone me-2" />{settings.contact_phone || '(+01)-793-7938'}</li>
                             <li className="mb-2"><i className="fa-solid fa-envelope me-2" />{settings.contact_email || 'info@irwa.org'}</li>
                         </ul>

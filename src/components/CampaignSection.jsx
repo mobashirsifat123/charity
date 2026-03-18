@@ -103,8 +103,8 @@ const CampaignSection = () => {
                 <div className="container">
                     <div className="text-center py-5">
                         <i className="fa-solid fa-heart-crack text-muted" style={{ fontSize: '4rem' }}></i>
-                        <h4 className="mt-3">No Campaigns Yet</h4>
-                        <p className="text-muted">Check back soon for new fundraising campaigns!</p>
+                        <h4 className="mt-3">{settings.campaign_section_empty_title || 'No Campaigns Yet'}</h4>
+                        <p className="text-muted">{settings.campaign_section_empty_description || 'Check back soon for new fundraising campaigns!'}</p>
                     </div>
                 </div>
             </section>
@@ -125,11 +125,10 @@ const CampaignSection = () => {
                             <div className="section__header">
                                 <span className="sub-title">
                                     <i className="icon-donation" />
-                                    Active Campaigns
+                                    {settings.campaign_section_badge || 'Active Campaigns'}
                                 </span>
-                                <h2 className="title-animation_inner">
-                                    Help &amp; <span>donate</span> to make a difference
-                                </h2>
+                                <h2 className="title-animation_inner">{settings.campaign_section_title || 'Help & donate to make a difference'}</h2>
+                                <p className="text-muted mt-3 mb-0">{settings.campaign_section_description || 'Support campaigns that extend care, strengthen families, and serve the wider mission with lasting impact.'}</p>
                             </div>
                         </div>
                     </div>

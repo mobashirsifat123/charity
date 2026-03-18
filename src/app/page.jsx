@@ -7,6 +7,7 @@ import CommunityOne from "@/components/CommunityOne";
 import CtaSectionOne from "@/components/CtaSectionOne";
 import DifferenceOne from "@/components/DifferenceOne";
 import DifferenceTwo from "@/components/DifferenceTwo";
+import FatwaHighlights from "@/components/FatwaHighlights";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
 import HelpOne from "@/components/HelpOne";
@@ -36,6 +37,12 @@ const Page = () => {
 
         {/* BannerOne */}
         <BannerOne />
+
+        {/* FatwaHighlights */}
+        <FatwaHighlights />
+
+        {/* BlogOne */}
+        <BlogOne />
 
         {/* PartnerOne */}
         <PartnerOne />
@@ -67,9 +74,6 @@ const Page = () => {
         {/* DifferenceTwo */}
         <DifferenceTwo />
 
-        {/* BlogOne */}
-        <BlogOne />
-
         {/* FooterOne */}
         <FooterOne />
       </section>
@@ -78,4 +82,3 @@ const Page = () => {
 };
 
 export default Page;
-

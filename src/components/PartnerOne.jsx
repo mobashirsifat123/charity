@@ -1,3 +1,5 @@
+"use client";
+
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 const PartnerOne = () => {
@@ -18,7 +20,7 @@ const PartnerOne = () => {
             <div className="container">
                 <div className="row align-items-center" data-aos="fade-in">
                     <div className="col-lg-3 text-center text-lg-start mb-4 mb-lg-0">
-                        <h6 className="fw-bold text-muted text-uppercase tracking-wider mb-0">Trusted By Global Partners</h6>
+                        <h6 className="fw-bold text-muted text-uppercase tracking-wider mb-0">{settings.partners_heading || 'Trusted By Global Partners'}</h6>
                     </div>
                     <div className="col-lg-9">
                         <div className="d-flex flex-wrap justify-content-center justify-content-lg-between align-items-center opacity-50 gap-4">

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
+const stripe = new Stripe(stripeSecretKey);
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -13,6 +14,20 @@ export async function POST(req) {
     try {
         const body = await req.json();
         const { sessionId } = body;
+
+        if (!sessionId) {
+            return NextResponse.json({ success: false, message: 'Session ID is required.' }, { status: 400 });
+        }
+
+        if (!stripeSecretKey.startsWith('sk_') || stripeSecretKey.includes('placeholder')) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Stripe verification is not configured in this environment yet.',
+                },
+                { status: 503 }
+            );
+        }
 
         // Fetch session from Stripe directly
         const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -42,6 +57,15 @@ export async function POST(req) {
         return NextResponse.json({ success: true, data: donation });
     } catch (error) {
         console.error('Verify donation error:', error);
+        if (String(error?.message || '').includes('Invalid API Key')) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Stripe verification is unavailable because the configured secret key is invalid.',
+                },
+                { status: 503 }
+            );
+        }
         return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 }

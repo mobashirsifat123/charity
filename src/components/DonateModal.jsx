@@ -1,13 +1,8 @@
 "use client";
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/context/AuthContext';
-
-// Initialize Stripe - only if key is available (avoids crash if not configured)
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
 
 /**
  * DonateModal - Reusable donation modal with Stripe Checkout
@@ -61,12 +56,16 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
                     campaignId: campaignId,
                     userEmail: user.email,
                     userName: user.user_metadata?.full_name || user.email,
-                    userId: user.id
+                    userId: user.id,
+                    successUrl: `${window.location.origin}/donation/success`,
+                    cancelUrl: campaignId
+                        ? `${window.location.origin}/cause-details/${campaignId}`
+                        : `${window.location.origin}/donation`
                 })
             });
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success && data.url) {
                 // Redirect to Stripe Checkout
                 window.location.href = data.url;
             } else {
@@ -134,7 +133,7 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
                                 {!user && (
                                     <div className="alert alert-warning py-2" role="alert">
                                         <i className="fa-solid fa-triangle-exclamation me-2"></i>
-                                        Please <a href="/login" className="alert-link">login</a> to make a donation.
+                                        Please <Link href="/login" className="alert-link">login</Link> to make a donation.
                                     </div>
                                 )}
 

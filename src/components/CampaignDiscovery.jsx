@@ -1,11 +1,11 @@
 "use client";
 import { useState, Suspense } from 'react';
-import Link from 'next/link';
 import useCampaigns from '@/hooks/useCampaigns';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import Pagination from '@/components/Pagination';
 import DonateModal from '@/components/DonateModal';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 // Campaign Card Component
 const CampaignCard = ({ campaign, onDonate }) => {
@@ -108,6 +108,7 @@ const CampaignCard = ({ campaign, onDonate }) => {
 
 // Main Discovery Component
 function CampaignDiscoveryContent() {
+    const { settings } = useSiteSettings();
     const {
         campaigns,
         loading,
@@ -144,13 +145,13 @@ function CampaignDiscoveryContent() {
                 <div className="text-center mb-5">
                     <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
                         <i className="fa-solid fa-handshake-angle me-2"></i>
-                        Support a Cause
+                        {settings.campaign_discovery_badge || 'Causes That Support the Mission'}
                     </span>
                     <h2 className="display-5 fw-bold mb-3">
-                        Discover Campaigns
+                        {settings.campaign_discovery_title || 'Support Our Causes'}
                     </h2>
                     <p className="lead text-muted">
-                        Find and support causes that matter to you
+                        {settings.campaign_discovery_description || 'Give to projects that extend care, strengthen the community, and support the wider work of dawah.'}
                     </p>
                 </div>
 
@@ -227,11 +228,11 @@ function CampaignDiscoveryContent() {
                         <div className="text-muted mb-3">
                             <i className="fa-solid fa-folder-open" style={{ fontSize: '4rem' }}></i>
                         </div>
-                        <h4>No campaigns found</h4>
+                        <h4>{settings.campaign_section_empty_title || 'No Campaigns Yet'}</h4>
                         <p className="text-muted">
                             {search || category
                                 ? 'Try adjusting your search or filters'
-                                : 'Check back later for new campaigns'}
+                                : (settings.campaign_section_empty_description || 'Check back soon for new fundraising campaigns!')}
                         </p>
                     </div>
                 )}

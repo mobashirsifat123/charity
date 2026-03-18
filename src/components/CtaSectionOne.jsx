@@ -1,3 +1,5 @@
+"use client";
+
 import Link from 'next/link';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 
@@ -28,11 +30,11 @@ const CtaSectionOne = () => {
                     </div>
                     <div className="col-lg-4 text-lg-end" data-aos="fade-left">
                         <div className="d-flex flex-wrap gap-3 justify-content-lg-end">
-                            <Link href="/donation" className="btn btn-dark btn-lg fw-bold px-5 rounded-pill">
-                                Donate Now <i className="fa-solid fa-heart ms-2" />
+                            <Link href={settings.cta_primary_cta_link || '/donation'} className="btn btn-dark btn-lg fw-bold px-5 rounded-pill">
+                                {settings.cta_primary_cta_text || 'Donate Now'} <i className="fa-solid fa-heart ms-2" />
                             </Link>
-                            <Link href="/#campaigns" className="btn btn-outline-light btn-lg px-4 rounded-pill">
-                                Browse Causes
+                            <Link href={settings.cta_secondary_cta_link || '/#campaigns'} className="btn btn-outline-light btn-lg px-4 rounded-pill">
+                                {settings.cta_secondary_cta_text || 'Browse Causes'}
                             </Link>
                         </div>
                     </div>

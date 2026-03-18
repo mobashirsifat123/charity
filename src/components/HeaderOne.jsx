@@ -1,22 +1,40 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const HeaderOne = () => {
   let pathname = usePathname();
+  const router = useRouter();
   let [search, setSearch] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [scroll, setScroll] = useState(false);
   const { user, logout, loading } = useAuth();
   const { settings } = useSiteSettings();
+  const isArticleRoute = pathname === "/blog-grid" || pathname.startsWith("/blog-details/");
+  const isFatwaRoute = pathname === "/fatwa" || pathname.startsWith("/fatwa/");
+  const isCauseRoute = pathname === "/" || pathname.startsWith("/cause-details/");
+  const isAccountRoute =
+    ["/login", "/register", "/dashboard"].includes(pathname) ||
+    pathname.startsWith("/admin");
   const handleSearch = () => {
     setSearch(!search);
   };
   const handleMobileMenu = () => {
     setMobileMenu(!mobileMenu);
+  };
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    setSearch(false);
+    if (!query) {
+      router.push("/search");
+      return;
+    }
+    router.push(`/search?q=${encodeURIComponent(query)}`);
   };
 
   useEffect(() => {
@@ -91,7 +109,7 @@ const HeaderOne = () => {
 
       setupDropdownToggles(mobileMenuListRef.current);
     }
-  }, []);
+  }, [user, loading, pathname]);
 
   return (
     <>
@@ -116,71 +134,37 @@ const HeaderOne = () => {
                     <div className='navbar__menu d-none d-xl-block'>
                       <ul className='navbar__list'>
                         <li
-                          className={`navbar__item navbar__item--has-children nav-fade ${pathname === "/" ? "active" : ""
+                          className={`navbar__item nav-fade ${pathname === "/" ? "active" : ""
                             }`}
                         >
-                          <Link
-                            href='#'
-                            aria-label='dropdown menu'
-                            className='navbar__dropdown-label dropdown-label-alter'
-                          >
-                            Home
-                          </Link>
-                          <ul className='navbar__sub-menu mega-menu'>
-                            <li>
-                              <div className='mega-content-wrapper p-3'>
-                                <div className='mega-content'>
-                                  <Link href='/' className='btn--primary'>Demo</Link>
-                                </div>
-                              </div>
-                              <Link href='/'>Home One</Link>
-                            </li>
-                            <li>
-                              <div className='mega-content-wrapper p-3'>
-                                <div className='mega-content'>
-                                  <Link href='/index-two' className='btn--secondary'>Demo</Link>
-                                </div>
-                              </div>
-                              <Link href='/index-two'>Home Two</Link>
-                            </li>
-                            <li>
-                              <div className='mega-content-wrapper p-3'>
-                                <div className='mega-content'>
-                                  <Link href='/index-three' className='btn--primary'>Demo</Link>
-                                </div>
-                              </div>
-                              <Link href='/index-three'>Home Three</Link>
-                            </li>
-                            <li>
-                              <div className='mega-content-wrapper p-3'>
-                                <div className='mega-content'>
-                                  <Link href='/index-four' className='btn--primary'>Demo</Link>
-                                </div>
-                                <span className='new'>New</span>
-                              </div>
-                              <Link href='/index-four'>Home Four</Link>
-                            </li>
-                            <li>
-                              <div className='mega-content-wrapper p-3'>
-                                <div className='mega-content'>
-                                  <Link href='/index-five' className='btn--primary'>Demo</Link>
-                                </div>
-                                <span className='new'>New</span>
-                              </div>
-                              <Link href='/index-five'>Home Five</Link>
-                            </li>
-                          </ul>
+                          <Link href='/'>{settings.nav_home_label || 'Home'}</Link>
                         </li>
                         <li
                           className={`navbar__item nav-fade ${["/about-us"].includes(pathname) ? "active" : ""
                             }`}
                         >
-                          <Link href='/about-us'>About Us</Link>
+                          <Link href='/about-us'>{settings.nav_about_label || 'About Us'}</Link>
                         </li>
                         <li
-                          className={`navbar__item navbar__item--has-children nav-fade ${["/#campaigns", "/cause-details"].includes(pathname)
-                            ? "active"
-                            : ""
+                          className={`navbar__item nav-fade ${isArticleRoute ? "active" : ""
+                            }`}
+                        >
+                          <Link href='/blog-grid'>{settings.nav_articles_label || 'Articles'}</Link>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${isFatwaRoute ? "active" : ""
+                            }`}
+                        >
+                          <Link href='/fatwa'>{settings.nav_fatwas_label || 'Fatwas'}</Link>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${pathname === "/search" ? "active" : ""
+                            }`}
+                        >
+                          <Link href='/search'>{settings.nav_search_label || 'Search'}</Link>
+                        </li>
+                        <li
+                          className={`navbar__item navbar__item--has-children nav-fade ${isCauseRoute ? "active" : ""
                             }`}
                         >
                           <Link
@@ -188,57 +172,31 @@ const HeaderOne = () => {
                             aria-label='dropdown menu'
                             className='navbar__dropdown-label dropdown-label-alter'
                           >
-                            Causes
+                            {settings.nav_causes_label || 'Causes'}
                           </Link>
                           <ul className='navbar__sub-menu'>
                             <li
                               className={
-                                ["/#campaigns"].includes(pathname)
+                                pathname === "/"
                                   ? "active"
                                   : ""
                               }
                             >
-                              <Link href='/#campaigns'>Our Causes</Link>
+                              <Link href='/#campaigns'>{settings.nav_causes_overview_label || 'Our Causes'}</Link>
                             </li>
                             <li
-                              className={
-                                ["/cause-details"].includes(pathname)
-                                  ? "active"
-                                  : ""
-                              }
+                              className={pathname.startsWith("/cause-details/") ? "active" : ""}
                             >
-                              <Link href='/cause-details'>Cause Details</Link>
+                              <Link href='/#campaigns'>{settings.nav_support_mission_label || 'Support the Mission'}</Link>
                             </li>
                           </ul>
-                        </li>
-                        <li
-                          className={`navbar__item nav-fade ${["/blog-grid"].includes(pathname)
-                            ? "active"
-                            : ""
-                            }`}
-                        >
-                          <Link href='/blog-grid'>Blogs</Link>
-                        </li>
-                        <li
-                          className={`navbar__item nav-fade ${["/fatwa"].includes(pathname)
-                            ? "active"
-                            : ""
-                            }`}
-                        >
-                          <Link href='/fatwa'>Fatwa</Link>
                         </li>
                         <li
                           className={`navbar__item navbar__item--has-children nav-fade ${[
                             "/faq",
                             "/donation",
-                            "/become-volunteer",
-                            "/events",
-                            "/event-details",
-                            "/shop",
-                            "/product-details",
-                            "/cart",
-                            "/checkout",
-                          ].includes(pathname)
+                            "/contact-us",
+                          ].includes(pathname) || isAccountRoute
                             ? "active"
                             : ""
                             }`}
@@ -248,7 +206,7 @@ const HeaderOne = () => {
                             aria-label='dropdown menu'
                             className='navbar__dropdown-label dropdown-label-alter'
                           >
-                            Pages
+                            {settings.nav_pages_label || 'Pages'}
                           </Link>
                           <ul className='navbar__sub-menu'>
                             <li
@@ -256,7 +214,7 @@ const HeaderOne = () => {
                                 ["/faq"].includes(pathname) ? "active" : ""
                               }
                             >
-                              <Link href='/faq'>FAQ</Link>
+                              <Link href='/faq'>{settings.nav_faq_label || 'FAQ'}</Link>
                             </li>
                             <li
                               className={
@@ -265,209 +223,43 @@ const HeaderOne = () => {
                                   : ""
                               }
                             >
-                              <Link href='/donation'>Donate Us</Link>
+                              <Link href='/donation'>{settings.nav_donate_label || 'Donate Us'}</Link>
                             </li>
                             <li
                               className={
-                                ["/become-volunteer"].includes(pathname)
+                                ["/contact-us"].includes(pathname)
                                   ? "active"
                                   : ""
                               }
                             >
-                              <Link href='/become-volunteer'>
-                                Become Volunteer
+                              <Link href='/contact-us'>
+                                {settings.nav_contact_label || 'Contact Us'}
                               </Link>
                             </li>
-                            <li
-                              className={`navbar__item navbar__item--has-children ${["/events", "/event-details"].includes(pathname)
-                                ? "active"
-                                : ""
-                                }`}
-                            >
-                              <Link
-                                href='#'
-                                aria-label='dropdown menu'
-                                className='navbar__dropdown-label navbar__dropdown-label-sub'
-                              >
-                                Events
-                              </Link>
-                              <ul className='navbar__sub-menu navbar__sub-menu__nested'>
-                                <li
-                                  className={
-                                    ["/events"].includes(pathname)
-                                      ? "active"
-                                      : ""
-                                  }
-                                >
-                                  <Link href='/events'>Events</Link>
-                                </li>
-                                <li
-                                  className={
-                                    ["/event-details"].includes(pathname)
-                                      ? "active"
-                                      : ""
-                                  }
-                                >
-                                  <Link href='/event-details'>
-                                    Event Details
-                                  </Link>
-                                </li>
-                              </ul>
+                            <li>
+                              <Link href='/request-fatwa'>{settings.nav_request_fatwa_label || 'Request Fatwa'}</Link>
                             </li>
-                            <li
-                              className={`navbar__item navbar__item--has-children ${[
-                                "/shop",
-                                "/product-details",
-                                "/cart",
-                                "/checkout",
-                              ].includes(pathname)
-                                ? "active"
-                                : ""
-                                }`}
-                            >
-                              <Link
-                                href='#'
-                                aria-label='dropdown menu'
-                                className='navbar__dropdown-label navbar__dropdown-label-sub'
-                              >
-                                Shop
-                              </Link>
-                              <ul className='navbar__sub-menu navbar__sub-menu__nested'>
-                                <li
-                                  className={
-                                    ["/shop"].includes(pathname) ? "active" : ""
-                                  }
-                                >
-                                  <Link href='/shop'>Our Shop</Link>
+                            {!loading && user ? (
+                              <>
+                                <li className={pathname === "/dashboard" ? "active" : ""}>
+                                  <Link href='/dashboard'>{settings.nav_dashboard_label || 'My Dashboard'}</Link>
                                 </li>
-                                <li
-                                  className={
-                                    ["/product-details"].includes(pathname)
-                                      ? "active"
-                                      : ""
-                                  }
-                                >
-                                  <Link href='/product-details'>
-                                    Product Details
-                                  </Link>
+                                {user.role === 'admin' && (
+                                  <li className={pathname.startsWith("/admin") ? "active" : ""}>
+                                    <Link href='/admin/dashboard'>{settings.nav_admin_label || 'Admin Panel'}</Link>
+                                  </li>
+                                )}
+                              </>
+                            ) : !loading ? (
+                              <>
+                                <li className={pathname === "/login" ? "active" : ""}>
+                                  <Link href='/login'>{settings.nav_login_label || 'Login'}</Link>
                                 </li>
-                                <li
-                                  className={
-                                    ["/cart"].includes(pathname) ? "active" : ""
-                                  }
-                                >
-                                  <Link href='/cart'>View Cart</Link>
+                                <li className={pathname === "/register" ? "active" : ""}>
+                                  <Link href='/register'>{settings.nav_register_label || 'Register'}</Link>
                                 </li>
-                                <li
-                                  className={
-                                    ["/checkout"].includes(pathname)
-                                      ? "active"
-                                      : ""
-                                  }
-                                >
-                                  <Link href='/checkout'>Cehckout</Link>
-                                </li>
-                              </ul>
-                            </li>
-                            <li
-                              className={`navbar__item navbar__item--has-children ${["/our-team", "/team-details"].includes(
-                                pathname
-                              )
-                                ? "active"
-                                : ""
-                                }`}
-                            >
-                              <Link
-                                href='#'
-                                aria-label='dropdown menu'
-                                className='navbar__dropdown-label navbar__dropdown-label-sub'
-                              >
-                                Team
-                              </Link>
-                              <ul className='navbar__sub-menu navbar__sub-menu__nested'>
-                                <li
-                                  className={
-                                    ["/our-team"].includes(pathname)
-                                      ? "active"
-                                      : ""
-                                  }
-                                >
-                                  <Link href='/our-team'>Our Teams</Link>
-                                </li>
-                                <li
-                                  className={
-                                    ["/team-details"].includes(pathname)
-                                      ? "active"
-                                      : ""
-                                  }
-                                >
-                                  <Link href='/team-details'>Team Details</Link>
-                                </li>
-                              </ul>
-                            </li>
-                            <li
-                              className={
-                                ["/coming-soon"].includes(pathname)
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              <Link href='/coming-soon'>Coming Soon</Link>
-                            </li>
-                            <li
-                              className={
-                                ["/404"].includes(pathname) ? "active" : ""
-                              }
-                            >
-                              <Link href='/404'>Error</Link>
-                            </li>
-                          </ul>
-                        </li>
-                        <li
-                          className={`navbar__item navbar__item--has-children nav-fade ${[
-                            "/blog-list",
-                            "/blog-grid",
-                            "/blog-details",
-                          ].includes(pathname)
-                            ? "active"
-                            : ""
-                            } `}
-                        >
-                          <Link
-                            href='/'
-                            aria-label='dropdown menu'
-                            className='navbar__dropdown-label dropdown-label-alter'
-                          >
-                            News
-                          </Link>
-                          <ul className='navbar__sub-menu'>
-                            <li
-                              className={
-                                ["/blog-list"].includes(pathname)
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              <Link href='/blog-list'>News List View</Link>
-                            </li>
-                            <li
-                              className={
-                                ["/blog-grid"].includes(pathname)
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              <Link href='/blog-grid'>News Grid View</Link>
-                            </li>
-                            <li
-                              className={
-                                ["/blog-details"].includes(pathname)
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              <Link href='/blog-details'>News Details</Link>
-                            </li>
+                              </>
+                            ) : null}
                           </ul>
                         </li>
                         <li
@@ -592,13 +384,15 @@ const HeaderOne = () => {
           >
             <i className='fa-solid fa-xmark' />
           </button>
-          <form action='#' method='post'>
+          <form onSubmit={handleSearchSubmit}>
             <div className='search-popup__group'>
               <input
                 type='text'
                 name='search-field'
                 id='searchField'
                 placeholder='Search....'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 required=''
               />
               <button
@@ -635,6 +429,27 @@ const HeaderOne = () => {
           <div className='mobile-menu__list' ref={mobileMenuListRef}></div>
 
           <div className='mobile-menu__cta nav-fade d-block d-md-none'>
+            {!loading && user ? (
+              <div className='d-flex flex-column gap-2 mb-3'>
+                <Link href='/dashboard' className='btn--secondary'>
+                  Dashboard <i className='fa-solid fa-chart-line' />
+                </Link>
+                {user.role === 'admin' && (
+                  <Link href='/admin/dashboard' className='btn--primary'>
+                    Admin Panel <i className='fa-solid fa-shield-halved' />
+                  </Link>
+                )}
+              </div>
+            ) : !loading ? (
+              <div className='d-flex flex-column gap-2 mb-3'>
+                <Link href='/login' className='btn--secondary'>
+                  Login
+                </Link>
+                <Link href='/register' className='btn--primary'>
+                  Register <i className='fa-solid fa-arrow-right' />
+                </Link>
+              </div>
+            ) : null}
             <Link href='/donation' className='btn--primary '>
               Donate Now <i className='fa-solid fa-arrow-right' />
             </Link>
@@ -679,6 +494,7 @@ const HeaderOne = () => {
       <div
         className={`mobile-menu__backdrop ${mobileMenu ? "mobile-menu__backdrop-active" : ""
           }`}
+        onClick={() => setMobileMenu(false)}
       ></div>
     </>
   );

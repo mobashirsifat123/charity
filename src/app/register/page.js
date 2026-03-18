@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
@@ -15,8 +16,18 @@ export default function RegisterPage() {
         confirmPassword: '',
     });
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [nextPath, setNextPath] = useState('/dashboard');
     const router = useRouter();
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        setNextPath(params.get('next') || '/dashboard');
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -25,11 +36,13 @@ export default function RegisterPage() {
             [name]: value
         }));
         setError(''); // Clear error on input change
+        setSuccessMessage('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMessage('');
 
         // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
@@ -70,10 +83,10 @@ export default function RegisterPage() {
             }
 
             if (data?.session) {
-                router.push('/dashboard');
+                router.push(nextPath);
             } else {
                 // Supabase might require email confirmation
-                setError('Registration successful! Please check your email to confirm your account.');
+                setSuccessMessage('Registration successful! Please check your email to confirm your account.');
             }
         } catch (err) {
             setError(err.message || 'An error occurred during registration');
@@ -111,6 +124,17 @@ export default function RegisterPage() {
                                             type="button"
                                             className="btn-close"
                                             onClick={() => setError('')}
+                                        ></button>
+                                    </div>
+                                )}
+                                {successMessage && (
+                                    <div className="alert alert-success alert-dismissible fade show" role="alert">
+                                        <i className="fa-solid fa-circle-check me-2"></i>
+                                        {successMessage}
+                                        <button
+                                            type="button"
+                                            className="btn-close"
+                                            onClick={() => setSuccessMessage('')}
                                         ></button>
                                     </div>
                                 )}
@@ -167,7 +191,7 @@ export default function RegisterPage() {
                                                 <i className="fa-solid fa-lock text-muted"></i>
                                             </span>
                                             <input
-                                                type="password"
+                                                type={showPassword ? "text" : "password"}
                                                 className="form-control border-start-0 ps-0"
                                                 id="password"
                                                 name="password"
@@ -176,6 +200,13 @@ export default function RegisterPage() {
                                                 onChange={handleChange}
                                                 required
                                             />
+                                            <button
+                                                type="button"
+                                                className="input-group-text bg-light border-start-0"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                            >
+                                                <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
+                                            </button>
                                         </div>
                                         <small className="text-muted">Minimum 6 characters</small>
                                     </div>
@@ -189,7 +220,7 @@ export default function RegisterPage() {
                                                 <i className="fa-solid fa-lock text-muted"></i>
                                             </span>
                                             <input
-                                                type="password"
+                                                type={showConfirmPassword ? "text" : "password"}
                                                 className="form-control border-start-0 ps-0"
                                                 id="confirmPassword"
                                                 name="confirmPassword"
@@ -198,6 +229,13 @@ export default function RegisterPage() {
                                                 onChange={handleChange}
                                                 required
                                             />
+                                            <button
+                                                type="button"
+                                                className="input-group-text bg-light border-start-0"
+                                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                            >
+                                                <i className={`fa-solid ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
+                                            </button>
                                         </div>
                                     </div>
 

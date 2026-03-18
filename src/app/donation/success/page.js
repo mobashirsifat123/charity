@@ -16,6 +16,30 @@ function DonationSuccessContent() {
     const sessionId = searchParams.get('session_id');
 
     useEffect(() => {
+        const verifyDonation = async () => {
+            try {
+                const response = await fetch('/api/stripe/verify-donation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sessionId: sessionId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    setStatus('success');
+                    setDonation(data.data);
+                } else {
+                    setStatus('error');
+                    setError(data.message || 'Verification failed');
+                }
+            } catch (err) {
+                setStatus('error');
+                setError(err.message || 'Failed to verify donation');
+            }
+        };
+
         // Redirect to home if no session ID
         if (!sessionId) {
             router.push('/');
@@ -34,30 +58,6 @@ function DonationSuccessContent() {
         // Verify the donation
         verifyDonation();
     }, [sessionId, user, authLoading, router]);
-
-    const verifyDonation = async () => {
-        try {
-            const response = await fetch('/api/stripe/verify-donation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ sessionId: sessionId })
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                setStatus('success');
-                setDonation(data.data);
-            } else {
-                setStatus('error');
-                setError(data.message || 'Verification failed');
-            }
-        } catch (err) {
-            setStatus('error');
-            setError(err.message || 'Failed to verify donation');
-        }
-    };
 
     // Format currency
     const formatCurrency = (amount) => {
