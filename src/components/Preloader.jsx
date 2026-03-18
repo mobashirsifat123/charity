@@ -41,7 +41,7 @@ const Preloader = () => {
                 <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
-                <h4 className="mt-3 fw-bold text-primary tracking-wider" style={{ letterSpacing: 2 }}>CHARIFUND</h4>
+                <h4 className="mt-3 fw-bold text-primary tracking-wider" style={{ letterSpacing: 2 }}>IRWA</h4>
             </div>
         </div>
     );

@@ -108,7 +108,7 @@ const HeaderOne = () => {
                       {settings.site_logo_url ? (
                         <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} style={{ maxHeight: '45px' }} />
                       ) : (
-                        <h3 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'ChariFund'}</h3>
+                        <h3 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h3>
                       )}
                     </Link>
                   </div>
@@ -621,7 +621,7 @@ const HeaderOne = () => {
           <div className='mobile-menu__header nav-fade'>
             <div className='logo'>
               <Link href='/' className='text-decoration-none'>
-                 <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'ChariFund'}</h4>
+                 <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h4>
               </Link>
             </div>
             <button

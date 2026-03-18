@@ -41,7 +41,7 @@ const BlogOne = () => {
                         Latest News
                     </span>
                     <h2 className="fw-bold">{settings.blog_title || 'From Our Blog'}</h2>
-                    <p className="text-muted">{settings.blog_subtitle || 'Stay updated with stories, tips, and insights from the ChariFund community.'}</p>
+                    <p className="text-muted">{settings.blog_subtitle || 'Stay updated with stories, tips, and insights from the IRWA community.'}</p>
                 </div>
 
                 <div className="row g-4">

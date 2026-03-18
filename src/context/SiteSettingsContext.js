@@ -6,8 +6,8 @@ const SiteSettingsContext = createContext(null);
 
 export function SiteSettingsProvider({ children }) {
     const [settings, setSettings] = useState({
-        site_name: 'ChariFund',
-        contact_email: 'info@charifund.org',
+        site_name: 'IRWA',
+        contact_email: 'info@irwa.org',
         contact_phone: '(+01)-793-7938',
         hero_title: 'Help the Poor, They Need You',
         hero_subtitle: 'Fundraising',
@@ -19,7 +19,7 @@ export function SiteSettingsProvider({ children }) {
         community_title: 'Together We Can Change the World',
         community_subtitle: 'Our global community of donors, volunteers, and campaign creators unites around a shared mission: making the world a better place, one act of generosity at a time.',
         blog_title: 'From Our Blog',
-        blog_subtitle: 'Stay updated with stories, tips, and insights from the ChariFund community.',
+        blog_subtitle: 'Stay updated with stories, tips, and insights from the IRWA community.',
         footer_description: 'Connecting donors with meaningful causes. Empowering change, one donation at a time.',
         social_facebook: 'https://www.facebook.com/',
         social_twitter: 'https://x.com/',

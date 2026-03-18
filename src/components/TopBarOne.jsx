@@ -7,7 +7,7 @@ const TopBarOne = () => {
                 <div className="row align-items-center">
                     <div className="col-md-6">
                         <div className="d-flex gap-4">
-                            <span><i className="fa-solid fa-envelope me-2 opacity-75" />info@charifund.org</span>
+                            <span><i className="fa-solid fa-envelope me-2 opacity-75" />info@irwa.org</span>
                             <span><i className="fa-solid fa-phone me-2 opacity-75" />(+01)-793-7938</span>
                         </div>
                     </div>

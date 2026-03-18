@@ -17,7 +17,7 @@ const TestimonialOne = () => {
                     <div className="col-lg-8">
                         <div className="card border-0 shadow-lg rounded-4 p-5 text-center bg-white" data-aos="zoom-in">
                             <h4 className="fw-normal fst-italic text-dark mb-4" style={{ lineHeight: 1.6 }}>
-                                "I was looking for a way to give back to education initiatives, and ChariFund made the process incredibly transparent. Being able to see exactly where my money went and receiving updates from the campaign leaders is truly rewarding."
+                                "I was looking for a way to give back to education initiatives, and IRWA made the process incredibly transparent. Being able to see exactly where my money went and receiving updates from the campaign leaders is truly rewarding."
                             </h4>
                             <div className="d-flex align-items-center justify-content-center mt-4">
                                 <img src={settings.testimonial_avatar_url || "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop"} 

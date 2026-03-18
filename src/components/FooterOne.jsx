@@ -14,7 +14,7 @@ const FooterOne = () => {
                                 {settings.site_logo_url ? (
                                     <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} style={{ maxHeight: '45px' }} />
                                 ) : (
-                                    <h3 className="text-white m-0">{settings.site_name || 'ChariFund'}</h3>
+                                    <h3 className="text-white m-0">{settings.site_name || 'IRWA'}</h3>
                                 )}
                             </Link>
                             <p className="mt-3 text-light opacity-75">
@@ -52,13 +52,13 @@ const FooterOne = () => {
                         <ul className="list-unstyled text-light opacity-75">
                             <li className="mb-2"><i className="fa-solid fa-location-dot me-2" />123 Charity Lane, NY 10001</li>
                             <li className="mb-2"><i className="fa-solid fa-phone me-2" />{settings.contact_phone || '(+01)-793-7938'}</li>
-                            <li className="mb-2"><i className="fa-solid fa-envelope me-2" />{settings.contact_email || 'info@charifund.org'}</li>
+                            <li className="mb-2"><i className="fa-solid fa-envelope me-2" />{settings.contact_email || 'info@irwa.org'}</li>
                         </ul>
                     </div>
                 </div>
                 <div className="border-top border-secondary pt-3 pb-3 text-center">
                     <p className="text-light opacity-50 mb-0 small">
-                        &copy; {new Date().getFullYear()} {settings.site_name || 'ChariFund'}. All rights reserved. Made with <span className="text-danger">❤️</span> for a better world.
+                        &copy; {new Date().getFullYear()} {settings.site_name || 'IRWA'}. All rights reserved. Made with <span className="text-danger">❤️</span> for a better world.
                     </p>
                 </div>
             </div>

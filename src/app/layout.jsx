@@ -10,7 +10,7 @@ import ColorPalate from "@/helper/ColorPalate";
 import ClientProviders from "@/components/ClientProviders";
 
 export const metadata = {
-  title: "Charifund | Nonprofit & Fundraising Charity Platform",
+  title: "IRWA | Nonprofit & Fundraising Charity Platform",
   description: "Nonprofit & Fundraising Charity Platform built with Next.js and Supabase.",
 };
 

@@ -129,7 +129,7 @@ function SiteSettingsContent() {
                                                 name="site_name"
                                                 value={settings.site_name}
                                                 onChange={handleChange}
-                                                placeholder="e.g. ChariFund"
+                                                placeholder="e.g. IRWA"
                                                 required
                                             />
                                         </div>
@@ -182,7 +182,7 @@ function SiteSettingsContent() {
                                                     name="contact_email"
                                                     value={settings.contact_email}
                                                     onChange={handleChange}
-                                                    placeholder="info@charifund.org"
+                                                    placeholder="info@irwa.org"
                                                 />
                                             </div>
                                             <div className="col-md-6 mb-3">
