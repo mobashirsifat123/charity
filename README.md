@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="frontend/public/assets/images/logo.png" alt="ChariFund Logo" width="200"/>
+  <img src="frontend/public/assets/images/logo.png" alt="IRWA Logo" width="200"/>
 </p>
 
-<h1 align="center">🌟 ChariFund - Charity Crowdfunding Platform</h1>
+<h1 align="center">🌟 IRWA - Charity Crowdfunding Platform</h1>
 
 <p align="center">
   <strong>Empower Change, One Donation at a Time</strong>
@@ -28,9 +28,9 @@
 
 ## 📖 About The Project
 
-**ChariFund** is a modern, full-stack charity crowdfunding platform that connects donors with meaningful causes. Built with cutting-edge technologies, it provides a seamless experience for both campaign creators and donors, featuring secure payment processing through Stripe.
+**IRWA** is a modern, full-stack charity crowdfunding platform that connects donors with meaningful causes. Built with cutting-edge technologies, it provides a seamless experience for both campaign creators and donors, featuring secure payment processing through Stripe.
 
-Whether you're raising funds for education, healthcare, environmental causes, or community projects, ChariFund makes it easy to create impactful campaigns and receive donations from supporters worldwide.
+Whether you're raising funds for education, healthcare, environmental causes, or community projects, IRWA makes it easy to create impactful campaigns and receive donations from supporters worldwide.
 
 ---
 
