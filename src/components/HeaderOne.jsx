@@ -144,9 +144,12 @@ const HeaderOne = () => {
                   <div className='navbar-logo'>
                     <Link href='/' className='text-decoration-none'>
                       {settings.site_logo_url ? (
-                        <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--header' />
+                        <span className='site-brand site-brand--header'>
+                          <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--header' />
+                          <span className='site-brand__wordmark'>IRWAA</span>
+                        </span>
                       ) : (
-                        <h3 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h3>
+                        <h3 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>IRWAA</h3>
                       )}
                     </Link>
                   </div>
@@ -432,9 +435,12 @@ const HeaderOne = () => {
             <div className='logo'>
               <Link href='/' className='text-decoration-none'>
                 {settings.site_logo_url ? (
-                  <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--mobile' />
+                  <span className='site-brand site-brand--mobile'>
+                    <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--mobile' />
+                    <span className='site-brand__wordmark'>IRWAA</span>
+                  </span>
                 ) : (
-                  <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h4>
+                  <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>IRWAA</h4>
                 )}
               </Link>
             </div>

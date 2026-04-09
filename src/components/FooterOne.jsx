@@ -24,9 +24,12 @@ const FooterOne = () => {
                         <div className="footer__about">
                             <Link href="/" className="text-decoration-none">
                                 {settings.site_logo_url ? (
-                                    <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className="site-logo site-logo--footer" />
+                                    <span className="site-brand site-brand--footer">
+                                        <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className="site-logo site-logo--footer" />
+                                        <span className="site-brand__wordmark">IRWAA</span>
+                                    </span>
                                 ) : (
-                                    <h3 className="text-white m-0">{settings.site_name || 'IRWA'}</h3>
+                                    <h3 className="text-white m-0">IRWAA</h3>
                                 )}
                             </Link>
                             <p className="mt-3 text-light opacity-75">
@@ -83,7 +86,7 @@ const FooterOne = () => {
                 </div>
                 <div className="border-top border-secondary pt-3 pb-3 text-center">
                     <p className="text-light opacity-50 mb-0 small">
-                        &copy; {new Date().getFullYear()} {settings.site_name || 'IRWA'}. {t('rightsReserved', 'All rights reserved.')} {t('madeForBetterWorld', 'Made with love for a better world.')}
+                        &copy; {new Date().getFullYear()} IRWAA. {t('rightsReserved', 'All rights reserved.')} {t('madeForBetterWorld', 'Made with love for a better world.')}
                     </p>
                 </div>
             </div>

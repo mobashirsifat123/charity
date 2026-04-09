@@ -145,13 +145,16 @@ export default function RegisterPage() {
                             <div className="card-body p-5">
                                 <div className="text-center mb-4">
                                     {settings.site_logo_url ? (
-                                        <Image
-                                            src={settings.site_logo_url}
-                                            alt={settings.site_name || 'IRWA'}
-                                            className="site-logo site-logo--auth mb-3"
-                                            width={220}
-                                            height={88}
-                                        />
+                                        <div className="site-brand site-brand--auth mb-3 justify-content-center">
+                                            <Image
+                                                src={settings.site_logo_url}
+                                                alt="IRWAA"
+                                                className="site-logo site-logo--auth"
+                                                width={220}
+                                                height={88}
+                                            />
+                                            <span className="site-brand__wordmark">IRWAA</span>
+                                        </div>
                                     ) : null}
                                     <h2 className="fw-bold text-primary mb-2">{t('joinOurCommunity', 'Join Our Community')}</h2>
                                     <p className="text-muted">{t('createAccountIntro', 'Create an account to start making a difference')}</p>

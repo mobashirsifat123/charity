@@ -325,3 +325,10 @@ Homepage Quran learning conversion (April 9, 2026):
   - a JSON list of short video lesson cards
 - Added new shared styling for the Quran learning showcase so it matches the green-and-white premium design system.
 - Re-ran lint and production build after the homepage conversion to confirm the new section is production-safe.
+
+IRWAA wordmark visibility fix (April 9, 2026):
+- Fixed the shared brand treatment so the visible wordmark is consistently shown as `IRWAA` alongside the small logo instead of depending on older saved site-name values.
+- Updated the header, mobile menu, footer, login page, and registration page to use the logo-plus-wordmark presentation.
+- Adjusted the shared brand layout styles so the wordmark stays visible, aligned, and non-wrapping across common screen sizes.
+- Updated the default site settings brand name to `IRWAA` for better consistency with the intended identity.
+- Re-ran lint and production build after the wordmark fix to confirm the branding update is production-safe.

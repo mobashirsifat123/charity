@@ -1,7 +1,7 @@
 const repeat = (count, factory) => Array.from({ length: count }, (_, index) => factory(index + 1)).flat();
 
 export const DEFAULT_SITE_SETTINGS = {
-  site_name: 'IRWA',
+  site_name: 'IRWAA',
   site_logo_url: '/branding/irwaa-logo.avif',
   contact_email: 'contact@irwa.org',
   contact_phone: '+44 20 3000 0000',
