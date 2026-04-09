@@ -130,7 +130,7 @@ export default function DashboardPage() {
                 {/* Welcome Card */}
                 <div className="row mb-4">
                     <div className="col-12">
-                        <div className="card border-0 shadow-sm rounded-4 bg-primary text-white">
+                        <div className="card border-0 shadow-sm rounded-4 text-white overflow-hidden" style={{ background: 'linear-gradient(135deg, #0a281f 0%, #0b3d2e 60%, #145a32 100%)' }}>
                             <div className="card-body p-4">
                                 <div className="row align-items-center">
                                     <div className="col-md-8">
@@ -143,7 +143,7 @@ export default function DashboardPage() {
                                         </p>
                                     </div>
                                     <div className="col-md-4 text-md-end mt-3 mt-md-0">
-                                        <div className="bg-white bg-opacity-25 rounded-3 p-3 d-inline-block">
+                                        <div className="rounded-4 p-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.14)' }}>
                                             <small className="d-block mb-1">Total Donated</small>
                                             <h3 className="fw-bold mb-0">{formatCurrency(totalDonated)}</h3>
                                         </div>
@@ -254,7 +254,7 @@ export default function DashboardPage() {
                                 <p className="text-muted mb-4">
                                     Be the change! Start making a difference today.
                                 </p>
-                                <Link href="/" className="btn btn-primary">
+                                <Link href="/" className="btn btn-primary btn-ripple">
                                     <i className="fa-solid fa-heart me-2"></i>
                                     Browse Campaigns
                                 </Link>

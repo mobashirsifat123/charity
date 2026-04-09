@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../models/userModel');
 
 const SALT_ROUNDS = 10;
+const DB_UNAVAILABLE_MESSAGE = 'Backend database is unavailable. Configure DATABASE_URL (or DB_USER/DB_HOST/DB_NAME/DB_PASSWORD/DB_PORT).';
 
 /**
  * Register a new user
@@ -55,6 +56,13 @@ const register = async (req, res) => {
         // Create user
         const newUser = await userModel.createUser(name, email, passwordHash, userRole);
 
+        if (!process.env.JWT_SECRET) {
+            return res.status(503).json({
+                success: false,
+                message: 'JWT authentication is not configured on the backend.',
+            });
+        }
+
         // Generate JWT token
         const token = jwt.sign(
             {
@@ -82,6 +90,12 @@ const register = async (req, res) => {
         });
     } catch (error) {
         console.error('Registration error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred during registration.',
@@ -123,6 +137,13 @@ const login = async (req, res) => {
             });
         }
 
+        if (!process.env.JWT_SECRET) {
+            return res.status(503).json({
+                success: false,
+                message: 'JWT authentication is not configured on the backend.',
+            });
+        }
+
         // Generate JWT token
         const token = jwt.sign(
             {
@@ -149,6 +170,12 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred during login.',

@@ -1,0 +1,85 @@
+:root {
+  --mi-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --mi-shadow-lift: 0 15px 30px rgba(0, 0, 0, 0.1);
+  --mi-shadow-lift-soft: 0 10px 20px rgba(0, 0, 0, 0.06);
+  --mi-primary-rgb: 247, 79, 34;
+}
+
+.hover-lift {
+  transition:
+    transform 0.45s var(--mi-ease-premium),
+    box-shadow 0.45s var(--mi-ease-premium),
+    border-color 0.45s var(--mi-ease-premium);
+  will-change: transform, box-shadow;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-5px);
+    box-shadow: var(--mi-shadow-lift);
+  }
+}
+
+.hover-glow-primary {
+  transition:
+    box-shadow 0.45s var(--mi-ease-premium),
+    transform 0.45s var(--mi-ease-premium);
+
+  &:hover,
+  &:focus-visible {
+    box-shadow:
+      0 15px 30px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(var(--mi-primary-rgb), 0.08),
+      0 0 30px rgba(var(--mi-primary-rgb), 0.18);
+  }
+}
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.18s var(--mi-ease-premium),
+    box-shadow 0.3s var(--mi-ease-premium);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 999px;
+    pointer-events: none;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.15) 45%,
+      rgba(255, 255, 255, 0) 75%
+    );
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:active::after {
+    width: 220px;
+    height: 220px;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    transition:
+      transform 0.35s ease,
+      opacity 0.45s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift,
+  .hover-glow-primary,
+  .btn-ripple,
+  .btn-ripple::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

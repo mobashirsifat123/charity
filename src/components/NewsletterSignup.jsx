@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function NewsletterSignup({ compact = false }) {
   const { settings } = useSiteSettings();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -13,7 +15,7 @@ export default function NewsletterSignup({ compact = false }) {
     setMessage({ type: "", text: "" });
 
     if (!email.trim()) {
-      setMessage({ type: "danger", text: "Please enter your email address." });
+      setMessage({ type: "danger", text: t('pleaseEnterEmail', 'Please enter your email address.') });
       return;
     }
 
@@ -29,13 +31,13 @@ export default function NewsletterSignup({ compact = false }) {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Unable to subscribe right now.");
+        throw new Error(data.message || t('unableToSubscribe', 'Unable to subscribe right now.'));
       }
 
       setEmail("");
       setMessage({ type: "success", text: settings.newsletter_success_message || "You are subscribed for new articles and fatwas." });
     } catch (error) {
-      setMessage({ type: "danger", text: error.message || "Subscription failed." });
+      setMessage({ type: "danger", text: error.message || t('subscriptionFailed', 'Subscription failed.') });
     } finally {
       setLoading(false);
     }
@@ -54,7 +56,7 @@ export default function NewsletterSignup({ compact = false }) {
             <input
               type="email"
               className="form-control"
-              placeholder="Enter your email"
+              placeholder={t('enterEmailAddress', 'Enter your email address')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -63,10 +65,10 @@ export default function NewsletterSignup({ compact = false }) {
               {loading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2"></span>
-                  Joining...
+                  {t('joining', 'Joining...')}
                 </>
               ) : (
-                "Subscribe"
+                t('subscribe', 'Subscribe')
               )}
             </button>
           </div>

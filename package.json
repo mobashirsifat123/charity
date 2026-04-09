@@ -2,6 +2,9 @@
   "name": "Charifund_nextjs",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20 <23"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,16 +26,22 @@
     "react-fast-marquee": "^1.6.5",
     "react-modal-video": "^2.0.2",
     "react-on-screen": "^2.1.1",
+    "react-quill": "^2.0.0",
     "react-scroll-to-top": "^3.0.0",
     "react-slick": "^0.30.3",
     "react-slider": "^2.0.6",
+    "recharts": "^2.13.0",
     "sass": "^1.86.3",
     "select2": "^4.1.0-rc.0",
     "slick-carousel": "^1.8.1",
     "stripe": "^20.4.1"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "eslint": "9.39.2",
-    "eslint-config-next": "^15.5.10"
+    "eslint-config-next": "^15.5.10",
+    "typescript": "^5.9.3"
   }
 }

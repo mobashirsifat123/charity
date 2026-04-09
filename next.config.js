@@ -6,12 +6,12 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '5000',
+        port: '5050',
         pathname: '/uploads/**',
       },
       {
         protocol: 'https',
-        hostname: 'kpvcuclyctjlmvqhfkdct.supabase.co',
+        hostname: 'kpvculyctjlmvqhfkdct.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/**',
       },

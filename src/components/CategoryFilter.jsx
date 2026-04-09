@@ -1,4 +1,6 @@
 "use client";
+import { useLanguage } from '@/context/LanguageContext';
+import { translateCampaignCategory } from '@/lib/i18n';
 
 // Default categories if none exist in database
 const DEFAULT_CATEGORIES = [
@@ -17,13 +19,17 @@ const DEFAULT_CATEGORIES = [
  * @param {Array} categories - Optional custom categories from API
  */
 const CategoryFilter = ({ value, onChange, categories = null }) => {
+    const { locale, t } = useLanguage();
     const displayCategories = categories && categories.length > 0
-        ? [{ id: 'all', label: 'All', icon: 'fa-layer-group' }, ...categories.map(cat => ({
+        ? [{ id: 'all', label: t('allCampaigns', 'All Campaigns'), icon: 'fa-layer-group' }, ...categories.map(cat => ({
             id: cat.toLowerCase(),
-            label: cat.charAt(0).toUpperCase() + cat.slice(1),
+            label: translateCampaignCategory(locale, cat.charAt(0).toUpperCase() + cat.slice(1)),
             icon: getIconForCategory(cat),
         }))]
-        : DEFAULT_CATEGORIES;
+        : DEFAULT_CATEGORIES.map((cat) => ({
+            ...cat,
+            label: translateCampaignCategory(locale, cat.id === 'all' ? 'all' : cat.label),
+        }));
 
     return (
         <div className="category-filter">

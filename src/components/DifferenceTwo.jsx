@@ -26,11 +26,11 @@ const DifferenceTwo = () => {
     ];
 
     return (
-        <section className="py-5" style={{ background: '#f8f9fa' }}>
+        <section className="py-5 page-surface-alt">
             <div className="container py-4">
                 <div className="row justify-content-center text-center mb-5" data-aos="fade-up">
                     <div className="col-lg-7">
-                        <span className="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill mb-3 fw-semibold">
+                        <span className="badge bg-warning px-3 py-2 rounded-pill mb-3 fw-semibold">
                             {settings.journey_badge || 'How It Works'}
                         </span>
                         <h2 className="fw-bold">{settings.journey_title || 'Your Journey of Giving'}</h2>
@@ -40,13 +40,13 @@ const DifferenceTwo = () => {
 
                 <div className="row g-4 position-relative">
                     {/* Connecting line for desktop */}
-                    <div className="d-none d-lg-block position-absolute" style={{ top: 40, left: '10%', right: '10%', height: 2, borderTop: '2px dashed #dee2e6', zIndex: 0 }} />
+                    <div className="d-none d-lg-block position-absolute" style={{ top: 40, left: '10%', right: '10%', height: 2, borderTop: '2px dashed var(--border-color)', zIndex: 0 }} />
                     
                     {steps.map((item, i) => (
                         <div key={item.step} className="col-lg-4 text-center position-relative" data-aos="fade-up" data-aos-delay={i * 100}>
                             <div className="bg-white rounded-circle shadow-sm mx-auto d-flex align-items-center justify-content-center mb-4 position-relative" style={{ width: 80, height: 80, zIndex: 1 }}>
-                                <i className={`fa-solid ${item.icon} fs-3 text-danger`} />
-                                <span className="position-absolute bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow" 
+                                <i className={`fa-solid ${item.icon} fs-3 text-primary`} />
+                                <span className="position-absolute bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow" 
                                     style={{ width: 32, height: 32, top: -5, right: -5, fontSize: '0.8rem' }}>
                                     {item.step}
                                 </span>

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { fetchPublishedBlogs } from "@/lib/content-data";
 import { getContentPath, getExcerpt, normalizeTags } from "@/lib/content-utils";
@@ -37,14 +38,15 @@ const getReadTime = (content = "") => {
   return `${Math.max(1, Math.ceil(words / 180))} min read`;
 };
 
-const formatDate = (dateString) =>
-  new Date(dateString).toLocaleDateString("en-US", {
+const formatDate = (dateString, locale) =>
+  new Date(dateString).toLocaleDateString(locale === "ar" ? "ar" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
 export default function BlogOne() {
+  const { locale, t } = useLanguage();
   const { settings } = useSiteSettings();
   const [posts, setPosts] = useState(FALLBACK_POSTS);
   const [loading, setLoading] = useState(true);
@@ -82,23 +84,11 @@ export default function BlogOne() {
   }, []);
 
   return (
-    <section
-      className="py-5"
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(247,244,235,0.88) 0%, rgba(255,255,255,1) 100%)",
-      }}
-    >
-      <div className="container py-4">
+    <section className="py-5 page-surface-alt section-shell">
+      <div className="container position-relative py-4">
         <div className="row align-items-end g-4 mb-5">
           <div className="col-lg-7" data-aos="fade-up">
-            <span
-              className="badge px-3 py-2 rounded-pill mb-3 fw-semibold"
-              style={{
-                background: "rgba(171, 125, 44, 0.12)",
-                color: "#7a5310",
-              }}
-            >
+            <span className="section-header-rail mb-3">
               {settings.blog_badge_text || "Islamic Insights"}
             </span>
             <h2 className="fw-bold mb-3">
@@ -109,21 +99,27 @@ export default function BlogOne() {
                 "Explore reflections, reminders, and practical articles that strengthen faith and deepen understanding."}
             </p>
           </div>
-          <div className="col-lg-5 text-lg-end" data-aos="fade-up" data-aos-delay="100">
-            <div className="d-flex flex-wrap gap-2 justify-content-lg-end">
-              {(tags.length ? tags : ["Dawah", "Tazkiyah", "Community", "Guidance"]).map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-pill px-3 py-2 small fw-semibold"
-                  style={{
-                    background: "#fff",
-                    border: "1px solid rgba(122, 83, 16, 0.18)",
-                    color: "#6a4b14",
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
+          <div className="col-lg-5" data-aos="fade-up" data-aos-delay="100">
+            <div className="system-panel glass-surface--light p-4 p-xl-4">
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {(tags.length ? tags : ["Dawah", "Tazkiyah", "Community", "Guidance"]).map((tag) => (
+                  <span key={tag} className="data-chip">
+                    <span className="data-chip__dot" />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div className="system-list">
+                <div className="system-list__item">
+                  <span className="system-list__icon">
+                    <i className="fa-solid fa-book-open-reader" />
+                  </span>
+                  <div>
+                    <span className="system-list__title">Practical and readable</span>
+                    <span className="system-list__meta">Designed for quick scanning and deeper reading.</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -137,35 +133,25 @@ export default function BlogOne() {
               data-aos-delay={index * 120}
             >
               <article
-                className="h-100 rounded-4 overflow-hidden shadow-sm"
-                style={{
-                  background: "#fff",
-                  border: "1px solid rgba(10, 31, 53, 0.08)",
-                  transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                }}
+                className="h-100 rounded-4 overflow-hidden shadow-sm system-panel glass-surface--light"
               >
                 <div
                   style={{
                     height: "10px",
                     background:
-                      "linear-gradient(90deg, #0f3b5f 0%, #ab7d2c 50%, #2f7d67 100%)",
+                      "linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 62%, var(--accent-color) 100%)",
                   }}
                 />
                 <div className="p-4 p-xl-5 d-flex flex-column h-100">
                   <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
-                    <span
-                      className="rounded-pill px-3 py-2 small fw-semibold"
-                      style={{
-                        background: "rgba(15, 59, 95, 0.08)",
-                        color: "#0f3b5f",
-                      }}
-                    >
-                    {post.category || "Islamic Insights"}
-                  </span>
-                  <small className="text-muted">{getReadTime(post.content)}</small>
-                </div>
+                    <span className="data-chip">
+                      <span className="data-chip__dot" />
+                      {post.category || "Islamic Insights"}
+                    </span>
+                    <small className="text-muted">{getReadTime(post.content)}</small>
+                  </div>
 
-                  {post.featured ? <span className="badge bg-warning text-dark rounded-pill align-self-start mb-3">Featured</span> : null}
+                  {post.featured ? <span className="badge bg-warning text-dark rounded-pill align-self-start mb-3">{t("featured", "Featured")}</span> : null}
 
                   <h4 className="fw-bold mb-3" style={{ lineHeight: 1.35 }}>
                     {post.title}
@@ -182,13 +168,13 @@ export default function BlogOne() {
                   </div>
 
                   <div className="d-flex align-items-center justify-content-between gap-3 pt-3 border-top">
-                    <small className="text-muted">{formatDate(post.created_at)}</small>
+                    <small className="text-muted">{formatDate(post.created_at, locale)}</small>
                     <Link
                       href={getContentPath("blog", post)}
                       className="text-decoration-none fw-semibold"
-                      style={{ color: "#0f3b5f" }}
+                      style={{ color: "var(--primary-color)" }}
                     >
-                      Read article <i className="fa-solid fa-arrow-right ms-2" />
+                      {t("readArticle", "Read Article")} <i className="fa-solid fa-arrow-right ms-2" />
                     </Link>
                   </div>
                 </div>
@@ -200,16 +186,11 @@ export default function BlogOne() {
         <div className="text-center mt-5" data-aos="fade-up">
           <Link
             href="/blog-grid"
-            className="btn btn-lg rounded-pill px-5"
-            style={{
-              background: "#0f3b5f",
-              color: "#fff",
-              border: "none",
-            }}
+            className="btn btn-primary btn-lg rounded-pill px-5 btn-ripple"
           >
             {settings.blog_browse_cta_text || "Browse All Articles"} <i className="fa-solid fa-arrow-right ms-2" />
           </Link>
-          {loading ? <p className="text-muted small mt-3 mb-0">Loading latest articles...</p> : null}
+          {loading ? <p className="text-muted small mt-3 mb-0">{t("loadingLatestArticles", "Loading latest articles...")}</p> : null}
         </div>
       </div>
     </section>

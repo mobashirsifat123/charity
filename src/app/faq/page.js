@@ -3,10 +3,12 @@ import { useState } from "react";
 import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function FAQPage() {
   const { settings } = useSiteSettings();
+  const { t } = useLanguage();
   const [openIndex, setOpenIndex] = useState(0);
   const faqs = [
     {
@@ -27,10 +29,10 @@ export default function FAQPage() {
     <section className="page-wrapper">
       <HeaderOne />
       <BreadcrumbOne
-        title="FAQ"
+        title={t('faq', 'FAQ')}
         links={[
-          { name: "Home", link: "/" },
-          { name: "FAQ", link: "/faq" },
+          { name: t('home', 'Home'), link: "/" },
+          { name: t('faq', 'FAQ'), link: "/faq" },
         ]}
       />
       <div className="container py-5">

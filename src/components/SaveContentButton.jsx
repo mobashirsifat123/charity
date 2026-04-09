@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   getContentCategory,
   getContentPath,
@@ -11,6 +12,7 @@ import {
 
 export default function SaveContentButton({ item, type, className = "btn btn-outline-secondary rounded-pill" }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [saved, setSaved] = useState(false);
   const userKey = useMemo(() => user?.id || "guest", [user?.id]);
 
@@ -49,7 +51,7 @@ export default function SaveContentButton({ item, type, className = "btn btn-out
   return (
     <button type="button" className={className} onClick={handleToggle}>
       <i className={`fa-${saved ? "solid" : "regular"} fa-bookmark me-2`}></i>
-      {saved ? "Saved" : "Save"}
+      {saved ? t("saved", "Saved") : t("save", "Save")}
     </button>
   );
 }

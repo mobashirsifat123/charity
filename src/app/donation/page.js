@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
@@ -19,6 +20,7 @@ export default function DonationPage() {
   const [loading, setLoading] = useState(false);
   const [campaignId, setCampaignId] = useState(null);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
@@ -42,14 +44,19 @@ export default function DonationPage() {
           .from("campaigns")
           .select("id, title, description")
           .eq("id", campaignId)
-          .single();
+          .maybeSingle();
 
         if (fetchError) throw fetchError;
-        if (active) setCampaign(data);
+        if (active) {
+          setCampaign(data || null);
+          if (!data) {
+            setError(t('campaignNotFound', 'Campaign Not Found'));
+          }
+        }
       } catch (fetchError) {
         if (active) {
           setCampaign(null);
-          setError(fetchError.message || "Unable to load the selected campaign.");
+          setError(fetchError.message || t('unableToLoadCampaign', 'Unable to load the selected campaign.'));
         }
       } finally {
         if (active) setCampaignLoading(false);
@@ -61,7 +68,7 @@ export default function DonationPage() {
     return () => {
       active = false;
     };
-  }, [campaignId]);
+  }, [campaignId, t]);
 
   const selectedTitle = useMemo(() => campaign?.title || "General Donation", [campaign]);
 
@@ -72,7 +79,7 @@ export default function DonationPage() {
 
     const donationAmount = Number(amount);
     if (!Number.isFinite(donationAmount) || donationAmount < 1) {
-      setError("Please enter a valid amount of at least $1.");
+      setError(t('invalidDonationAmount', 'Please enter a valid amount of at least $1.'));
       return;
     }
 
@@ -102,13 +109,13 @@ export default function DonationPage() {
 
       const data = await response.json();
       if (!response.ok || !data?.success || !data?.url) {
-        throw new Error(data?.message || "Unable to start checkout.");
+        throw new Error(data?.message || t('unableToStartCheckout', 'Unable to start checkout.'));
       }
 
-      setSuccess("Redirecting you to Stripe...");
+      setSuccess(t('redirectingToStripe', 'Redirecting you to Stripe...'));
       window.location.href = data.url;
     } catch (submitError) {
-      setError(submitError.message || "Unable to create checkout session.");
+      setError(submitError.message || t('unableToStartCheckout', 'Unable to start checkout.'));
     } finally {
       setLoading(false);
     }
@@ -118,10 +125,10 @@ export default function DonationPage() {
     <section className="page-wrapper">
       <HeaderOne />
       <BreadcrumbOne
-        title="Donation"
+        title={t('donation', 'Donation')}
         links={[
-          { name: "Home", link: "/" },
-          { name: "Donation", link: "/donation" },
+          { name: t('home', 'Home'), link: "/" },
+          { name: t('donation', 'Donation'), link: "/donation" },
         ]}
       />
 
@@ -131,11 +138,11 @@ export default function DonationPage() {
             <div className="card border-0 shadow-sm rounded-4">
               <div className="card-body p-4 p-md-5">
                 <div className="text-center mb-4">
-                  <h2 className="fw-bold mb-2">Complete Your Donation</h2>
+                  <h2 className="fw-bold mb-2">{t('completeYourDonation', 'Complete Your Donation')}</h2>
                   <p className="text-muted mb-0">
                     {campaignLoading
-                      ? "Loading campaign details..."
-                      : `You are supporting: ${selectedTitle}`}
+                      ? t('loadingCampaignDetails', 'Loading campaign details...')
+                      : t('supportingCampaign', 'You are supporting: {title}').replace('{title}', selectedTitle)}
                   </p>
                 </div>
 
@@ -153,19 +160,19 @@ export default function DonationPage() {
                 {success ? <div className="alert alert-success">{success}</div> : null}
                 {!user ? (
                   <div className="alert alert-warning">
-                    Please <Link href="/login" className="alert-link">log in</Link> before continuing to Stripe.
+                    {t('loginBeforeStripe', 'Please log in before continuing to Stripe.')}
                   </div>
                 ) : null}
 
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
-                    <label className="form-label fw-semibold">Select an amount</label>
+                    <label className="form-label fw-semibold">{t('selectAmount', 'Select an amount')}</label>
                     <div className="d-flex flex-wrap gap-2">
                       {quickAmounts.map((quickAmount) => (
                         <button
                           key={quickAmount}
                           type="button"
-                          className={`btn ${amount === String(quickAmount) ? "btn-primary" : "btn-outline-primary"}`}
+                          className={`btn btn-ripple ${amount === String(quickAmount) ? "btn-primary hover-glow-primary" : "btn-outline-primary"}`}
                           onClick={() => setAmount(String(quickAmount))}
                         >
                           ${quickAmount}
@@ -176,7 +183,7 @@ export default function DonationPage() {
 
                   <div className="mb-4">
                     <label htmlFor="donationAmount" className="form-label fw-semibold">
-                      Custom amount
+                      {t('customAmount', 'Custom amount')}
                     </label>
                     <div className="input-group input-group-lg">
                       <span className="input-group-text">$</span>
@@ -194,15 +201,15 @@ export default function DonationPage() {
                     </div>
                   </div>
 
-                  <button type="submit" className="btn btn-primary w-100 py-3 fw-semibold" disabled={loading}>
+                  <button type="submit" className="btn btn-primary btn-ripple hover-glow-primary w-100 py-3 fw-semibold" disabled={loading}>
                     {loading ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2" />
-                        Redirecting to Stripe...
+                        {t('redirectingToStripe', 'Redirecting to Stripe...')}
                       </>
                     ) : (
                       <>
-                        Continue to Stripe <i className="fa-solid fa-arrow-right ms-2" />
+                        {t('continueToStripe', 'Continue to Stripe')} <i className="fa-solid fa-arrow-right ms-2" />
                       </>
                     )}
                   </button>
@@ -211,7 +218,7 @@ export default function DonationPage() {
                 <div className="text-center mt-4">
                   <Link href={campaignId ? `/cause-details/${campaignId}` : "/#campaigns"} className="text-decoration-none fw-semibold">
                     <i className="fa-solid fa-arrow-left me-2" />
-                    {campaignId ? "Back to campaign" : "Browse campaigns"}
+                    {campaignId ? t('backToCampaign', 'Back to campaign') : t('browseCampaigns', 'Browse campaigns')}
                   </Link>
                 </div>
               </div>

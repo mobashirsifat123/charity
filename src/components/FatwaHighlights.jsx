@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+import { translateFatwaCategory } from "@/lib/i18n";
 import { fetchPublishedFatwas } from "@/lib/content-data";
 import { getContentPath, getExcerpt, normalizeTags } from "@/lib/content-utils";
 
@@ -32,14 +34,15 @@ const FALLBACK_FATWAS = [
   },
 ];
 
-const formatDate = (dateString) =>
-  new Date(dateString).toLocaleDateString("en-US", {
+const formatDate = (dateString, locale) =>
+  new Date(dateString).toLocaleDateString(locale === "ar" ? "ar" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
 export default function FatwaHighlights() {
+  const { locale, t } = useLanguage();
   const { settings } = useSiteSettings();
   const [fatwas, setFatwas] = useState(FALLBACK_FATWAS);
   const [loading, setLoading] = useState(true);
@@ -71,10 +74,10 @@ export default function FatwaHighlights() {
 
   return (
     <section
-      className="py-5 position-relative"
+      className="py-5 position-relative aurora-grid"
       style={{
         background:
-          "linear-gradient(135deg, #0c1f2e 0%, #113553 58%, #0f3b5f 100%)",
+          "linear-gradient(135deg, #0a281f 0%, #0b3d2e 58%, #145a32 100%)",
       }}
     >
       <div
@@ -82,20 +85,15 @@ export default function FatwaHighlights() {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(circle at top right, rgba(171,125,44,0.22), transparent 32%)",
+            "radial-gradient(circle at top right, rgba(200,169,81,0.24), transparent 32%)",
           pointerEvents: "none",
         }}
       />
       <div className="container position-relative py-4">
         <div className="row align-items-end g-4 mb-5">
           <div className="col-lg-7" data-aos="fade-up">
-            <span
-              className="badge px-3 py-2 rounded-pill mb-3 fw-semibold"
-              style={{
-                background: "rgba(255,255,255,0.12)",
-                color: "#f6deb0",
-              }}
-            >
+            <span className="signal-chip mb-3">
+              <span className="signal-chip__dot" />
               {settings.fatwa_highlights_badge || "Featured Fatwas"}
             </span>
             <h2 className="fw-bold text-white mb-3">{settings.fatwa_highlights_title || "Guidance That Answers Real Questions"}</h2>
@@ -103,18 +101,38 @@ export default function FatwaHighlights() {
               {settings.fatwa_highlights_description || "Highlighting fatwas near the top helps the site feel trusted, useful, and rooted in beneficial knowledge from the first scroll."}
             </p>
           </div>
-          <div className="col-lg-5 text-lg-end" data-aos="fade-up" data-aos-delay="100">
-            <Link
-              href="/fatwa"
-              className="btn btn-lg rounded-pill px-5"
-              style={{
-                background: "#ab7d2c",
-                color: "#fff",
-                border: "none",
-              }}
-            >
-              {settings.fatwa_highlights_cta_text || "View All Fatwas"} <i className="fa-solid fa-arrow-right ms-2" />
-            </Link>
+          <div className="col-lg-5" data-aos="fade-up" data-aos-delay="100">
+            <div className="glass-surface rounded-4 p-4 p-xl-4">
+              <div className="d-flex flex-wrap gap-2 mb-4">
+                {["Public answers", "Real questions", "Knowledge-led"].map((item, index) => (
+                  <span key={item} className="signal-chip">
+                    <span className={`signal-chip__dot ${index === 1 ? "signal-chip__dot--green" : index === 2 ? "signal-chip__dot--soft" : ""}`} />
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <div className="workflow-panel">
+                <div className="workflow-node ps-3 mb-3">
+                  <strong className="d-block text-white">Questions arrive from the community</strong>
+                  <small className="text-white-50">Relevant, public guidance stays visible and searchable.</small>
+                </div>
+                <div className="workflow-node ps-3">
+                  <strong className="d-block text-white">Answers stay calm and readable</strong>
+                  <small className="text-white-50">A cleaner format helps visitors trust and revisit the section.</small>
+                </div>
+              </div>
+              <Link
+                href="/fatwa"
+                className="btn btn-lg rounded-pill px-5 btn-ripple mt-4"
+                style={{
+                  background: "var(--accent-color)",
+                  color: "#fff",
+                  border: "none",
+                }}
+              >
+                {settings.fatwa_highlights_cta_text || "View All Fatwas"} <i className="fa-solid fa-arrow-right ms-2" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -127,27 +145,25 @@ export default function FatwaHighlights() {
               data-aos-delay={index * 120}
             >
               <article
-                className="h-100 rounded-4 p-4 p-xl-5"
+                className="h-100 rounded-4 p-4 p-xl-5 glass-surface"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  backdropFilter: "blur(10px)",
+                  boxShadow: "0 16px 30px rgba(0,0,0,0.08)",
                 }}
               >
                 <div className="d-flex align-items-center justify-content-between gap-3 mb-4">
                   <span
                     className="rounded-pill px-3 py-2 small fw-semibold"
                     style={{
-                      background: "rgba(171,125,44,0.16)",
+                      background: "rgba(200,169,81,0.16)",
                       color: "#f6deb0",
                     }}
                   >
-                    {fatwa.category || "General"}
+                    {translateFatwaCategory(locale, fatwa.category || "General")}
                   </span>
-                  <small className="text-white-50">{formatDate(fatwa.created_at)}</small>
+                  <small className="text-white-50">{formatDate(fatwa.created_at, locale)}</small>
                 </div>
 
-                {fatwa.featured ? <span className="badge bg-warning text-dark rounded-pill mb-3 align-self-start">Featured</span> : null}
+                {fatwa.featured ? <span className="badge bg-warning text-dark rounded-pill mb-3 align-self-start">{t("featured", "Featured")}</span> : null}
 
                 <div
                   className="rounded-circle d-flex align-items-center justify-content-center mb-4"
@@ -155,7 +171,7 @@ export default function FatwaHighlights() {
                     width: "56px",
                     height: "56px",
                     background: "rgba(255,255,255,0.08)",
-                    color: "#f6deb0",
+                    color: "var(--accent-color)",
                   }}
                 >
                   <i className="fa-solid fa-scale-balanced fs-4" />
@@ -165,7 +181,7 @@ export default function FatwaHighlights() {
                   {fatwa.title || fatwa.question}
                 </h4>
                 <p className="text-white-50 mb-4">
-                  {getExcerpt(fatwa.answer || fatwa.content || "", 165) || "Read the full answer and evidence for this ruling."}
+                  {getExcerpt(fatwa.answer || fatwa.content || "", 165) || t("readFullAnswer", "Read Full Answer")}
                 </p>
                 <div className="d-flex flex-wrap gap-2 mb-4">
                   {normalizeTags(fatwa.tags).slice(0, 3).map((tag) => (
@@ -180,14 +196,14 @@ export default function FatwaHighlights() {
                   className="text-decoration-none fw-semibold"
                   style={{ color: "#fff" }}
                 >
-                  Read full answer <i className="fa-solid fa-arrow-right ms-2" />
+                  {t("readFullAnswer", "Read Full Answer")} <i className="fa-solid fa-arrow-right ms-2" />
                 </Link>
               </article>
             </div>
           ))}
         </div>
 
-        {loading ? <p className="text-white-50 small mt-4 mb-0">Loading latest fatwas...</p> : null}
+        {loading ? <p className="text-white-50 small mt-4 mb-0">{t("loadingLatestFatwas", "Loading latest fatwas...")}</p> : null}
       </div>
     </section>
   );

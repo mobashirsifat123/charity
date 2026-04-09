@@ -6,8 +6,11 @@ import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
+import { useLanguage } from '@/context/LanguageContext';
+import { translateCampaignCategory } from '@/lib/i18n';
 
 export default function CauseDetailPage() {
+    const { locale, t } = useLanguage();
     const params = useParams();
     const campaignId = params.id;
 
@@ -26,20 +29,20 @@ export default function CauseDetailPage() {
                     .from('campaigns')
                     .select('*')
                     .eq('id', campaignId)
-                    .single();
+                    .maybeSingle();
 
                 if (fetchError) throw fetchError;
                 
                 if (data) {
                     setCampaign(data);
                 } else {
-                    setError('Campaign not found');
+                    setError(t('campaignNotFound', 'Campaign Not Found'));
                 }
             } catch (err) {
                 if (err.code === 'PGRST116') { // no rows returned
-                    setError('Campaign not found');
+                    setError(t('campaignNotFound', 'Campaign Not Found'));
                 } else {
-                    setError(err.message || 'Failed to load campaign');
+                    setError(err.message || t('unableToLoadCampaign', 'Unable to load the selected campaign.'));
                 }
             } finally {
                 setLoading(false);
@@ -60,7 +63,7 @@ export default function CauseDetailPage() {
 
     // Format currency
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat(locale === 'ar' ? 'ar' : 'en-US', {
             style: 'currency',
             currency: 'USD',
             minimumFractionDigits: 0,
@@ -104,13 +107,13 @@ export default function CauseDetailPage() {
         return (
             <section className="page-wrapper">
                 <HeaderOne />
-                <BreadcrumbOne title="Loading..." />
+                <BreadcrumbOne title={t('loading', 'Loading...')} />
                 <div className="container py-5">
                     <div className="text-center py-5">
                         <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
-                            <span className="visually-hidden">Loading...</span>
+                            <span className="visually-hidden">{t('loading', 'Loading...')}</span>
                         </div>
-                        <p className="mt-3 text-muted">Loading campaign details...</p>
+                        <p className="mt-3 text-muted">{t('loadingCampaignDetails', 'Loading campaign details...')}</p>
                     </div>
                 </div>
                 <FooterOne />
@@ -123,17 +126,17 @@ export default function CauseDetailPage() {
         return (
             <section className="page-wrapper">
                 <HeaderOne />
-                <BreadcrumbOne title="Campaign Not Found" />
+                <BreadcrumbOne title={t('campaignNotFound', 'Campaign Not Found')} />
                 <div className="container py-5">
                     <div className="text-center py-5">
                         <i className="fa-solid fa-circle-exclamation text-danger mb-4" style={{ fontSize: '4rem' }}></i>
                         <h3 className="mb-3">{error}</h3>
                         <p className="text-muted mb-4">
-                            The campaign you're looking for doesn't exist or has been removed.
+                            {t('campaignRemovedMessage', "The campaign you're looking for doesn't exist or has been removed.")}
                         </p>
                         <Link href="/#campaigns" className="btn btn-primary">
                             <i className="fa-solid fa-arrow-left me-2"></i>
-                            Browse All Campaigns
+                            {t('browseAllCampaigns', 'Browse All Campaigns')}
                         </Link>
                     </div>
                 </div>
@@ -147,11 +150,11 @@ export default function CauseDetailPage() {
         <section className="page-wrapper">
             <HeaderOne />
             <BreadcrumbOne
-                title={campaign.title || 'Campaign Details'}
+                title={campaign.title || t('campaignDetails', 'Campaign Details')}
                 links={[
-                    { name: "Home", link: "/" },
-                    { name: "Causes", link: "/#campaigns" },
-                    { name: campaign.title || 'Details', link: "#" }
+                    { name: t('home', 'Home'), link: "/" },
+                    { name: t('causes', 'Causes'), link: "/#campaigns" },
+                    { name: campaign.title || t('details', 'Details'), link: "#" }
                 ]}
             />
 
@@ -179,7 +182,7 @@ export default function CauseDetailPage() {
                                 {campaign.category && (
                                     <span className="badge bg-primary mb-3 px-3 py-2">
                                         <i className="fa-solid fa-tag me-1"></i>
-                                        {campaign.category}
+                                        {translateCampaignCategory(locale, campaign.category)}
                                     </span>
                                 )}
 
@@ -191,13 +194,13 @@ export default function CauseDetailPage() {
                                     <div className="card-body p-4">
                                         <div className="d-flex justify-content-between align-items-center mb-3">
                                             <div>
-                                                <span className="text-muted">Raised</span>
+                                                <span className="text-muted">{t('raised', 'Raised')}</span>
                                                 <h4 className="mb-0 text-success fw-bold">
                                                     {formatCurrency(campaign.raised_amount)}
                                                 </h4>
                                             </div>
                                             <div className="text-end">
-                                                <span className="text-muted">Goal</span>
+                                                <span className="text-muted">{t('goal', 'Goal')}</span>
                                                 <h4 className="mb-0 fw-bold">
                                                     {formatCurrency(campaign.goal_amount)}
                                                 </h4>
@@ -216,16 +219,16 @@ export default function CauseDetailPage() {
                                             ></div>
                                         </div>
                                         <p className="text-muted mb-0 text-center">
-                                            <strong>{getProgressPercentage()}%</strong> of goal reached
+                                            <strong>{getProgressPercentage()}%</strong> {t('ofGoalReached', 'of goal reached')}
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Description */}
                                 <div className="cm-group mb-4">
-                                    <h4 className="fw-bold mb-3">About This Campaign</h4>
+                                    <h4 className="fw-bold mb-3">{t('aboutThisCampaign', 'About This Campaign')}</h4>
                                     <p className="text-muted" style={{ lineHeight: '1.8' }}>
-                                        {campaign.description || 'No description available for this campaign.'}
+                                        {campaign.description || t('campaignMissingDescription', 'No description available for this campaign.')}
                                     </p>
                                 </div>
 
@@ -233,7 +236,7 @@ export default function CauseDetailPage() {
                                 <div className="cm-details-meta mb-4">
                                     <p className="text-muted">
                                         <i className="fa-solid fa-calendar-days me-2"></i>
-                                        Created: {new Date(campaign.created_at).toLocaleDateString('en-US', {
+                                        {t('created', 'Created')}: {new Date(campaign.created_at).toLocaleDateString(locale === 'ar' ? 'ar' : 'en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
@@ -242,7 +245,7 @@ export default function CauseDetailPage() {
                                     {campaign.status && (
                                         <p className="text-muted">
                                             <i className="fa-solid fa-circle-info me-2"></i>
-                                            Status: <span className={`badge ${campaign.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
+                                            {t('statusLabel', 'Status')}: <span className={`badge ${campaign.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>
                                                 {campaign.status}
                                             </span>
                                         </p>
@@ -258,16 +261,16 @@ export default function CauseDetailPage() {
                                 <div className="card border-0 shadow-lg rounded-4 mb-4" data-aos="fade-up">
                                     <div className="card-body p-4 text-center">
                                         <i className="fa-solid fa-hand-holding-heart text-primary mb-3" style={{ fontSize: '3rem' }}></i>
-                                        <h5 className="fw-bold mb-3">Support This Cause</h5>
+                                        <h5 className="fw-bold mb-3">{t('supportThisCause', 'Support This Cause')}</h5>
                                         <p className="text-muted mb-4">
-                                            Your donation can make a real difference in someone's life.
+                                            {t('donationCanHelp', "Your donation can make a real difference in someone's life.")}
                                         </p>
                                         <Link
                                             href={`/donation?campaign=${campaignId}`}
                                             className="btn btn-primary btn-lg w-100 py-3"
                                         >
                                             <i className="fa-solid fa-heart me-2"></i>
-                                            Donate Now
+                                            {t('donateNow', 'Donate Now')}
                                         </Link>
                                     </div>
                                 </div>
@@ -275,22 +278,22 @@ export default function CauseDetailPage() {
                                 {/* Quick Stats */}
                                 <div className="card border-0 shadow-sm rounded-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                                     <div className="card-body p-4">
-                                        <h6 className="fw-bold mb-3">Campaign Stats</h6>
+                                        <h6 className="fw-bold mb-3">{t('campaignStats', 'Campaign Stats')}</h6>
                                         <ul className="list-unstyled mb-0">
                                             <li className="d-flex justify-content-between py-2 border-bottom">
-                                                <span className="text-muted">Goal</span>
+                                                <span className="text-muted">{t('goal', 'Goal')}</span>
                                                 <strong>{formatCurrency(campaign.goal_amount)}</strong>
                                             </li>
                                             <li className="d-flex justify-content-between py-2 border-bottom">
-                                                <span className="text-muted">Raised</span>
+                                                <span className="text-muted">{t('raised', 'Raised')}</span>
                                                 <strong className="text-success">{formatCurrency(campaign.raised_amount)}</strong>
                                             </li>
                                             <li className="d-flex justify-content-between py-2 border-bottom">
-                                                <span className="text-muted">Remaining</span>
+                                                <span className="text-muted">{t('remaining', 'Remaining')}</span>
                                                 <strong>{formatCurrency(Math.max(0, campaign.goal_amount - (campaign.raised_amount || 0)))}</strong>
                                             </li>
                                             <li className="d-flex justify-content-between py-2">
-                                                <span className="text-muted">Progress</span>
+                                                <span className="text-muted">{t('progress', 'Progress')}</span>
                                                 <strong>{getProgressPercentage()}%</strong>
                                             </li>
                                         </ul>
@@ -300,22 +303,22 @@ export default function CauseDetailPage() {
                                 {/* Share */}
                                 <div className="card border-0 shadow-sm rounded-4" data-aos="fade-up" data-aos-delay="200">
                                     <div className="card-body p-4 text-center">
-                                        <h6 className="fw-bold mb-3">Share This Campaign</h6>
+                                        <h6 className="fw-bold mb-3">{t('shareThisCampaign', 'Share This Campaign')}</h6>
                                         <div className="d-flex justify-content-center gap-2">
-                                            <button type="button" className="btn btn-outline-primary btn-sm" title="Share on Facebook" onClick={() => handleShare('facebook')}>
+                                            <button type="button" className="btn btn-outline-primary btn-sm" title={t('shareOnFacebook', 'Share on Facebook')} onClick={() => handleShare('facebook')}>
                                                 <i className="fa-brands fa-facebook-f"></i>
                                             </button>
-                                            <button type="button" className="btn btn-outline-info btn-sm" title="Share on Twitter" onClick={() => handleShare('twitter')}>
+                                            <button type="button" className="btn btn-outline-info btn-sm" title={t('shareOnTwitter', 'Share on Twitter')} onClick={() => handleShare('twitter')}>
                                                 <i className="fa-brands fa-twitter"></i>
                                             </button>
-                                            <button type="button" className="btn btn-outline-success btn-sm" title="Share on WhatsApp" onClick={() => handleShare('whatsapp')}>
+                                            <button type="button" className="btn btn-outline-success btn-sm" title={t('shareOnWhatsApp', 'Share on WhatsApp')} onClick={() => handleShare('whatsapp')}>
                                                 <i className="fa-brands fa-whatsapp"></i>
                                             </button>
-                                            <button type="button" className="btn btn-outline-secondary btn-sm" title="Copy Link" onClick={() => handleShare('copy')}>
+                                            <button type="button" className="btn btn-outline-secondary btn-sm" title={t('copyLink', 'Copy Link')} onClick={() => handleShare('copy')}>
                                                 <i className="fa-solid fa-link"></i>
                                             </button>
                                         </div>
-                                        {copied ? <p className="small text-success mt-2 mb-0">Campaign link copied.</p> : null}
+                                        {copied ? <p className="small text-success mt-2 mb-0">{t('campaignLinkCopied', 'Campaign link copied.')}</p> : null}
                                     </div>
                                 </div>
                             </div>

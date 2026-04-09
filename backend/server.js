@@ -1,7 +1,12 @@
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
+
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
 
 // Import routes
 const authRoutes = require('./src/routes/authRoutes');
@@ -12,7 +17,7 @@ const uploadRoutes = require('./src/routes/uploadRoutes');
 const stripeRoutes = require('./src/routes/stripeRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // Middleware
 app.use(cors());

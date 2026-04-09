@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [nextPath, setNextPath] = useState('/dashboard');
+    const { t } = useLanguage();
     const router = useRouter();
 
     useEffect(() => {
@@ -46,13 +48,13 @@ export default function RegisterPage() {
 
         // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('passwordsDoNotMatch', 'Passwords do not match'));
             return;
         }
 
         // Validate password length
         if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters');
+            setError(t('passwordTooShort', 'Password must be at least 6 characters'));
             return;
         }
 
@@ -65,7 +67,7 @@ export default function RegisterPage() {
             });
 
             if (signUpError) {
-                setError(signUpError.message || 'Registration failed');
+                setError(signUpError.message || t('registrationFailed', 'Registration failed'));
                 return;
             }
 
@@ -86,11 +88,38 @@ export default function RegisterPage() {
                 router.push(nextPath);
             } else {
                 // Supabase might require email confirmation
-                setSuccessMessage('Registration successful! Please check your email to confirm your account.');
+                setSuccessMessage(t('registrationSuccessCheckEmail', 'Registration successful! Please check your email to confirm your account.'));
             }
         } catch (err) {
-            setError(err.message || 'An error occurred during registration');
+            setError(err.message || t('registrationFailed', 'Registration failed'));
         } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleRegister = async () => {
+        setError('');
+        setSuccessMessage('');
+        setLoading(true);
+
+        try {
+            const origin = typeof window !== 'undefined' ? window.location.origin : '';
+            const { error: oauthError } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'select_account',
+                    },
+                },
+            });
+
+            if (oauthError) {
+                throw oauthError;
+            }
+        } catch (err) {
+            setError(err.message || t('googleSignupFailed', 'Unable to start Google sign up.'));
             setLoading(false);
         }
     };
@@ -99,10 +128,10 @@ export default function RegisterPage() {
         <section className="page-wrapper">
             <HeaderOne />
             <BreadcrumbOne
-                title="Create Account"
+                title={t('createAccount', 'Create Account')}
                 links={[
-                    { name: "Home", link: "/" },
-                    { name: "Register", link: "/register" }
+                    { name: t('home', 'Home'), link: "/" },
+                    { name: t('register', 'Register'), link: "/register" }
                 ]}
             />
 
@@ -112,8 +141,8 @@ export default function RegisterPage() {
                         <div className="card shadow-lg border-0 rounded-4">
                             <div className="card-body p-5">
                                 <div className="text-center mb-4">
-                                    <h2 className="fw-bold text-primary mb-2">Join Our Community</h2>
-                                    <p className="text-muted">Create an account to start making a difference</p>
+                                    <h2 className="fw-bold text-primary mb-2">{t('joinOurCommunity', 'Join Our Community')}</h2>
+                                    <p className="text-muted">{t('createAccountIntro', 'Create an account to start making a difference')}</p>
                                 </div>
 
                                 {error && (
@@ -139,10 +168,26 @@ export default function RegisterPage() {
                                     </div>
                                 )}
 
+                                <button
+                                    type="button"
+                                    className="btn btn-light btn-ripple w-100 py-3 fw-semibold border mb-4"
+                                    onClick={handleGoogleRegister}
+                                    disabled={loading}
+                                >
+                                    <i className="fa-brands fa-google me-2"></i>
+                                    {t('continueWithGoogle', 'Continue with Google')}
+                                </button>
+
+                                <div className="d-flex align-items-center gap-3 mb-4">
+                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
+                                    <span className="text-muted small">{t('orCreateWithEmail', 'or create with email')}</span>
+                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
+                                </div>
+
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label htmlFor="name" className="form-label fw-semibold">
-                                            Full Name
+                                            {t('fullName', 'Full Name')}
                                         </label>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
@@ -153,7 +198,7 @@ export default function RegisterPage() {
                                                 className="form-control border-start-0 ps-0"
                                                 id="name"
                                                 name="name"
-                                                placeholder="Enter your full name"
+                                                placeholder={t('enterYourFullName', 'Enter your full name')}
                                                 value={formData.name}
                                                 onChange={handleChange}
                                                 required
@@ -163,7 +208,7 @@ export default function RegisterPage() {
 
                                     <div className="mb-3">
                                         <label htmlFor="email" className="form-label fw-semibold">
-                                            Email Address
+                                            {t('emailAddress', 'Email Address')}
                                         </label>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
@@ -174,7 +219,7 @@ export default function RegisterPage() {
                                                 className="form-control border-start-0 ps-0"
                                                 id="email"
                                                 name="email"
-                                                placeholder="Enter your email"
+                                                placeholder={t('enterYourEmail', 'Enter your email')}
                                                 value={formData.email}
                                                 onChange={handleChange}
                                                 required
@@ -184,7 +229,7 @@ export default function RegisterPage() {
 
                                     <div className="mb-3">
                                         <label htmlFor="password" className="form-label fw-semibold">
-                                            Password
+                                            {t('password', 'Password')}
                                         </label>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
@@ -195,7 +240,7 @@ export default function RegisterPage() {
                                                 className="form-control border-start-0 ps-0"
                                                 id="password"
                                                 name="password"
-                                                placeholder="Create a password"
+                                                placeholder={t('createYourPassword', 'Create a password')}
                                                 value={formData.password}
                                                 onChange={handleChange}
                                                 required
@@ -208,12 +253,12 @@ export default function RegisterPage() {
                                                 <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
                                             </button>
                                         </div>
-                                        <small className="text-muted">Minimum 6 characters</small>
+                                        <small className="text-muted">{t('minimumSixCharacters', 'Minimum 6 characters')}</small>
                                     </div>
 
                                     <div className="mb-4">
                                         <label htmlFor="confirmPassword" className="form-label fw-semibold">
-                                            Confirm Password
+                                            {t('confirmPassword', 'Confirm Password')}
                                         </label>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
@@ -224,7 +269,7 @@ export default function RegisterPage() {
                                                 className="form-control border-start-0 ps-0"
                                                 id="confirmPassword"
                                                 name="confirmPassword"
-                                                placeholder="Confirm your password"
+                                                placeholder={t('confirmYourPassword', 'Confirm your password')}
                                                 value={formData.confirmPassword}
                                                 onChange={handleChange}
                                                 required
@@ -245,13 +290,13 @@ export default function RegisterPage() {
                                         disabled={loading}
                                     >
                                         {loading ? (
-                                            <>
-                                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                Creating Account...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Create Account <i className="fa-solid fa-arrow-right ms-2"></i>
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                    {t('creatingAccount', 'Creating Account...')}
+                                                </>
+                                            ) : (
+                                                <>
+                                                {t('createAccount', 'Create Account')} <i className="fa-solid fa-arrow-right ms-2"></i>
                                             </>
                                         )}
                                     </button>
@@ -259,9 +304,9 @@ export default function RegisterPage() {
 
                                 <div className="text-center mt-4">
                                     <p className="text-muted mb-0">
-                                        Already have an account?{' '}
+                                        {t('alreadyHaveAccount', 'Already have an account?')}{' '}
                                         <Link href="/login" className="text-primary fw-semibold text-decoration-none">
-                                            Sign In
+                                            {t('signInInstead', 'Sign in')}
                                         </Link>
                                     </p>
                                 </div>

@@ -235,7 +235,6 @@ function TeamEditorContent({ isEdit = false, memberId = null }) {
     );
 }
 
-export default function TeamEditorPage({ params }) {
-    const isEdit = !!params?.id;
-    return <TeamEditorContent isEdit={isEdit} memberId={params?.id} />;
+export default function TeamEditorPage() {
+    return <TeamEditorContent isEdit={false} memberId={null} />;
 }

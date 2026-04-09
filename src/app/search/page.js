@@ -4,10 +4,12 @@ import Link from "next/link";
 import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
+import { useLanguage } from "@/context/LanguageContext";
 import { fetchPublishedBlogs, fetchPublishedFatwas, getUnifiedSearchResults } from "@/lib/content-data";
 import { getContentCategory, getContentPath, getExcerpt, normalizeTags } from "@/lib/content-utils";
 
 export default function SearchPage() {
+  const { locale, t } = useLanguage();
   const [query, setQuery] = useState("");
   const [type, setType] = useState("all");
   const [category, setCategory] = useState("all");
@@ -62,10 +64,10 @@ export default function SearchPage() {
     <section className="page-wrapper">
       <HeaderOne />
       <BreadcrumbOne
-        title="Search"
+        title={t('search', 'Search')}
         links={[
-          { name: "Home", link: "/" },
-          { name: "Search", link: "/search" },
+          { name: t('home', 'Home'), link: "/" },
+          { name: t('search', 'Search'), link: "/search" },
         ]}
       />
       <div className="container py-5">
@@ -73,23 +75,23 @@ export default function SearchPage() {
           <div className="card-body p-4">
             <div className="row g-3">
               <div className="col-lg-6">
-                <label className="form-label fw-semibold">Search articles and fatwas</label>
-                <input type="text" className="form-control" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by topic, title, tag, or author..." />
+                <label className="form-label fw-semibold">{t('searchArticlesAndFatwas', 'Search articles and fatwas')}</label>
+                <input type="text" className="form-control" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('searchByTopic', 'Search by topic, title, tag, or author...')} />
               </div>
               <div className="col-lg-3">
-                <label className="form-label fw-semibold">Content type</label>
+                <label className="form-label fw-semibold">{t('contentType', 'Content type')}</label>
                 <select className="form-select" value={type} onChange={(e) => setType(e.target.value)}>
-                  <option value="all">All content</option>
-                  <option value="blog">Articles</option>
-                  <option value="fatwa">Fatwas</option>
+                  <option value="all">{t('allContent', 'All content')}</option>
+                  <option value="blog">{t('articles', 'Articles')}</option>
+                  <option value="fatwa">{t('fatwas', 'Fatwas')}</option>
                 </select>
               </div>
               <div className="col-lg-3">
-                <label className="form-label fw-semibold">Category</label>
+                <label className="form-label fw-semibold">{t('category', 'Category')}</label>
                 <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
                   {categories.map((option) => (
                     <option key={option} value={option}>
-                      {option === "all" ? "All categories" : option}
+                      {option === "all" ? t('allCategories', 'All categories') : option}
                     </option>
                   ))}
                 </select>
@@ -104,8 +106,8 @@ export default function SearchPage() {
           </div>
         ) : results.length === 0 ? (
           <div className="text-center py-5">
-            <h4 className="fw-bold">No results found</h4>
-            <p className="text-muted">Try another keyword, content type, or category.</p>
+            <h4 className="fw-bold">{t('noResultsFound', 'No results found')}</h4>
+            <p className="text-muted">{t('tryDifferentSearch', 'Try another keyword, content type, or category.')}</p>
           </div>
         ) : (
           <div className="row g-4">
@@ -115,7 +117,7 @@ export default function SearchPage() {
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center gap-3 mb-3">
                       <span className={`badge rounded-pill ${item.contentType === "blog" ? "bg-primary" : "bg-success"}`}>
-                        {item.contentType === "blog" ? "Article" : "Fatwa"}
+                        {item.contentType === "blog" ? t('article', 'Article') : t('fatwa', 'Fatwa')}
                       </span>
                       <span className="text-muted small">{getContentCategory(item)}</span>
                     </div>
@@ -129,7 +131,7 @@ export default function SearchPage() {
                       ))}
                     </div>
                     <Link href={getContentPath(item.contentType, item)} className="fw-semibold text-decoration-none">
-                      Open result <i className="fa-solid fa-arrow-right ms-2"></i>
+                      {t('openResult', 'Open result')} <i className="fa-solid fa-arrow-right ms-2"></i>
                     </Link>
                   </div>
                 </div>

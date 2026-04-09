@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from '@/context/LanguageContext';
 
 /**
  * Pagination - Previous/Next pagination controls
@@ -8,6 +9,7 @@
  * @param {number} total - Total items count
  */
 const Pagination = ({ currentPage, totalPages, onPageChange, total }) => {
+    const { t } = useLanguage();
     if (totalPages <= 1) return null;
 
     const handlePrevious = () => {
@@ -56,7 +58,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, total }) => {
                             disabled={currentPage === 1}
                         >
                             <i className="fa-solid fa-chevron-left me-2"></i>
-                            Previous
+                            {t('previous', 'Previous')}
                         </button>
                     </li>
 
@@ -106,7 +108,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange, total }) => {
                     {/* Mobile Page Info */}
                     <li className="page-item d-md-none">
                         <span className="page-link bg-transparent border-0 text-muted">
-                            {currentPage} of {totalPages}
+                            {t('pageOf', '{current} of {total}')
+                                .replace('{current}', currentPage)
+                                .replace('{total}', totalPages)}
                         </span>
                     </li>
 
@@ -117,7 +121,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, total }) => {
                             onClick={handleNext}
                             disabled={currentPage === totalPages}
                         >
-                            Next
+                            {t('next', 'Next')}
                             <i className="fa-solid fa-chevron-right ms-2"></i>
                         </button>
                     </li>
@@ -127,7 +131,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, total }) => {
             {/* Total Count */}
             <div className="text-center mt-3">
                 <small className="text-muted">
-                    Showing page {currentPage} of {totalPages} ({total} campaigns total)
+                    {t('showingPageSummary', 'Showing page {current} of {total} ({count} campaigns total)')
+                        .replace('{current}', currentPage)
+                        .replace('{total}', totalPages)
+                        .replace('{count}', total)}
                 </small>
             </div>
 

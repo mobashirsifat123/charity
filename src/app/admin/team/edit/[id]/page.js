@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { adminFetchJson } from '@/lib/adminApi';
 
 function TeamEditorContent({ isEdit = false, memberId = null }) {
@@ -235,7 +235,9 @@ function TeamEditorContent({ isEdit = false, memberId = null }) {
     );
 }
 
-export default function TeamEditorPage({ params }) {
-    const isEdit = !!params?.id;
-    return <TeamEditorContent isEdit={isEdit} memberId={params?.id} />;
+export default function TeamEditorPage() {
+    const params = useParams();
+    const memberId = typeof params?.id === 'string' ? params.id : null;
+    const isEdit = !!memberId;
+    return <TeamEditorContent isEdit={isEdit} memberId={memberId} />;
 }

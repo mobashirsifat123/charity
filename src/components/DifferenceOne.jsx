@@ -12,12 +12,12 @@ const DifferenceOne = () => {
     ].filter(Boolean);
 
     return (
-        <section className="py-5" style={{ background: '#fff' }}>
+        <section className="py-5 page-surface section-shell">
             <div className="container py-4">
                 <div className="row align-items-center gy-5">
                     <div className="col-lg-6" data-aos="fade-right">
                         <div className="position-relative">
-                            <div className="rounded-4 overflow-hidden" style={{ background: '#e9ecef', height: 400, width: '100%', position: 'relative' }}>
+                            <div className="rounded-4 overflow-hidden surface-placeholder" style={{ height: 400, width: '100%', position: 'relative' }}>
                                 {settings.impact_image_url ? (
                                     <img
                                         src={settings.impact_image_url}
@@ -26,22 +26,22 @@ const DifferenceOne = () => {
                                     />
                                 ) : (
                                     <div className="absolute-center text-center w-100 h-100 d-flex flex-column align-items-center justify-content-center opacity-50">
-                                        <i className="fa-solid fa-image mb-3" style={{ fontSize: '4rem', color: '#adb5bd' }} />
+                                        <i className="fa-solid fa-image mb-3 text-muted" style={{ fontSize: '4rem' }} />
                                         <h5 className="text-secondary">{settings.impact_image_alt || 'Impact Image'}</h5>
                                     </div>
                                 )}
                             </div>
                             {/* Floating stat card */}
-                            <div className="position-absolute bg-white rounded-4 shadow p-4" 
-                                style={{ bottom: -30, right: -20, width: 220, borderTop: '4px solid #4e9af1' }}>
-                                <h3 className="fw-bold text-dark mb-1">{settings.impact_stat_value || '15+'}</h3>
+                            <div className="position-absolute rounded-4 shadow p-4 system-panel glass-surface--light" 
+                                style={{ bottom: -30, right: -20, width: 220, borderTop: '4px solid var(--primary-color)' }}>
+                                <h3 className="fw-bold mb-1" style={{ color: 'var(--primary-color)' }}>{settings.impact_stat_value || '15+'}</h3>
                                 <p className="text-muted mb-0 small fw-semibold">{settings.impact_stat_label || 'Years of Global Impact'}</p>
                             </div>
                         </div>
                     </div>
                     
                     <div className="col-lg-6 ps-lg-5" data-aos="fade-left">
-                        <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3 fw-semibold">
+                        <span className="theme-badge-soft mb-3">
                             {settings.impact_badge || 'Make A Difference'}
                         </span>
                         <h2 className="fw-bold mb-4">{settings.impact_title || 'Every Act of Kindness Creates a Ripple Effect'}</h2>
@@ -52,8 +52,8 @@ const DifferenceOne = () => {
                         <ul className="list-unstyled mb-5">
                             {impactPoints.map((item, i) => (
                                 <li key={i} className="mb-3 d-flex align-items-center">
-                                    <div className="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center me-3" style={{ width: 32, height: 32 }}>
-                                        <i className="fa-solid fa-check text-primary small" />
+                                    <div className="rounded-circle theme-icon-soft d-flex align-items-center justify-content-center me-3" style={{ width: 32, height: 32 }}>
+                                        <i className="fa-solid fa-check small" />
                                     </div>
                                     <span className="fw-medium text-dark">{item}</span>
                                 </li>

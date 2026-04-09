@@ -3,19 +3,21 @@ import Link from "next/link";
 import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function AboutPage() {
   const { settings } = useSiteSettings();
+  const { t } = useLanguage();
 
   return (
     <section className="page-wrapper">
       <HeaderOne />
       <BreadcrumbOne
-        title="About Us"
+        title={t('aboutUs', 'About Us')}
         links={[
-          { name: "Home", link: "/" },
-          { name: "About Us", link: "/about-us" },
+          { name: t('home', 'Home'), link: "/" },
+          { name: t('aboutUs', 'About Us'), link: "/about-us" },
         ]}
       />
       <div className="container py-5">
@@ -34,9 +36,9 @@ export default function AboutPage() {
                   {settings.about_page_paragraph_3 || "Explore our latest articles, browse fatwas, or support an active cause through the resources below."}
                 </p>
                 <div className="d-flex flex-wrap gap-3">
-                  <Link href="/blog-grid" className="btn btn-outline-primary rounded-pill px-4">Articles</Link>
-                  <Link href="/fatwa" className="btn btn-outline-primary rounded-pill px-4">Fatwas</Link>
-                  <Link href="/#campaigns" className="btn btn-primary rounded-pill px-4">Support a Cause</Link>
+                  <Link href="/blog-grid" className="btn btn-outline-primary rounded-pill px-4">{t('articles', 'Articles')}</Link>
+                  <Link href="/fatwa" className="btn btn-outline-primary rounded-pill px-4">{t('fatwas', 'Fatwas')}</Link>
+                  <Link href="/#campaigns" className="btn btn-primary rounded-pill px-4">{t('supportCause', 'Support a Cause')}</Link>
                 </div>
               </div>
             </div>

@@ -27,6 +27,13 @@ const verifyToken = (req, res, next) => {
             });
         }
 
+        if (!process.env.JWT_SECRET) {
+            return res.status(503).json({
+                success: false,
+                message: 'JWT authentication is not configured on the backend.',
+            });
+        }
+
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded; // Attach user info to request

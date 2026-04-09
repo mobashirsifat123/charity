@@ -11,6 +11,8 @@ export default function AdminDashboard() {
         totalBlogs: 0,
         totalFatwas: 0,
         totalTeamMembers: 0,
+        newFatwaRequests: 0,
+        activeNewsletterSubscribers: 0,
     });
     const [loading, setLoading] = useState(true);
 
@@ -28,7 +30,7 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
-    if (loading) return <div>Loading dashboard data...</div>;
+    if (loading) return <div className="text-muted">Loading dashboard data...</div>;
 
     return (
         <div>
@@ -36,7 +38,7 @@ export default function AdminDashboard() {
             
             <div className="row mb-5">
                 <div className="col-md-6 col-xl-3 mb-3">
-                    <div className="card bg-primary text-white h-100 shadow-sm">
+                    <div className="card admin-metric-card h-100 shadow-sm border-0">
                         <div className="card-body">
                             <h5 className="card-title">Total Donations Raised</h5>
                             <h2 className="display-4 fw-bold">${stats.totalRaised.toFixed(2)}</h2>
@@ -44,7 +46,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
                 <div className="col-md-6 col-xl-3 mb-3">
-                    <div className="card bg-success text-white h-100 shadow-sm">
+                    <div className="card admin-metric-card h-100 shadow-sm border-0">
                         <div className="card-body">
                             <h5 className="card-title">Active Campaigns</h5>
                             <h2 className="display-4 fw-bold">{stats.activeCampaigns}</h2>
@@ -52,7 +54,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
                 <div className="col-md-6 col-xl-3 mb-3">
-                    <div className="card bg-dark text-white h-100 shadow-sm">
+                    <div className="card admin-metric-card h-100 shadow-sm border-0">
                         <div className="card-body">
                             <h5 className="card-title">Articles & Fatwas</h5>
                             <h2 className="display-6 fw-bold">{stats.totalBlogs} / {stats.totalFatwas}</h2>
@@ -61,7 +63,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
                 <div className="col-md-6 col-xl-3 mb-3">
-                    <div className="card bg-warning text-dark h-100 shadow-sm">
+                    <div className="card admin-metric-card admin-metric-card--gold h-100 shadow-sm border-0">
                         <div className="card-body">
                             <h5 className="card-title">Team Members</h5>
                             <h2 className="display-4 fw-bold">{stats.totalTeamMembers}</h2>
@@ -70,9 +72,28 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            <div className="row mb-5">
+                <div className="col-md-6 col-xl-3 mb-3">
+                    <div className="card admin-metric-card h-100 shadow-sm border-0">
+                        <div className="card-body">
+                            <h5 className="card-title">New Fatwa Requests</h5>
+                            <h2 className="display-4 fw-bold">{stats.newFatwaRequests}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-md-6 col-xl-3 mb-3">
+                    <div className="card admin-metric-card admin-metric-card--soft h-100 shadow-sm border-0">
+                        <div className="card-body">
+                            <h5 className="card-title">Active Subscribers</h5>
+                            <h2 className="display-4 fw-bold">{stats.activeNewsletterSubscribers}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div className="row">
                 <div className="col-md-8">
-                    <div className="card shadow-sm mb-4">
+                    <div className="card admin-surface shadow-sm mb-4">
                         <div className="card-header bg-white">
                             <h5 className="mb-0 py-2">Recent Donations</h5>
                         </div>
@@ -109,7 +130,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
                 <div className="col-md-4">
-                    <div className="card shadow-sm">
+                    <div className="card admin-surface shadow-sm">
                         <div className="card-header bg-white">
                             <h5 className="mb-0 py-2">Quick Links</h5>
                         </div>
@@ -126,6 +147,9 @@ export default function AdminDashboard() {
                                 </Link>
                                 <Link href="/admin/team" className="btn btn-outline-primary text-start">
                                     <i className="fa-solid fa-users me-2"></i> Manage Team
+                                </Link>
+                                <Link href="/admin/inbox" className="btn btn-outline-primary text-start">
+                                    <i className="fa-regular fa-envelope-open me-2"></i> Open Admin Inbox
                                 </Link>
                                 <Link href="/admin/images" className="btn btn-outline-primary text-start">
                                     <i className="fa-regular fa-images me-2"></i> Update Images

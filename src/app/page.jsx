@@ -1,83 +1,49 @@
-"use client";
+import dynamic from "next/dynamic";
 import BannerOne from "@/components/BannerOne";
 import BlogOne from "@/components/BlogOne";
 import CampaignDiscovery from "@/components/CampaignDiscovery";
-import CauseSliderTwo from "@/components/CauseSliderTwo";
-import CommunityOne from "@/components/CommunityOne";
-import CtaSectionOne from "@/components/CtaSectionOne";
-import DifferenceOne from "@/components/DifferenceOne";
-import DifferenceTwo from "@/components/DifferenceTwo";
+import LiveDonationToast from "@/components/charity/LiveDonationToast";
 import FatwaHighlights from "@/components/FatwaHighlights";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
-import HelpOne from "@/components/HelpOne";
-import PartnerOne from "@/components/PartnerOne";
-import Preloader from "@/components/Preloader";
-import TeamOne from "@/components/TeamOne";
-import TestimonialOne from "@/components/TestimonialOne";
+import PrayerTimesWidget from "@/components/home/PrayerTimesWidget";
 import TopBarOne from "@/components/TopBarOne";
-import AOSWrap from "@/helper/AOSWrap";
-import CustomCursor from "@/helper/CustomCursor";
+import { getFallbackPrayerTimes } from "@/lib/server/prayer-times";
 
-const Page = () => {
+const PartnerOne = dynamic(() => import("@/components/PartnerOne"));
+const DifferenceOne = dynamic(() => import("@/components/DifferenceOne"));
+const HelpOne = dynamic(() => import("@/components/HelpOne"));
+const CtaSectionOne = dynamic(() => import("@/components/CtaSectionOne"));
+const TeamOne = dynamic(() => import("@/components/TeamOne"));
+const CommunityOne = dynamic(() => import("@/components/CommunityOne"));
+const TestimonialOne = dynamic(() => import("@/components/TestimonialOne"));
+const CauseSliderTwo = dynamic(() => import("@/components/CauseSliderTwo"));
+const DifferenceTwo = dynamic(() => import("@/components/DifferenceTwo"));
+
+const Page = async () => {
+  const fallbackPrayerTimes = await getFallbackPrayerTimes();
+
   return (
-    <AOSWrap>
-      <section className='page-wrapper'>
-        {/* Preloader */}
-        <Preloader />
-
-        {/* CustomCursor  */}
-        <CustomCursor />
-
-        {/* TopBarOne */}
-        <TopBarOne />
-
-        {/* HeaderOne */}
-        <HeaderOne />
-
-        {/* BannerOne */}
-        <BannerOne />
-
-        {/* FatwaHighlights */}
-        <FatwaHighlights />
-
-        {/* BlogOne */}
-        <BlogOne />
-
-        {/* PartnerOne */}
-        <PartnerOne />
-
-        {/* DifferenceOne */}
-        <DifferenceOne />
-
-        {/* HelpOne */}
-        <HelpOne />
-
-        {/* CampaignDiscovery - Dynamic with Search/Filter/Pagination */}
-        <CampaignDiscovery />
-
-        {/* CtaSectionOne */}
-        <CtaSectionOne />
-
-        {/* TeamOne */}
-        <TeamOne />
-
-        {/* CommunityOne */}
-        <CommunityOne />
-
-        {/* TestimonialOne */}
-        <TestimonialOne />
-
-        {/* CauseSliderTwo */}
-        <CauseSliderTwo />
-
-        {/* DifferenceTwo */}
-        <DifferenceTwo />
-
-        {/* FooterOne */}
-        <FooterOne />
-      </section>
-    </AOSWrap>
+    <section className='page-wrapper'>
+      <LiveDonationToast />
+      <TopBarOne />
+      <HeaderOne />
+      <BannerOne />
+      <PrayerTimesWidget initialData={fallbackPrayerTimes} />
+      <FatwaHighlights />
+      <BlogOne />
+      <PartnerOne />
+      <DifferenceOne />
+      <HelpOne />
+      <CampaignDiscovery />
+      <CtaSectionOne />
+      <TeamOne />
+      <CommunityOne />
+      <TestimonialOne />
+      <CauseSliderTwo />
+      <DifferenceTwo />
+      <FooterOne />
+    </section>
   );
 };
 

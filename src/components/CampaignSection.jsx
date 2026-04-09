@@ -116,7 +116,9 @@ const CampaignSection = () => {
             <section
                 className="cause"
                 style={{
-                    background: settings.cause_bg_image ? `url(${settings.cause_bg_image}) center/cover no-repeat` : 'url(/assets/images/cause/cause-bg.png)',
+                    background: settings.cause_bg_image
+                        ? `linear-gradient(rgba(244, 248, 246, 0.94), rgba(255, 255, 255, 0.96)), url(${settings.cause_bg_image}) center/cover no-repeat`
+                        : 'linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%)',
                 }}
             >
                 <div className="container">
@@ -137,7 +139,7 @@ const CampaignSection = () => {
                         {campaigns.map((campaign) => (
                             <div key={campaign.id} className="col-12 col-md-6 col-lg-4 col-xl-3 mb-4">
                                 <div className="cause__slider-inner">
-                                    <div className="cause__slider-single">
+                                    <div className="cause__slider-single hover-lift">
                                         <div className="thumb">
                                             <Link href={`/cause-details/${campaign.id}`}>
                                                 <img
@@ -179,7 +181,7 @@ const CampaignSection = () => {
                                             <div className="cause__cta">
                                                 <button
                                                     onClick={() => handleDonateClick(campaign)}
-                                                    className="btn--secondary"
+                                                    className="btn--secondary btn-ripple"
                                                     style={{ cursor: 'pointer', border: 'none' }}
                                                 >
                                                     Donate Now
@@ -191,9 +193,6 @@ const CampaignSection = () => {
                             </div>
                         ))}
                     </div>
-                </div>
-                <div className="spade">
-                    <img src="/assets/images/help/spade.png" alt="decoration" />
                 </div>
             </section>
 

@@ -1,11 +1,12 @@
 "use client";
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import HeaderOne from "@/components/HeaderOne";
-import FooterOne from "@/components/FooterOne";
+
 import BreadcrumbOne from "@/components/BreadcrumbOne";
-import SaveContentButton from "@/components/SaveContentButton";
+import FooterOne from "@/components/FooterOne";
+import HeaderOne from "@/components/HeaderOne";
+import { useLanguage } from "@/context/LanguageContext";
 import { fetchPublishedBlogs } from "@/lib/content-data";
 import {
   buildContentIdentifier,
@@ -16,210 +17,262 @@ import {
   sortFeaturedFirst,
 } from "@/lib/content-utils";
 
+const ITEMS_PER_PAGE = 12;
+
 export default function BlogGrid() {
-  const [blogs, setBlogs] = useState([]);
+  const { locale, t } = useLanguage();
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("all");
+  const [author, setAuthor] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
 
   useEffect(() => {
     let active = true;
 
-    const fetchBlogs = async () => {
+    async function loadArticles() {
       try {
         setLoading(true);
-        const data = await fetchPublishedBlogs();
-        if (active) setBlogs(sortFeaturedFirst(data));
+        const result = await fetchPublishedBlogs();
+        if (!active) return;
+        setArticles(sortFeaturedFirst(result || []));
       } catch (error) {
-        console.error("Error fetching blogs:", error.message);
+        console.error("Error fetching articles:", error);
       } finally {
         if (active) setLoading(false);
       }
-    };
+    }
 
-    fetchBlogs();
-
+    loadArticles();
     return () => {
       active = false;
     };
   }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    setSearchTerm(params.get("search") || "");
-    setCurrentPage(1);
-  }, []);
-
   const categories = useMemo(
-    () => ["all", ...Array.from(new Set(blogs.map((blog) => getContentCategory(blog)).filter(Boolean)))],
-    [blogs]
+    () => ["all", ...Array.from(new Set(articles.map((item) => getContentCategory(item)).filter(Boolean)))],
+    [articles]
   );
 
-  const filteredBlogs = useMemo(() => {
-    const lower = searchTerm.toLowerCase();
-    return blogs.filter((blog) => {
-      const searchMatch =
-        !lower ||
-        blog.title?.toLowerCase().includes(lower) ||
-        blog.content?.toLowerCase().includes(lower) ||
-        getContentCategory(blog).toLowerCase().includes(lower) ||
-        normalizeTags(blog.tags).join(" ").toLowerCase().includes(lower) ||
-        blog.author_name?.toLowerCase().includes(lower);
+  const authors = useMemo(
+    () => ["all", ...Array.from(new Set(articles.map((item) => item.author_name).filter(Boolean)))],
+    [articles]
+  );
 
-      const categoryMatch = category === "all" || getContentCategory(blog) === category;
-      return searchMatch && categoryMatch;
+  const filteredArticles = useMemo(() => {
+    const lowerSearch = searchTerm.trim().toLowerCase();
+
+    return articles.filter((article) => {
+      const matchesSearch =
+        !lowerSearch ||
+        article.title?.toLowerCase().includes(lowerSearch) ||
+        article.content?.toLowerCase().includes(lowerSearch) ||
+        getContentCategory(article).toLowerCase().includes(lowerSearch) ||
+        normalizeTags(article.tags).join(" ").toLowerCase().includes(lowerSearch) ||
+        (article.author_name || "").toLowerCase().includes(lowerSearch);
+
+      const matchesCategory = category === "all" || getContentCategory(article) === category;
+      const matchesAuthor = author === "all" || (article.author_name || "") === author;
+
+      return matchesSearch && matchesCategory && matchesAuthor;
     });
-  }, [blogs, searchTerm, category]);
+  }, [articles, searchTerm, category, author]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredBlogs.length / itemsPerPage));
-  const displayedBlogs = filteredBlogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / ITEMS_PER_PAGE));
+  const displayedArticles = filteredArticles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const latestArticles = useMemo(
+    () =>
+      [...articles]
+        .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0))
+        .slice(0, 8),
+    [articles]
+  );
+
+  const resetToFirstPage = () => setCurrentPage(1);
 
   return (
     <>
       <HeaderOne />
-      <BreadcrumbOne title="Articles" links={[{ name: "Home", link: "/" }, { name: "Articles", link: "/blog-grid" }]} />
+      <BreadcrumbOne
+        title={t("articles", "Articles")}
+        links={[
+          { name: t("home", "Home"), link: "/" },
+          { name: t("articles", "Articles"), link: "/blog-grid" },
+        ]}
+      />
 
-      <section className="py-5 bg-light">
-        <div className="container py-4">
-          <div className="row mb-5 justify-content-center">
-            <div className="col-lg-8 text-center">
-              <h2 className="fw-bold mb-3">Articles</h2>
-              <p className="text-muted lead">Browse Islamic insights, reflections, reminders, and practical writing that support faith, family, and community growth.</p>
-              <div className="input-group shadow-sm mt-4 rounded-pill overflow-hidden mx-auto" style={{ maxWidth: "500px" }}>
-                <span className="input-group-text bg-white border-0 ps-4"><i className="bi bi-search text-muted"></i></span>
-                <input
-                  type="text"
-                  className="form-control border-0 py-3 ps-2 shadow-none"
-                  placeholder="Search articles, tags, or topics..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                />
-              </div>
-              <div className="d-flex flex-wrap gap-2 justify-content-center mt-4">
-                {categories.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    className={`btn rounded-pill ${category === option ? "btn-primary" : "btn-outline-primary"}`}
-                    onClick={() => {
-                      setCategory(option);
-                      setCurrentPage(1);
+      <section className="py-5 bg-white">
+        <div className="container">
+          <div className="row g-4">
+            <aside className="col-lg-4 col-xl-3">
+              <div className="islamweb-like-panel sticky-lg-top" style={{ top: "110px" }}>
+                <div className="islamweb-like-block">
+                  <h5 className="islamweb-like-block-title">{t("search", "Search")}</h5>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder={t("searchArticlesPlaceholder", "Search articles, tags, or topics...")}
+                    value={searchTerm}
+                    onChange={(event) => {
+                      setSearchTerm(event.target.value);
+                      resetToFirstPage();
                     }}
-                  >
-                    {option === "all" ? "All categories" : option}
-                  </button>
-                ))}
+                  />
+                </div>
+
+                <div className="islamweb-like-block">
+                  <h5 className="islamweb-like-block-title">By Subject</h5>
+                  <ul className="islamweb-like-list">
+                    {categories.map((item) => (
+                      <li key={item}>
+                        <button
+                          type="button"
+                          className={`islamweb-like-filter-btn ${category === item ? "active" : ""}`}
+                          onClick={() => {
+                            setCategory(item);
+                            resetToFirstPage();
+                          }}
+                        >
+                          {item === "all" ? t("allCategories", "All categories") : item}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="islamweb-like-block">
+                  <h5 className="islamweb-like-block-title">By Author</h5>
+                  <ul className="islamweb-like-list islamweb-like-scroll">
+                    {authors.map((item) => (
+                      <li key={item}>
+                        <button
+                          type="button"
+                          className={`islamweb-like-filter-btn ${author === item ? "active" : ""}`}
+                          onClick={() => {
+                            setAuthor(item);
+                            resetToFirstPage();
+                          }}
+                        >
+                          {item === "all" ? "All authors" : item}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="islamweb-like-block">
+                  <h5 className="islamweb-like-block-title">New Articles</h5>
+                  <ul className="islamweb-like-list">
+                    {latestArticles.map((article) => (
+                      <li key={buildContentIdentifier(article, "article")}>
+                        <Link href={getContentPath("blog", article)} className="islamweb-like-mini-link">
+                          {article.title}
+                        </Link>
+                      </li>
+                    ))}
+                    {!latestArticles.length ? (
+                      <li className="text-muted small">No published articles yet.</li>
+                    ) : null}
+                  </ul>
+                </div>
+              </div>
+            </aside>
+
+            <div className="col-lg-8 col-xl-9">
+              <div className="islamweb-like-feed">
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                  <h2 className="mb-0">{t("articles", "Articles")}</h2>
+                  <span className="text-muted small">
+                    {filteredArticles.length} item{filteredArticles.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                {loading ? (
+                  <div className="p-4 text-muted">Loading articles...</div>
+                ) : !displayedArticles.length ? (
+                  <div className="p-4 border rounded-3 text-muted">
+                    {t("noArticlesFound", "No articles found")} - {t("adjustSearchOrCategory", "Try adjusting your search or category filter.")}
+                  </div>
+                ) : (
+                  <div className="islamweb-like-items">
+                    {displayedArticles.map((article) => (
+                      <article className="islamweb-like-item" key={buildContentIdentifier(article, "article")}>
+                        <h3 className="islamweb-like-item-title">
+                          <Link href={getContentPath("blog", article)}>{article.title}</Link>
+                        </h3>
+                        <p className="islamweb-like-item-excerpt">
+                          {getExcerpt(article.content || "", 300)}
+                        </p>
+                        <div className="islamweb-like-item-meta">
+                          <span>{getContentCategory(article)}</span>
+                          <span>•</span>
+                          <span>{article.author_name || "IRWA Editorial Team"}</span>
+                          <span>•</span>
+                          <span>
+                            {new Date(article.created_at).toLocaleDateString(
+                              locale === "ar" ? "ar" : "en-US",
+                              { year: "numeric", month: "2-digit", day: "2-digit" }
+                            )}
+                          </span>
+                        </div>
+                        <Link href={getContentPath("blog", article)} className="islamweb-like-more">
+                          More
+                        </Link>
+                      </article>
+                    ))}
+                  </div>
+                )}
+
+                {totalPages > 1 ? (
+                  <nav className="mt-4" aria-label="Articles pagination">
+                    <ul className="pagination mb-0">
+                      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                        <button
+                          type="button"
+                          className="page-link"
+                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        >
+                          Previous
+                        </button>
+                      </li>
+                      {Array.from({ length: totalPages }).map((_, index) => (
+                        <li
+                          key={index + 1}
+                          className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                        >
+                          <button
+                            type="button"
+                            className="page-link"
+                            onClick={() => setCurrentPage(index + 1)}
+                          >
+                            {index + 1}
+                          </button>
+                        </li>
+                      ))}
+                      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                        <button
+                          type="button"
+                          className="page-link"
+                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                ) : null}
               </div>
             </div>
           </div>
-
-          {loading ? (
-            <div className="row justify-content-center my-5">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="col-lg-4 col-md-6 mb-4">
-                  <div className="card border-0 shadow-sm rounded-4" aria-hidden="true">
-                    <div className="card-img-top placeholder-glow" style={{ height: "200px", backgroundColor: "#e9ecef" }}>
-                      <span className="placeholder w-100 h-100"></span>
-                    </div>
-                    <div className="card-body p-4">
-                      <h5 className="card-title placeholder-glow"><span className="placeholder col-6"></span></h5>
-                      <p className="card-text placeholder-glow">
-                        <span className="placeholder col-7"></span>
-                        <span className="placeholder col-4"></span>
-                        <span className="placeholder col-4"></span>
-                        <span className="placeholder col-6"></span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : displayedBlogs.length === 0 ? (
-            <div className="text-center py-5">
-              <i className="bi bi-journal-x display-1 text-muted mb-3 d-block"></i>
-              <h4 className="fw-bold">No articles found</h4>
-              <p className="text-muted">Try adjusting your search or selecting another category.</p>
-            </div>
-          ) : (
-            <>
-              <div className="row g-4">
-                {displayedBlogs.map((blog) => (
-                  <div className="col-lg-4 col-md-6" key={buildContentIdentifier(blog, "article")}>
-                    <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-hover">
-                      {blog.image_url ? (
-                        <Image src={blog.image_url} className="card-img-top" alt={blog.title} width={800} height={220} style={{ height: "220px", objectFit: "cover" }} unoptimized />
-                      ) : (
-                        <div className="card-img-top d-flex align-items-center justify-content-center bg-secondary bg-opacity-10" style={{ height: "220px" }}>
-                          <i className="bi bi-image text-muted display-4"></i>
-                        </div>
-                      )}
-                      <div className="card-body p-4 d-flex flex-column">
-                        <div className="d-flex justify-content-between align-items-center mb-3 gap-2">
-                          <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
-                            {getContentCategory(blog)}
-                          </span>
-                          <small className="text-muted"><i className="bi bi-clock me-1"></i> {new Date(blog.created_at).toLocaleDateString()}</small>
-                        </div>
-                        {blog.featured ? <span className="badge bg-warning text-dark rounded-pill align-self-start mb-3">Featured</span> : null}
-                        <h4 className="card-title fw-bold mb-3">{blog.title}</h4>
-                        <p className="card-text text-muted mb-3 flex-grow-1">{getExcerpt(blog.content || "", 130)}</p>
-                        <div className="d-flex flex-wrap gap-2 mb-4">
-                          {normalizeTags(blog.tags).slice(0, 3).map((tag) => (
-                            <span key={tag} className="badge bg-light text-dark border">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center mt-auto gap-2">
-                          <Link href={getContentPath("blog", blog)} className="btn btn-outline-primary fw-semibold rounded-pill border-2 px-4 py-2">
-                            Read Article <i className="bi bi-arrow-right ms-2"></i>
-                          </Link>
-                          <SaveContentButton item={blog} type="blog" className="btn btn-outline-secondary rounded-pill" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {totalPages > 1 ? (
-                <div className="row mt-5">
-                  <div className="col-12 d-flex justify-content-center">
-                    <nav aria-label="Articles navigation">
-                      <ul className="pagination pagination-lg">
-                        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                          <button type="button" className="page-link rounded-start-pill px-4" onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}>Prev</button>
-                        </li>
-                        {[...Array(totalPages)].map((_, i) => (
-                          <li key={i} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
-                            <button type="button" className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                          </li>
-                        ))}
-                        <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                          <button type="button" className="page-link rounded-end-pill px-4" onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}>Next</button>
-                        </li>
-                      </ul>
-                    </nav>
-                  </div>
-                </div>
-              ) : null}
-            </>
-          )}
         </div>
       </section>
 
       <FooterOne />
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,.15)!important; }
-      ` }} />
     </>
   );
 }

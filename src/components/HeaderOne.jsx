@@ -3,18 +3,26 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+import { parseJsonArraySetting } from "@/lib/siteSettings";
 
 const HeaderOne = () => {
-  let pathname = usePathname();
+  const pathname = usePathname();
   const router = useRouter();
-  let [search, setSearch] = useState(false);
-  let [mobileMenu, setMobileMenu] = useState(false);
+  const [search, setSearch] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scroll, setScroll] = useState(false);
   const { user, logout, loading } = useAuth();
+  const { t } = useLanguage();
   const { settings } = useSiteSettings();
+  const customNavLinks = parseJsonArraySetting(settings.nav_custom_links_json, []).filter(
+    (item) => item && typeof item.href === "string" && typeof item.label === "string"
+  );
   const isArticleRoute = pathname === "/blog-grid" || pathname.startsWith("/blog-details/");
+  const isEbookRoute = pathname === "/ebooks" || pathname.startsWith("/ebooks/");
   const isFatwaRoute = pathname === "/fatwa" || pathname.startsWith("/fatwa/");
   const isCauseRoute = pathname === "/" || pathname.startsWith("/cause-details/");
   const isAccountRoute =
@@ -38,20 +46,26 @@ const HeaderOne = () => {
   };
 
   useEffect(() => {
-    window.onscroll = () => {
-      if (window.pageYOffset < 150) {
-        setScroll(false);
-      } else if (window.pageYOffset > 150) {
-        setScroll(true);
-      }
-      return () => (window.onscroll = null);
+    const handleScroll = () => {
+      const shouldStick = window.scrollY > 150;
+      setScroll((previous) => (previous === shouldStick ? previous : shouldStick));
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   const mobileMenuListRef = useRef(null);
 
   useEffect(() => {
+    if (!mobileMenu || !mobileMenuListRef.current) return;
+
     const desktopMenu = document.querySelector(".navbar__menu");
+    const cleanupFns = [];
 
     if (desktopMenu && mobileMenuListRef.current) {
       mobileMenuListRef.current.innerHTML = desktopMenu.innerHTML;
@@ -62,7 +76,7 @@ const HeaderOne = () => {
         );
 
         dropdownLabels.forEach((label) => {
-          label.addEventListener("click", function (e) {
+          const handleDropdownClick = function (e) {
             e.preventDefault();
             e.stopPropagation();
 
@@ -103,13 +117,20 @@ const HeaderOne = () => {
                 this.classList.add("navbar__item-active");
               }
             }
-          });
+          };
+
+          label.addEventListener("click", handleDropdownClick);
+          cleanupFns.push(() => label.removeEventListener("click", handleDropdownClick));
         });
       };
 
       setupDropdownToggles(mobileMenuListRef.current);
     }
-  }, [user, loading, pathname]);
+
+    return () => {
+      cleanupFns.forEach((cleanup) => cleanup());
+    };
+  }, [mobileMenu, user, loading, pathname]);
 
   return (
     <>
@@ -152,6 +173,12 @@ const HeaderOne = () => {
                           <Link href='/blog-grid'>{settings.nav_articles_label || 'Articles'}</Link>
                         </li>
                         <li
+                          className={`navbar__item nav-fade ${isEbookRoute ? "active" : ""
+                            }`}
+                        >
+                          <Link href='/ebooks'>{settings.nav_ebooks_label || 'E-Books'}</Link>
+                        </li>
+                        <li
                           className={`navbar__item nav-fade ${isFatwaRoute ? "active" : ""
                             }`}
                         >
@@ -163,6 +190,14 @@ const HeaderOne = () => {
                         >
                           <Link href='/search'>{settings.nav_search_label || 'Search'}</Link>
                         </li>
+                        {customNavLinks.map((item) => (
+                          <li
+                            key={`${item.href}-${item.label}`}
+                            className={`navbar__item nav-fade ${pathname === item.href ? "active" : ""}`}
+                          >
+                            <Link href={item.href}>{item.label}</Link>
+                          </li>
+                        ))}
                         <li
                           className={`navbar__item navbar__item--has-children nav-fade ${isCauseRoute ? "active" : ""
                             }`}
@@ -266,7 +301,7 @@ const HeaderOne = () => {
                           className={`navbar__item nav-fade ${["/contact-us"].includes(pathname) ? "active" : ""
                             } `}
                         >
-                          <Link href='/contact-us'>Contact Us</Link>
+                          <Link href='/contact-us'>{t('contactUs', 'Contact Us')}</Link>
                         </li>
                       </ul>
                     </div>
@@ -275,19 +310,22 @@ const HeaderOne = () => {
                         <i className='icon-support' />
                       </div>
                       <div className='contact-content'>
-                        <p>Call Us Now</p>
-                        <a href='tel:01-793-7938'>(+01)-793-7938 </a>
+                        <p>{t('callUsNow', 'Call Us Now')}</p>
+                        <a href={`tel:${(settings.contact_phone || '(+01)-793-7938').replace(/[^\d+]/g, '')}`}>{settings.contact_phone || '(+01)-793-7938'}</a>
                       </div>
                     </div>
                   </div>
                   <div className='navbar__options'>
                     <div className='navbar__mobile-options '>
+                      <div className='d-none d-md-flex'>
+                        <LanguageSwitcher />
+                      </div>
                       <div className='search-box'>
                         <button
                           onClick={handleSearch}
                           className='open-search'
-                          aria-label='search products'
-                          title='open search box'
+                          aria-label={t('search', 'Search')}
+                          title={t('search', 'Search')}
                         >
                           <i className='fa-solid fa-magnifying-glass' />
                         </button>
@@ -300,7 +338,7 @@ const HeaderOne = () => {
                             <div className='d-none d-md-flex align-items-center gap-3'>
                               <span className='text-dark fw-semibold'>
                                 <i className='fa-solid fa-user me-2'></i>
-                                Welcome, {user.name?.split(' ')[0]}
+                                {t('welcome', 'Welcome')}, {user.name?.split(' ')[0]}
                               </span>
                               {user.role === 'admin' && (
                                 <Link
@@ -309,7 +347,7 @@ const HeaderOne = () => {
                                   style={{ padding: '10px 20px' }}
                                 >
                                   <i className='fa-solid fa-shield-halved me-1' />
-                                  Admin
+                                  {t('admin', 'Admin')}
                                 </Link>
                               )}
                               <Link
@@ -318,14 +356,14 @@ const HeaderOne = () => {
                                 style={{ padding: '10px 20px' }}
                               >
                                 <i className='fa-solid fa-chart-line me-1' />
-                                Dashboard
+                                {t('dashboard', 'Dashboard')}
                               </Link>
                               <button
                                 onClick={logout}
                                 className='btn--secondary'
                                 style={{ padding: '10px 20px', cursor: 'pointer' }}
                               >
-                                Logout <i className='fa-solid fa-sign-out-alt ms-1' />
+                                {t('logout', 'Logout')} <i className='fa-solid fa-sign-out-alt ms-1' />
                               </button>
                             </div>
                           ) : (
@@ -335,13 +373,13 @@ const HeaderOne = () => {
                                 className='btn--secondary'
                                 style={{ padding: '10px 20px' }}
                               >
-                                Login
+                                {t('login', 'Login')}
                               </Link>
                               <Link
                                 href='/register'
                                 className='btn--primary'
                               >
-                                Register <i className='fa-solid fa-arrow-right' />
+                                {t('register', 'Register')} <i className='fa-solid fa-arrow-right' />
                               </Link>
                             </div>
                           )}
@@ -352,7 +390,7 @@ const HeaderOne = () => {
                         href='/donation'
                         className='btn--primary d-none d-lg-none'
                       >
-                        Donate Now <i className='fa-solid fa-arrow-right' />
+                        {t('donateNow', 'Donate Now')} <i className='fa-solid fa-arrow-right' />
                       </Link>
                     </div>
                     <button
@@ -390,7 +428,7 @@ const HeaderOne = () => {
                 type='text'
                 name='search-field'
                 id='searchField'
-                placeholder='Search....'
+                placeholder={t('searchSite', 'Search...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 required=''
@@ -429,29 +467,32 @@ const HeaderOne = () => {
           <div className='mobile-menu__list' ref={mobileMenuListRef}></div>
 
           <div className='mobile-menu__cta nav-fade d-block d-md-none'>
+            <div className='mb-3'>
+              <LanguageSwitcher compact />
+            </div>
             {!loading && user ? (
               <div className='d-flex flex-column gap-2 mb-3'>
                 <Link href='/dashboard' className='btn--secondary'>
-                  Dashboard <i className='fa-solid fa-chart-line' />
+                  {t('dashboard', 'Dashboard')} <i className='fa-solid fa-chart-line' />
                 </Link>
                 {user.role === 'admin' && (
                   <Link href='/admin/dashboard' className='btn--primary'>
-                    Admin Panel <i className='fa-solid fa-shield-halved' />
+                    {t('adminPanel', 'Admin Panel')} <i className='fa-solid fa-shield-halved' />
                   </Link>
                 )}
               </div>
             ) : !loading ? (
               <div className='d-flex flex-column gap-2 mb-3'>
                 <Link href='/login' className='btn--secondary'>
-                  Login
+                  {t('login', 'Login')}
                 </Link>
                 <Link href='/register' className='btn--primary'>
-                  Register <i className='fa-solid fa-arrow-right' />
+                  {t('register', 'Register')} <i className='fa-solid fa-arrow-right' />
                 </Link>
               </div>
             ) : null}
             <Link href='/donation' className='btn--primary '>
-              Donate Now <i className='fa-solid fa-arrow-right' />
+              {t('donateNow', 'Donate Now')} <i className='fa-solid fa-arrow-right' />
             </Link>
           </div>
           <div className='mobile-menu__social social nav-fade'>

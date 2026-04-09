@@ -12,6 +12,44 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const hydrateUser = async (sessionUser) => {
+        if (!sessionUser?.email) {
+            return sessionUser || null;
+        }
+
+        let { data: userData } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', sessionUser.email)
+            .maybeSingle();
+
+        if (!userData) {
+            try {
+                await supabase.from('users').insert({
+                    name:
+                        sessionUser.user_metadata?.full_name ||
+                        sessionUser.user_metadata?.name ||
+                        sessionUser.email,
+                    email: sessionUser.email,
+                    password_hash: 'managed_by_supabase_auth',
+                    role: 'donor',
+                });
+
+                const result = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', sessionUser.email)
+                    .maybeSingle();
+
+                userData = result.data || null;
+            } catch (profileError) {
+                console.error('Unable to sync public.users profile:', profileError);
+            }
+        }
+
+        return { ...sessionUser, ...userData };
+    };
+
     useEffect(() => {
         // Initial session fetch
         const initializeAuth = async () => {
@@ -19,14 +57,8 @@ export function AuthProvider({ children }) {
                 const { data: { session }, error } = await supabase.auth.getSession();
                 if (error) throw error;
                 if (session) {
-                    // Check if we also have user metadata from the DB
-                    const { data: userData } = await supabase
-                        .from('users')
-                        .select('*')
-                        .eq('email', session.user.email)
-                        .single();
-                        
-                    setUser({ ...session.user, ...userData });
+                    const hydratedUser = await hydrateUser(session.user);
+                    setUser(hydratedUser);
                 }
             } catch (error) {
                 console.error('Error fetching Supabase session:', error);
@@ -40,12 +72,8 @@ export function AuthProvider({ children }) {
         // Listen for Auth changes (login, logout)
         const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (session) {
-                const { data: userData } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', session.user.email)
-                    .single();
-                setUser({ ...session.user, ...userData });
+                const hydratedUser = await hydrateUser(session.user);
+                setUser(hydratedUser);
             } else {
                 setUser(null);
             }

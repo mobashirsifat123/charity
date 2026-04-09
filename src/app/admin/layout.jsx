@@ -1,71 +1,134 @@
 "use client";
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import AdminGuard from '@/components/AdminGuard';
+import Sidebar from '@/components/admin/Sidebar';
+import {
+    canAccessAdminPath,
+    getDefaultAdminPath,
+    isAdminRole,
+} from '@/lib/admin-navigation';
 
 export default function AdminLayout({ children }) {
     const pathname = usePathname();
-    const { logout } = useAuth();
-    const navItems = [
-        { href: '/admin/dashboard', label: 'Dashboard', icon: 'fa-solid fa-chart-line' },
-        { href: '/admin/campaigns', label: 'Campaigns', icon: 'fa-solid fa-bullhorn' },
-        { href: '/admin/blogs', label: 'Articles', icon: 'fa-solid fa-newspaper' },
-        { href: '/admin/fatwas', label: 'Fatwas', icon: 'fa-solid fa-scale-balanced' },
-        { href: '/admin/team', label: 'Team', icon: 'fa-solid fa-users' },
-        { href: '/admin/donations', label: 'Donations', icon: 'fa-solid fa-hand-holding-dollar' },
-        { href: '/admin/images', label: 'Images & Media', icon: 'fa-regular fa-images' },
-        { href: '/admin/content', label: 'Site Builder', icon: 'fa-solid fa-pen-ruler' },
-        { href: '/admin/settings', label: 'Brand & Contact', icon: 'fa-solid fa-gear' },
-    ];
+    const router = useRouter();
+    const { user, loading, logout } = useAuth();
+    const [accessState, setAccessState] = useState('checking');
+    const userRole = user?.role || null;
+    const nextPath = useMemo(
+        () => encodeURIComponent(pathname || '/admin/dashboard'),
+        [pathname]
+    );
 
-    const isActive = (href) => pathname === href || pathname.startsWith(`${href}/`);
+    useEffect(() => {
+        if (loading) return;
+
+        if (!user) {
+            setAccessState('not-logged-in');
+            const timeout = window.setTimeout(() => {
+                router.replace(`/login?next=${nextPath}`);
+            }, 1200);
+            return () => window.clearTimeout(timeout);
+        }
+
+        if (!isAdminRole(userRole)) {
+            setAccessState('not-authorized');
+            const timeout = window.setTimeout(() => {
+                router.replace('/');
+            }, 1500);
+            return () => window.clearTimeout(timeout);
+        }
+
+        if (!canAccessAdminPath(userRole, pathname)) {
+            setAccessState('blocked-route');
+            const timeout = window.setTimeout(() => {
+                router.replace(getDefaultAdminPath(userRole));
+            }, 1200);
+            return () => window.clearTimeout(timeout);
+        }
+
+        setAccessState('authorized');
+        return undefined;
+    }, [loading, pathname, router, nextPath, user, userRole]);
+
+    if (loading || accessState === 'checking') {
+        return (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%)' }}>
+                <div className="text-center">
+                    <div className="spinner-border text-primary mb-3" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <p className="text-muted mb-0">Checking admin access...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (accessState === 'not-logged-in') {
+        return (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%)' }}>
+                <div className="text-center">
+                    <i className="fa-solid fa-lock text-warning mb-3" style={{ fontSize: '3rem' }}></i>
+                    <h3 className="mb-2">Login required</h3>
+                    <p className="text-muted mb-0">Redirecting you to sign in...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (accessState === 'not-authorized') {
+        return (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%)' }}>
+                <div className="text-center">
+                    <i className="fa-solid fa-shield-halved text-danger mb-3" style={{ fontSize: '3rem' }}></i>
+                    <h3 className="mb-2">Access denied</h3>
+                    <p className="text-muted mb-0">Only admin and scholar roles can enter this workspace.</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (accessState === 'blocked-route') {
+        return (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%)' }}>
+                <div className="text-center">
+                    <i className="fa-solid fa-route text-primary mb-3" style={{ fontSize: '3rem' }}></i>
+                    <h3 className="mb-2">Redirecting to your workspace</h3>
+                    <p className="text-muted mb-0">
+                        This section is not available for your role.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <AdminGuard>
-            <div
-                className="d-flex flex-column flex-lg-row"
-                style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #f7f8fb 0%, #eef2f7 100%)' }}
-            >
-                <aside
-                    className="bg-dark text-white p-3 p-lg-4 d-flex flex-column"
-                    style={{ width: '280px', minHeight: '100vh' }}
-                >
-                    <div className="mb-4">
-                        <span className="badge text-bg-light rounded-pill mb-3">Admin Control Center</span>
-                        <h4 className="mb-2">IRWA Admin</h4>
-                        <p className="text-white-50 mb-0 small">
-                            Manage campaigns, scholarship content, site copy, and public-facing media from one place.
-                        </p>
+        <div
+            className="d-flex flex-column flex-lg-row"
+            style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%)' }}
+        >
+            <Sidebar pathname={pathname} role={userRole} onLogout={logout} />
+            <main className="flex-grow-1 p-4 p-xl-5">
+                <div className="container-fluid px-0">
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                        <div>
+                            <span className="badge bg-white border rounded-pill mb-2" style={{ color: 'var(--primary-color)' }}>
+                                {userRole === 'scholar' ? 'Scholar Access' : 'Super Admin Access'}
+                            </span>
+                            <h2 className="mb-1">Admin Workspace</h2>
+                            <p className="text-muted mb-0">
+                                {userRole === 'scholar'
+                                    ? 'You can manage dawah content, learning modules, and incoming fatwa work.'
+                                    : 'You have full control across charity, dawah, learning, and platform operations.'}
+                            </p>
+                        </div>
+                        <div className="text-muted small">
+                            Signed in as <strong>{user?.name || user?.email || 'IRWA user'}</strong>
+                        </div>
                     </div>
-
-                    <nav className="nav flex-column gap-2">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`nav-link rounded-3 px-3 py-2 ${
-                                    isActive(item.href) ? 'bg-white text-dark fw-bold' : 'text-white'
-                                }`}
-                            >
-                                <i className={`${item.icon} me-2`}></i>
-                                {item.label}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    <div className="mt-auto pt-4">
-                        <button onClick={logout} className="btn btn-outline-light w-100">Logout</button>
-                        <Link href="/" className="btn btn-link text-white w-100 mt-2 text-decoration-none">← Back to Site</Link>
-                    </div>
-                </aside>
-                <main className="flex-grow-1 p-4 p-xl-5">
-                    <div className="container-fluid px-0">
-                        {children}
-                    </div>
-                </main>
-            </div>
-        </AdminGuard>
+                    {children}
+                </div>
+            </main>
+        </div>
     );
 }

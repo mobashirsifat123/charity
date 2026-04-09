@@ -31,7 +31,7 @@ const TeamOne = () => {
     };
 
     return (
-        <section className="py-5" style={{ background: '#fff' }}>
+        <section className="py-5 page-surface">
             <div className="container py-4">
                 <div className="text-center mb-5" data-aos="fade-up">
                     <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3 fw-semibold">
@@ -53,11 +53,8 @@ const TeamOne = () => {
                     <div className="row g-4 justify-content-center">
                         {team.map((member, i) => (
                             <div key={member.id} className="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay={i * 100}>
-                                <div className="card border-0 shadow-sm rounded-4 text-center overflow-hidden h-100"
-                                    style={{ transition: 'transform 0.3s' }}
-                                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'}
-                                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                                    <div style={{ height: 250, backgroundColor: '#f8f9fa', overflow: 'hidden' }}>
+                                <div className="card border-0 shadow-sm rounded-4 text-center overflow-hidden h-100 hover-lift">
+                                    <div style={{ height: 250, backgroundColor: 'var(--surface-alt)', overflow: 'hidden' }}>
                                         {member.image_url ? (
                                             <img src={member.image_url} alt={member.name} className="w-100 h-100 object-fit-cover" 
                                                 style={{ transition: 'transform 0.5s' }} />
@@ -80,7 +77,7 @@ const TeamOne = () => {
                                                 )}
                                                 {member.twitter_url && (
                                                     <Link href={member.twitter_url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-light rounded-circle" style={{ width: 32, height: 32 }} title="Twitter">
-                                                        <i className="fa-brands fa-twitter text-info" />
+                                                        <i className="fa-brands fa-twitter text-primary" />
                                                     </Link>
                                                 )}
                                             </div>

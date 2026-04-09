@@ -10,7 +10,7 @@ const BreadcrumbOne = ({ title = 'Page', links = [] }) => {
         <section
             className="breadcrumb"
             style={{
-                background: 'linear-gradient(135deg, #1a3c5e 0%, #2d6a9f 100%)',
+                background: 'linear-gradient(135deg, #0a281f 0%, #0b3d2e 58%, #145a32 100%)',
                 padding: '60px 0',
             }}
         >
@@ -24,7 +24,8 @@ const BreadcrumbOne = ({ title = 'Page', links = [] }) => {
                                     links.map((link, index) => (
                                         <li
                                             key={index}
-                                            className={`breadcrumb-item ${index === links.length - 1 ? 'active text-warning' : ''}`}
+                                            className={`breadcrumb-item ${index === links.length - 1 ? 'active' : ''}`}
+                                            style={index === links.length - 1 ? { color: 'var(--accent-color)' } : undefined}
                                         >
                                             {index === links.length - 1 ? (
                                                 link.name
@@ -36,7 +37,7 @@ const BreadcrumbOne = ({ title = 'Page', links = [] }) => {
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="breadcrumb-item active text-warning">{title}</li>
+                                    <li className="breadcrumb-item active" style={{ color: 'var(--accent-color)' }}>{title}</li>
                                 )}
                             </ol>
                         </nav>

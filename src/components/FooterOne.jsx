@@ -1,10 +1,21 @@
 "use client";
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
+import { translateCampaignCategory } from '@/lib/i18n';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import { parseJsonArraySetting } from '@/lib/siteSettings';
 
 const FooterOne = () => {
     const { settings } = useSiteSettings();
+    const { locale, t } = useLanguage();
+    const customQuickLinks = parseJsonArraySetting(settings.footer_quick_links_json, []).filter(
+        (item) => item && typeof item.href === 'string' && typeof item.label === 'string'
+    );
+    const causeCategories = parseJsonArraySetting(
+        settings.footer_causes_json,
+        ['Education', 'Medical', 'Environment', 'Community', 'Crisis']
+    );
     return (
         <footer className="footer">
             <div className="container">
@@ -37,18 +48,26 @@ const FooterOne = () => {
                         <ul className="list-unstyled">
                             <li className="mb-2"><Link href="/" className="text-light opacity-75 text-decoration-none">{settings.footer_home_label || 'Home'}</Link></li>
                             <li className="mb-2"><Link href="/about-us" className="text-light opacity-75 text-decoration-none">{settings.footer_about_label || 'About Us'}</Link></li>
+                            <li className="mb-2"><Link href="/ebooks" className="text-light opacity-75 text-decoration-none">{settings.footer_ebooks_label || 'E-Books'}</Link></li>
                             <li className="mb-2"><Link href="/#campaigns" className="text-light opacity-75 text-decoration-none">{settings.footer_causes_label || 'Our Causes'}</Link></li>
                             <li className="mb-2"><Link href="/donation" className="text-light opacity-75 text-decoration-none">{settings.footer_donate_label || 'Donate'}</Link></li>
                             <li className="mb-2"><Link href="/request-fatwa" className="text-light opacity-75 text-decoration-none">{settings.footer_request_fatwa_label || 'Request Fatwa'}</Link></li>
                             <li className="mb-2"><Link href="/contact-us" className="text-light opacity-75 text-decoration-none">{settings.footer_contact_label || 'Contact'}</Link></li>
+                            {customQuickLinks.map((item) => (
+                                <li key={`${item.href}-${item.label}`} className="mb-2">
+                                    <Link href={item.href} className="text-light opacity-75 text-decoration-none">{item.label}</Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                     <div className="col-lg-3 col-md-6">
                         <h6 className="text-white fw-semibold mb-3">{settings.footer_causes_heading || 'Causes'}</h6>
                         <ul className="list-unstyled">
-                            {['Education', 'Medical', 'Environment', 'Community', 'Crisis'].map(cat => (
+                            {causeCategories.map((cat) => (
                                 <li key={cat} className="mb-2">
-                                    <Link href={`/#campaigns?category=${cat}`} className="text-light opacity-75 text-decoration-none">{cat}</Link>
+                                    <Link href={`/#campaigns?category=${cat}`} className="text-light opacity-75 text-decoration-none">
+                                        {translateCampaignCategory(locale, cat)}
+                                    </Link>
                                 </li>
                             ))}
                         </ul>
@@ -64,7 +83,7 @@ const FooterOne = () => {
                 </div>
                 <div className="border-top border-secondary pt-3 pb-3 text-center">
                     <p className="text-light opacity-50 mb-0 small">
-                        &copy; {new Date().getFullYear()} {settings.site_name || 'IRWA'}. All rights reserved. Made with <span className="text-danger">❤️</span> for a better world.
+                        &copy; {new Date().getFullYear()} {settings.site_name || 'IRWA'}. {t('rightsReserved', 'All rights reserved.')} {t('madeForBetterWorld', 'Made with love for a better world.')}
                     </p>
                 </div>
             </div>

@@ -1,6 +1,8 @@
-"use client";
-import BlogEditorForm from '@/components/admin/BlogEditorForm';
+import AdminArticleCreateForm from "@/components/admin/AdminArticleCreateForm";
+import { getAdminArticleFormData } from "@/lib/server/admin-editor-data";
 
-export default function BlogEditorPage({ params }) {
-    return <BlogEditorForm blogId={params?.id || null} />;
+export default async function BlogEditorPage() {
+    const { categories, scholars } = await getAdminArticleFormData();
+
+    return <AdminArticleCreateForm categories={categories} scholars={scholars} />;
 }

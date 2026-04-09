@@ -1,142 +1,145 @@
-<p align="center">
-  <img src="public/assets/images/logo.png" alt="IRWA Logo" width="200"/>
-</p>
+# IRWA
 
-<h1 align="center">🌟 IRWA - Charity Crowdfunding Platform</h1>
+IRWA is a modern Islamic knowledge and charity platform built with Next.js. Visitors can discover campaigns, donate securely, read articles, browse fatwas, explore e-books, submit new fatwa questions, and subscribe to updates. Admins can manage content, media, donations, and site settings from one dashboard.
 
-<p align="center">
-  <strong>Empower Change, One Donation at a Time</strong>
-</p>
+## What The Website Does
 
-<p align="center">
-  <a href="#about-the-project">About</a> •
-  <a href="#features">Features</a> •
-  <a href="#backend-architecture">Backend Architecture</a> •
-  <a href="#recent-updates">Recent Updates</a> •
-  <a href="#tech-stack">Tech Stack</a> •
-  <a href="#getting-started">Getting Started</a>
-</p>
+- Shows fundraising campaigns with progress tracking and donation links
+- Publishes articles, fatwas, and e-books with search, filters, and detail pages
+- Lets visitors submit fatwa requests and newsletter subscriptions
+- Supports English and Arabic with RTL support for Arabic
+- Gives users a dashboard for donation history and saved content
+- Gives admins a control panel for campaigns, articles, fatwas, team members, inbox items, donations, images, and site copy
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js"/>
-  <img src="https://img.shields.io/badge/Express-5.x-green?style=for-the-badge&logo=express" alt="Express"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-16-blue?style=for-the-badge&logo=postgresql" alt="PostgreSQL"/>
-  <img src="https://img.shields.io/badge/Stripe-Payments-purple?style=for-the-badge&logo=stripe" alt="Stripe"/>
-  <img src="https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase" alt="Supabase"/>
-</p>
+## Main Features
 
----
+- Campaign discovery with search, pagination, and progress bars
+- Stripe checkout flow for donations
+- Article library with categories, tags, featured items, and related content
+- Fatwa library with categories, filters, and request submission
+- Unified search across articles and fatwas
+- Newsletter signup storage
+- Admin inbox for fatwa requests and subscribers
+- Fatwa request to draft-fatwa conversion inside admin
+- Image upload and media management
+- Editable site settings and site-builder style content editing
 
-## 📖 About The Project
+## Tech Stack
 
-**IRWA** (formerly ChariFund) is a modern, fully-featured, full-stack charity crowdfunding platform that connects donors with meaningful causes. Built with Next.js 15, Supabase, and Node/Express, it provides a seamless and secure experience for both campaign creators and generous donors worldwide.
+### Main App
 
-Whether you're raising funds for education, healthcare, environmental clauses, or community projects, IRWA makes it easy to broadcast impactful campaigns and securely process donations. The platform natively hooks into **Stripe Checkout** to handle international payment workflows effortlessly.
+- Next.js 15
+- React 18
+- App Router
+- Supabase for database, auth, and storage
+- Stripe for payments
+- Bootstrap 5 and Sass for UI styling
+- AOS and React Slick for animations and sliders
 
----
+### Supporting Legacy Backend
 
-## 🆕 Recent Updates & Fixes (March 2026)
+- Express 5
+- PostgreSQL via `pg`
+- JWT, bcrypt, multer, cors
 
-The project has recently undergone massive restructuring and stabilization to adapt for Vercel deployment:
+The main live app logic is in the root Next.js project. The `backend/` folder contains an older standalone Express API that is still kept in the repository.
 
-* **Brand Transition:** The repository, dynamic configurations, variables and UI strings have been fully transitioned from *ChariFund* to **IRWA**.
-* **Next.js 15 Build Fixes:** Removed deprecated `appDir` config flags, completely resolved deeply nested file alias issues (`jsconfig.json` resolution limits), and fully reconstructed the root project directory to absorb isolated `frontend/` logic.
-* **Component Architecture Merger:** Dozens of vital components (`FooterOne`, `BreadcrumbOne`, `CauseSliderTwo`, etc.) alongside `public/assets` UI packages were merged strictly into the root source, fixing 404 Vercel hydration fails.
-* **Supabase Client Hardening:** Addressed lethal static compilation crashes connected to server components trying to invoke missing Environment Variables (`NEXT_PUBLIC_API_URL` & `NEXT_PUBLIC_SUPABASE_URL`) during static Next hooks. Images now fallback properly without fatal null-pointer build logs.
-* **UX Broken Link Fixes:** Re-mapped scattered UI paths (e.g. repointing `/donate-us` -> `/donation`, and dynamically jumping `/our-causes` to `/#campaigns`).
+## Development History
 
----
+- Started as **ChariFund**, a charity crowdfunding project
+- Added campaign management, donations, authentication, and admin tooling
+- Migrated data and uploads toward Supabase/Postgres and Supabase Storage
+- Expanded beyond fundraising to include articles, fatwas, newsletter subscriptions, and fatwa requests
+- Rebranded from **ChariFund** to **IRWA**
+- Recent work focused on merging app files into the root project and fixing deployment/build issues for Vercel
 
-## ✨ Features
+## Project Structure
 
-### 🎯 Core Platform Features
-- **Campaign Management:** Full creation, editing, and deployment workflows for complex charities.
-- **Secure Donations:** Processing logic completely authenticated through Stripe encrypted webhook sessions.
-- **Dynamic Site Layout:** Multi-page layout with custom `Preloaders`, `Server/Client Providers`, and context hooks.
-- **Server-Side Data Logic:** Leveraging Supabase API capabilities merged securely into Next.JS Server Components.
-- **Administrative Control:** Deeply protected dashboards to supervise total network flow, metrics, fatwas, site settings, and team tracking. 
+- `src/app` - Next.js routes, pages, and API routes
+- `src/components` - reusable UI and admin components
+- `src/context` - auth, language, and site settings providers
+- `src/lib` - Supabase helpers, content utilities, settings, and SQL upgrades
+- `public` - static assets
+- `backend` - legacy Express API
+- `frontend` - older copied frontend snapshot kept in the repo
 
----
+## Getting Started
 
-## 🏗️ Backend Architecture
+### Requirements
 
-The backend of this ecosystem comprises a robust Express.js & PostgreSQL framework handling independent processes alongside native Next.js API Routes:
+- Node.js 20 or 22
+- A Supabase project
+- A Stripe account for payments
 
-### Controller Functions & Their Behaviors
-
-1. **`authController.js`**
-   - Handles new user module registration.
-   - Performs BCrypt password hashing logic.
-   - Generates secure JSON Web Tokens (JWT) for session management.
-   - Authenticates and identifies valid scopes mapping users to Role-Based Access Controls (RBAC).
-
-2. **`campaignController.js`**
-   - Controls the fundamental CRUD (Create/Read/Update/Delete) pipeline for live charities.
-   - Parses complex JSON payloads encompassing numerical goal targets, image linking maps, and boolean validation rules.
-   - Handles advanced queries like dynamic category filtering and draft/live status logic.
-
-3. **`donationController.js`**
-   - Securely registers real-world payload transfers.
-   - Parses parameters to attribute user donations securely or flag them as fully anonymous pledges in the SQL Database.
-   - Iterates numerical logic to aggregate total goals mapping onto live Front-End visual progress bars.
-
-4. **`stripeController.js`**
-   - Direct low-level programmatic interface with Stripe API.
-   - Bootstraps real-time Checkout Sessions calculating raw pricing algorithms on the fly.
-   - Parses and embeds deeply nested donation metadata so asynchronous transaction trails never decouple from the donor.
-
-5. **`uploadController.js`**
-   - Handles the edge network configuration endpoints routing static local images dynamically via Multer forms to safe blob environments.
-
-### Route Network Logic (`/routes`)
-- **`adminRoutes.js`**: Enforces strict verification policies to expose secure administrative statistics exclusively to dashboard admins.
-- **`stripeRoutes.js`**: Protects the pivotal Webhook interceptor; responsible for listening to third-party bank-settlement POST hooks and securely modifying local transaction flags *only* when cleared.
-- Others matching respective controllers: *`authRoutes`, `campaignRoutes`, `donationRoutes`*.
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend Architecture
-* **Next.js 15 (App Router)** - Handling intensive Server-Side Rendering (SSR) and SEO optimizations.
-* **React 18** - UI component-driven rendering architecture.
-* **AOS / Slick** - Advanced customized carousel states and deeply nested visual scroll animations.
-* **SASS & Bootstrap 5** - Complex DOM hierarchical stylings overriding default classes safely.
-
-### Backend Infrastructure
-* **Express 5** - Extensible REST endpoints linking distinct modular microservices.
-* **PostgreSQL / Supabase** - Master relational table data structuring and real-time backend-as-a-service wrappers.
-* **Stripe SDK** - PCI-compliant vault hosting financial payment components safely offsite.
-* **JWT & Bcrypt** - State-of-the-art authentication lifecycle encryption formats.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- **Node.js** (v18 or higher)
-- **Supabase Account** or standard **PostgreSQL** instance
-- **Stripe Account** for API / Webhook Keys
-
-### Development Installation
+### Install
 
 ```bash
-# Clone the Repository
-git clone https://github.com/mobashirsifat123/charity.git
-cd charity
-
-# Install global root dependencies
 npm install
+```
 
-# Setup local credentials
-# Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and STRIPE_SECRET_KEY inside .env
+### Environment Variables
 
-# Run Next.js development server
+Create `.env.local` in the project root and add the values used by the current Next.js app:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+STRIPE_SECRET_KEY=...
+STRIPE_WEBHOOK_SECRET=...
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:5050
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=...
+```
+
+Notes:
+
+- `NEXT_PUBLIC_API_URL` is mainly useful when older image or backend paths are still in use.
+- `localhost:5000` is commonly occupied by AirPlay/AirTunes on macOS, so `5050` is the safer local default.
+- `STRIPE_WEBHOOK_SECRET` is strongly recommended for verified Stripe webhooks.
+- Some advanced content features expect the SQL upgrade in `src/lib/sql/content-platform-upgrade.sql`.
+
+### Run The App
+
+```bash
 npm run dev
 ```
 
----
+Open `http://localhost:3000`.
 
-<p align="center">
-  Made with ❤️ to empower change globally.
-</p>
+### Optional Legacy Backend
+
+If you still need the standalone Express API:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+## Quick Summary
+
+IRWA is no longer just a donation site. It is a combined Islamic publishing, learning, and charity platform with a bilingual public website and a full admin back office.
+
+## Deployment Checklist
+
+Before you point your domain at the app, make sure all of these are finished:
+
+1. Set every required environment variable from `.env.example` in your hosting platform.
+2. Replace all Stripe test keys with live keys for production.
+3. Set `NEXT_PUBLIC_SITE_URL` and `FRONTEND_URL` to your real domain, for example `https://irwa.org`.
+4. If you are using the legacy Express backend, set `DATABASE_URL` or the `DB_*` variables in the backend environment.
+5. In Supabase Auth:
+   - enable Google provider if you want Google sign-in
+   - add your production callback URL, for example `https://your-domain.com/auth/callback`
+   - add your reset-password redirect URL if needed
+6. In Stripe:
+   - add the production webhook endpoint for `/api/stripe/webhook`
+   - set `STRIPE_WEBHOOK_SECRET`
+7. In the admin panel, review the editable site settings so your live contact details, social links, and footer content are correct.
+
+## Production Notes
+
+- The Next.js app can build successfully even when external content services fail temporarily because some sections fall back gracefully.
+- The legacy backend intentionally returns `503` for database-backed routes if `DATABASE_URL` is not configured. That is an environment issue, not a frontend build failure.
+- The site is designed so future content, contact information, and many structural homepage changes can be managed from the admin interface without code edits.

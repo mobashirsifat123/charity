@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { hasValidStripeSecret, hasValidSupabaseServerEnv } from '@/lib/server/env';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
 const stripe = new Stripe(stripeSecretKey);
@@ -19,11 +20,21 @@ export async function POST(req) {
             return NextResponse.json({ success: false, message: 'Session ID is required.' }, { status: 400 });
         }
 
-        if (!stripeSecretKey.startsWith('sk_') || stripeSecretKey.includes('placeholder')) {
+        if (!hasValidStripeSecret()) {
             return NextResponse.json(
                 {
                     success: false,
                     message: 'Stripe verification is not configured in this environment yet.',
+                },
+                { status: 503 }
+            );
+        }
+
+        if (!hasValidSupabaseServerEnv()) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Supabase service credentials are not configured in this environment yet.',
                 },
                 { status: 503 }
             );

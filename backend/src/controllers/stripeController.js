@@ -1,4 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { resolveFrontendUrl } = require('../config/siteUrl');
+const DB_UNAVAILABLE_MESSAGE = 'Backend database is unavailable. Configure DATABASE_URL (or DB_USER/DB_HOST/DB_NAME/DB_PASSWORD/DB_PORT).';
 
 /**
  * Create a Stripe Checkout Session
@@ -6,8 +8,16 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
  */
 const createCheckoutSession = async (req, res) => {
     try {
+        if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('placeholder')) {
+            return res.status(503).json({
+                success: false,
+                message: 'Stripe is not configured on the backend.',
+            });
+        }
+
         const { amount, campaignTitle, campaignId } = req.body;
         const userId = req.user?.id;
+        const frontendUrl = resolveFrontendUrl(req);
 
         // Validate inputs
         if (!amount || amount <= 0) {
@@ -46,8 +56,8 @@ const createCheckoutSession = async (req, res) => {
                 userId: String(userId),
                 amount: String(amount),
             },
-            success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/donation/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/?cancelled=true`,
+            success_url: `${frontendUrl}/donation/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${frontendUrl}/?cancelled=true`,
         });
 
         res.status(200).json({
@@ -72,6 +82,13 @@ const createCheckoutSession = async (req, res) => {
  */
 const verifyDonation = async (req, res) => {
     try {
+        if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('placeholder')) {
+            return res.status(503).json({
+                success: false,
+                message: 'Stripe is not configured on the backend.',
+            });
+        }
+
         const { sessionId } = req.body;
 
         if (!sessionId) {
@@ -95,6 +112,16 @@ const verifyDonation = async (req, res) => {
 
         // Extract metadata
         const { campaignId, userId, amount } = session.metadata;
+        const normalizedCampaignId = String(campaignId || '').trim();
+        const normalizedUserId = String(userId || '').trim();
+        const parsedAmount = Number(amount);
+
+        if (!normalizedCampaignId || !normalizedUserId || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Donation metadata is invalid or incomplete.',
+            });
+        }
 
         // Import models here to avoid circular dependencies
         const donationModel = require('../models/donationModel');
@@ -112,15 +139,15 @@ const verifyDonation = async (req, res) => {
 
         // Create the donation with completed status
         const donation = await donationModel.createDonationWithSession(
-            parseInt(userId),
-            parseInt(campaignId),
-            parseFloat(amount),
+            normalizedUserId,
+            normalizedCampaignId,
+            parsedAmount,
             'completed',
             sessionId
         );
 
         // Update campaign raised amount
-        await campaignModel.updateRaisedAmount(parseInt(campaignId), parseFloat(amount));
+        await campaignModel.updateRaisedAmount(normalizedCampaignId, parsedAmount);
 
         res.status(200).json({
             success: true,
@@ -129,6 +156,12 @@ const verifyDonation = async (req, res) => {
         });
     } catch (error) {
         console.error('Verify donation error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to verify donation',

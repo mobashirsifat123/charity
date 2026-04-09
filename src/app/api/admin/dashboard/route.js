@@ -14,6 +14,8 @@ export async function GET(request) {
       blogsResult,
       fatwasResult,
       teamResult,
+      fatwaRequestsResult,
+      newsletterResult,
     ] = await Promise.all([
       supabase.from('campaigns').select('id, raised_amount'),
       supabase
@@ -24,6 +26,8 @@ export async function GET(request) {
       supabase.from('blogs').select('id', { count: 'exact', head: true }),
       supabase.from('fatwas').select('id', { count: 'exact', head: true }),
       supabase.from('team_members').select('id', { count: 'exact', head: true }),
+      supabase.from('fatwa_requests').select('id', { count: 'exact', head: true }).eq('status', 'new'),
+      supabase.from('newsletter_subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
     ]);
 
     if (campaignsResult.error) throw campaignsResult.error;
@@ -31,6 +35,8 @@ export async function GET(request) {
     if (blogsResult.error) throw blogsResult.error;
     if (fatwasResult.error) throw fatwasResult.error;
     if (teamResult.error) throw teamResult.error;
+    if (fatwaRequestsResult.error) throw fatwaRequestsResult.error;
+    if (newsletterResult.error) throw newsletterResult.error;
 
     const campaigns = campaignsResult.data || [];
     const totalRaised = campaigns.reduce((acc, curr) => acc + (Number(curr.raised_amount) || 0), 0);
@@ -44,6 +50,8 @@ export async function GET(request) {
         totalBlogs: blogsResult.count || 0,
         totalFatwas: fatwasResult.count || 0,
         totalTeamMembers: teamResult.count || 0,
+        newFatwaRequests: fatwaRequestsResult.count || 0,
+        activeNewsletterSubscribers: newsletterResult.count || 0,
       },
     });
   } catch (error) {

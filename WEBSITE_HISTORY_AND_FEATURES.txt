@@ -1,0 +1,234 @@
+IRWA WEBSITE SUMMARY
+
+What it is:
+IRWA is a charity and community website. People can donate to causes, read articles, read fatwas, ask questions, and join the newsletter.
+
+How it developed:
+It started as a simple charity crowdfunding site called ChariFund.
+Later, it added better admin tools, online payments, and a stronger database/storage setup.
+After that, it grew into IRWA, which now also includes articles, fatwas, bilingual support, and content management tools.
+Current improvement work is focused on UX and speed by removing unnecessary waiting, reducing heavy front-end work, and making pages feel faster.
+The platform is now also being restructured into a broader Dawah and Quran-learning product, with early work started on scholar roles, Quran progress tracking, and global audio playback.
+The charity tools are expanding too, including a live-price Zakat calculator that can send users directly into Stripe checkout as a dedicated zakat payment flow.
+Daily retention tools are being added as well, including a local prayer-times widget with browser geolocation, fallback city timings, countdown to the next prayer, and a simple Qibla compass.
+The Dawah section is also expanding into structured learning, with early LMS foundations for scholar-led courses, video modules, classroom pages, and saved user progress.
+The charity side is also becoming more transparent, with live donation pop-up notifications and a new impact dashboard showing totals, campaign progress, category breakdowns, and charts.
+The admin panel is being reorganized too, with clearer sidebar groups for charity, dawah, learning, and community work, plus role-based access so scholars only see the parts they are meant to manage.
+The Dawah admin tools are also getting richer, with new forms for scholar profiles, article creation, Supabase image uploads, and a richer article editor so content can be managed without changing code.
+The learning admin side is expanding as well, with a real course builder that lets admins create course overviews, upload course covers, and keep adding, editing, or removing video modules over time.
+The visual experience is also being polished with reusable micro-interactions like smoother card hover lift, soft color glow, and tactile button press effects to make the site feel more premium.
+
+Latest bug-fix update (March 30, 2026):
+- Fixed major build breaks on the Impact dashboard caused by database column differences.
+- Added safer fallback handling so pages still load even when some newer database tables are not ready yet.
+- Improved Next.js 15 route safety by fixing dynamic route parameter handling in admin APIs and editor pages.
+- Fixed live Zakat metal-price parsing so real API data is accepted correctly.
+- Cleaned remaining lint warnings and verified that both development and production builds now run successfully.
+
+Frontend QA stabilization update (March 30, 2026):
+- Ran a broad browser-based frontend route sweep (public pages + admin pages) and checked runtime console errors.
+- Fixed homepage hydration mismatch in the Prayer Times countdown logic.
+- Fixed featured campaigns fetch errors by making homepage campaign reads schema-safe for older databases.
+- Added working favicon handling to remove missing icon frontend errors.
+- Fixed dynamic content page edge-cases so invalid article/fatwa URLs no longer trigger UUID query errors in the browser console.
+- Added the recommended Next.js `data-scroll-behavior=\"smooth\"` attribute to remove navigation warning noise.
+- Re-verified with lint, production build, and repeated route checks after patching.
+
+Backend access and stability update (March 30, 2026):
+- Fixed local backend reachability by moving the legacy API default from port 5000 to 5050 (5000 was occupied by macOS AirPlay/AirTunes on this machine).
+- Updated frontend API defaults and env examples to point to the corrected backend port.
+- Added backend startup scripts (`start` and `dev`) in the legacy Express package for predictable local runs.
+- Hardened backend environment loading so Express reads both backend `.env` and root `.env.local`/`.env`.
+- Added graceful database configuration handling, so DB-related routes return clear `503` messages instead of opaque `500` crashes when DB env vars are missing.
+- Fixed auth middleware behavior so protected routes correctly return `401` when no token is provided.
+- Updated campaign/donation/stripe controller ID handling to avoid numeric-only assumptions and better tolerate UUID-style identifiers.
+- Verified backend route responses and CORS behavior from `http://localhost:3000` after patching.
+
+Tech used:
+- Next.js and React for the website
+- Supabase for login, database, and image/file storage
+- Stripe for payments
+- Bootstrap and Sass for the design
+- Express and PostgreSQL for older backend parts still kept in the repo
+
+Main features:
+- Donation campaigns with progress tracking
+- Secure online donations
+- Articles and blog-style content
+- Fatwas and question submission
+- Search and filtering
+- Newsletter signup
+- English and Arabic language support
+- User dashboard for donation history and saved items
+- Admin dashboard to manage content, donations, images, team members, and website settings
+
+Deep diagnosis and bug-fix update (April 8, 2026):
+- Ran a project-wide diagnosis across frontend routes, runtime fetches, auth/session boot flow, and backend startup.
+- Fixed campaign detail runtime query behavior by switching strict single-row reads to safe optional reads, so missing campaigns no longer produce Supabase 406 browser errors.
+- Applied the same safe optional campaign lookup in the donation flow, so invalid `?campaign=` links fail gracefully instead of surfacing noisy runtime errors.
+- Stabilized auth bootstrap by changing strict `users` profile lookups to optional reads, reducing startup failures when a profile row is missing.
+- Confirmed Next.js frontend still serves correctly on `http://127.0.0.1:3000` after these fixes.
+- Isolated a backend environment blocker: Express dependency loading is hanging before `app.listen()` in this machine runtime, so legacy backend routes cannot reliably bind to port `5050` until runtime/dependency state is normalized.
+
+Admin dynamic-control expansion (April 8, 2026):
+- Replaced placeholder admin pages with live dynamic management screens for `Article Categories` and `Scholar Profiles` (list + create/edit/delete flow).
+- Extended admin resource API mapping to support `article-categories` and `scholars` resources directly from the same secured admin endpoints.
+- Added dashboard-driven custom navigation controls:
+  - `nav_custom_links_json` for extra header links
+  - `footer_quick_links_json` for extra footer quick links
+  - `footer_causes_json` for fully configurable footer cause categories
+- Updated frontend header/footer rendering to consume those settings safely, so future link/category updates can be done from Admin Site Builder without code changes.
+
+Production stability hardening (April 8, 2026):
+- Root instability fixed by moving runtime from experimental Node 25 to Node 22 LTS behavior and pinning project compatibility (`.nvmrc` + `package.json` engines).
+- Fixed TypeScript/build deadlock by narrowing `tsconfig.json` include/exclude scope and removing stray duplicate dependency directories that caused endless scanning.
+- Rebuilt frontend and backend dependencies cleanly under Node 22 and verified backend starts reliably on `http://localhost:5050`.
+- Added resilient fallback handling for the Impact dashboard data loader so production builds no longer fail when external Supabase/network requests are temporarily unavailable.
+- Removed Sass import deprecation warning by migrating from `@import` to `@use` for micro-interaction stylesheet wiring.
+- Re-verified core health routes and admin pages after fixes (`/api/ping`, `/admin/dashboard`, `/admin/categories`, `/admin/scholars`).
+
+Final pre-launch QA pass (April 9, 2026):
+- Ran full lint + production build under Node 22 LTS and confirmed both pass consistently.
+- Executed production-runtime smoke checks for public pages, core admin pages, and key APIs.
+- Fixed newsletter API validation bug so invalid emails now return proper `400 Bad Request` instead of `500`.
+- Confirmed frontend production server route health (`/`, `/impact`, `/courses`, `/admin/dashboard`, `/admin/categories`, `/admin/scholars`, `/api/ping`).
+- Confirmed backend process stability on `http://localhost:5050`.
+- Backend DB-dependent routes still return explicit `503` until deployment environment sets a valid database connection (`DATABASE_URL` or `DB_*` vars).
+
+Fatwa & Article redesign update (April 9, 2026):
+- Rebuilt `/blog-grid` and `/fatwa` into an Islamweb-inspired directory layout (content-first list feed instead of large cards).
+- Added left sidebar navigation blocks on both pages with:
+  - search input
+  - “By Subject” filters
+  - “By Author” filters
+  - “New Articles” / “New Fatwas” quick lists
+- Updated main feed items to match “title + excerpt + compact metadata + More link” flow.
+- Added shared styling utilities in global stylesheet for this new layout (`.islamweb-like-*` classes).
+- Re-ran lint and production build after redesign to confirm no compile regressions.
+
+Dark green premium theme redesign update (April 9, 2026):
+- Replaced the old mixed orange/blue palette with a single green-and-white design system built around:
+  - deep green primary actions
+  - rich green secondary surfaces
+  - soft gold highlights used sparingly
+  - white and light green-tinted backgrounds for cleaner reading sections
+- Reworked the global stylesheet so buttons, cards, forms, pagination, header, footer, badges, dropdowns, and article/fatwa directory blocks now follow the same color tokens and spacing system.
+- Restyled the most visible homepage and shared sections to match the new theme, including:
+  - hero/banner
+  - article highlights
+  - fatwa highlights
+  - community section
+  - CTA section
+  - featured campaigns
+  - prayer times & Qibla widget
+  - impact charts
+  - breadcrumb headers
+- Updated the admin shell to visually match the public site better, including the sidebar and dashboard wrapper background treatment.
+- Updated the generated favicon to match the new green and gold identity.
+- Verified the redesign with lint, production build, and route smoke checks for `/`, `/blog-grid`, `/fatwa`, and `/admin/dashboard`.
+
+Full-site premium UX extension (April 9, 2026):
+- Extended the green premium theme beyond the homepage so more of the site now follows the same design language:
+  - blog detail pages
+  - fatwa detail pages
+  - campaign listings and donation modal
+  - impact dashboard
+  - zakat calculator
+  - courses catalog, course overview, and classroom pages
+  - donor dashboard and donation success flow
+  - testimonials, partners, team, and “how it works” sections
+- Added stronger global Bootstrap-style overrides so alerts, badges, secondary buttons, inputs, pills, tables, list groups, and utility surfaces now feel consistent across public pages and admin pages too.
+- Improved the reading experience with cleaner hero sections, calmer backgrounds, richer content panels, and more consistent share/action controls.
+- Improved tactile feel with wider use of premium hover-lift and ripple interaction styling on calls to action.
+- Re-ran lint, production build, and a broader route smoke test covering `/`, `/blog-grid`, `/fatwa`, `/impact`, `/courses`, `/zakat`, `/dashboard`, and `/admin/dashboard`.
+
+Authentication upgrade (April 9, 2026):
+- Fixed the broken “Forgot Password?” flow by replacing the old dashboard redirect with a real reset-password journey.
+- Added a dedicated `/reset-password` page where users can open the email link and set a new password safely.
+- Added a dedicated `/auth/callback` page to complete Supabase OAuth redirects cleanly in Next.js 15.
+- Added “Continue with Google” on both login and registration pages so users can sign in with their existing Google account session in the browser instead of manually creating a password-first account.
+- Improved auth profile hydration so Google-based sign-ins can also create/sync a matching `public.users` record when needed.
+- Re-ran lint and production build after the auth changes to confirm the new routes compile and deploy safely.
+
+E-Book library launch (April 9, 2026):
+- Added a new public `/ebooks` section inspired by the Islamweb ebook directory structure.
+- Built the new ebook listing page with:
+  - search
+  - category filtering
+  - sticky sidebar navigation
+  - “New E-Books” list
+  - paginated directory-style feed
+- Added a dedicated ebook detail page at `/ebooks/[slug]` with:
+  - premium book cover treatment
+  - metadata summary
+  - ebook description
+  - related ebooks sidebar
+- Added ebook navigation links into the main header and footer so the section is part of the primary site structure.
+- Implemented the first structured ebook content dataset as a reusable library source file so the section can be expanded cleanly later.
+- Re-ran lint, production build, and direct route checks for `/ebooks` and `/ebooks/foundations-of-faith`.
+
+Futuristic visual refinement (April 9, 2026):
+- Took selective inspiration from the visual language of Figma Weave without copying its full sci-fi style.
+- Added a softer “future-forward” layer to IRWA’s homepage by introducing:
+  - subtle grid/aurora background treatment
+  - premium glass-like surfaces
+  - luminous system/status chips
+  - a more structured “platform workflow” hero panel
+- Kept the implementation within IRWA’s calm green-and-gold identity so the site still feels trustworthy and suitable for Islamic education and charity work.
+- Re-ran lint and production build after the visual upgrade to confirm the new styling is safe.
+
+Shared modular design expansion (April 9, 2026):
+- Extended the Weave-inspired design language beyond the homepage hero so the site feels more intentionally “designed” across multiple sections.
+- Added reusable UI primitives to the global stylesheet, including:
+  - section header rails
+  - light glass panels
+  - modular information lists
+  - structured data chips
+  - trust/partner cloud cards
+- Applied the refined design system to:
+  - the homepage article highlights section
+  - the homepage fatwa highlights section
+  - the prayer times and Qibla widget
+  - the partners/trust band
+  - the donor testimonial section
+- Preserved the core IRWA palette with elegant dark green, white, and restrained gold so the platform stays calm and premium rather than overly futuristic.
+- Re-ran lint and production build after the shared design rollout to confirm the expanded styling remains production-safe.
+
+Global color-system sweep (April 9, 2026):
+- Performed another pass specifically to remove visual drift and reinforce the green-and-white design system across more sections.
+- Added more reusable theme utilities for:
+  - soft green badges
+  - gold highlight badges
+  - icon tints
+  - admin metric cards
+  - admin surfaces
+  - sidebar shells and active states
+- Reworked additional sections so they align more tightly with the approved palette:
+  - featured causes / campaigns
+  - community impact section
+  - “how you can help” cards
+  - impact / difference section
+  - admin sidebar
+  - admin dashboard summary cards and panels
+- Reduced the feeling of isolated one-off colors by leaning harder on the shared green, white, and subtle gold visual language.
+- Re-ran lint and production build after the color consistency pass to confirm the design cleanup is safe for production.
+
+Deployment hardening pass (April 9, 2026):
+- Ran a deeper production-readiness sweep focused on build stability, runtime health, API behavior, and deployment configuration.
+- Confirmed the Next.js app builds successfully in production mode and that key routes respond correctly in a running server environment.
+- Confirmed the legacy backend boots successfully and now clearly reports `503` when database configuration is missing instead of failing silently.
+- Added server-side environment guards so critical routes fail more clearly when live configuration is incomplete:
+  - newsletter subscriptions
+  - Stripe checkout session creation
+  - Stripe donation verification
+  - Stripe webhooks
+- Improved production branding and deployment readiness by updating:
+  - root metadata/title/description
+  - deployment environment example file
+  - README deployment checklist and required environment variables
+  - default live contact values in site settings
+- Corrected deployment-related config details including:
+  - Next image upload port alignment with the backend on `5050`
+  - Supabase storage hostname typo in `next.config.js`
+- Reduced noisy fallback logging from intended course/impact fallback behavior so production build logs stay cleaner.
+- Re-ran lint and production build after the hardening pass to confirm the deploy-facing fixes remain safe.

@@ -3,9 +3,9 @@ const repeat = (count, factory) => Array.from({ length: count }, (_, index) => f
 export const DEFAULT_SITE_SETTINGS = {
   site_name: 'IRWA',
   site_logo_url: '',
-  contact_email: 'info@irwa.org',
-  contact_phone: '(+01)-793-7938',
-  contact_address: '123 Charity Lane, NY 10001',
+  contact_email: 'contact@irwa.org',
+  contact_phone: '+44 20 3000 0000',
+  contact_address: 'London, United Kingdom',
   social_facebook: 'https://www.facebook.com/',
   social_twitter: 'https://x.com/',
   social_instagram: 'https://www.instagram.com/',
@@ -158,13 +158,14 @@ export const DEFAULT_SITE_SETTINGS = {
   nav_causes_overview_label: 'Our Causes',
   nav_support_mission_label: 'Support the Mission',
   nav_faq_label: 'FAQ',
-  nav_donate_label: 'Donate Us',
+  nav_donate_label: 'Donate',
   nav_contact_label: 'Contact Us',
   nav_request_fatwa_label: 'Request Fatwa',
   nav_dashboard_label: 'My Dashboard',
   nav_admin_label: 'Admin Panel',
   nav_login_label: 'Login',
   nav_register_label: 'Register',
+  nav_custom_links_json: '[]',
   top_bar_about_label: 'About',
   top_bar_faq_label: 'FAQ',
   top_bar_contact_label: 'Contact',
@@ -177,6 +178,8 @@ export const DEFAULT_SITE_SETTINGS = {
   footer_donate_label: 'Donate',
   footer_request_fatwa_label: 'Request Fatwa',
   footer_contact_label: 'Contact',
+  footer_quick_links_json: '[]',
+  footer_causes_json: '["Education","Medical","Environment","Community","Crisis"]',
   cause_slider_badge: 'Featured Causes',
   cause_slider_title: 'Causes That Need Your Help',
   cause_slider_description: 'Every campaign is making a real difference. Be a part of it.',
@@ -365,6 +368,12 @@ export const SITE_SETTINGS_SECTIONS = [
       textField('nav_admin_label', 'Header Admin Label'),
       textField('nav_login_label', 'Header Login Label'),
       textField('nav_register_label', 'Header Register Label'),
+      textareaField(
+        'nav_custom_links_json',
+        'Header Custom Links JSON',
+        'Optional JSON array: [{"label":"Quran","href":"/quran"},{"label":"Courses","href":"/courses"}]',
+        4
+      ),
       textField('top_bar_about_label', 'Top Bar About Label'),
       textField('top_bar_faq_label', 'Top Bar FAQ Label'),
       textField('top_bar_contact_label', 'Top Bar Contact Label'),
@@ -377,6 +386,18 @@ export const SITE_SETTINGS_SECTIONS = [
       textField('footer_donate_label', 'Footer Donate Label'),
       textField('footer_request_fatwa_label', 'Footer Request Fatwa Label'),
       textField('footer_contact_label', 'Footer Contact Label'),
+      textareaField(
+        'footer_quick_links_json',
+        'Footer Quick Links JSON',
+        'Optional JSON array: [{"label":"Quran","href":"/quran"}]',
+        4
+      ),
+      textareaField(
+        'footer_causes_json',
+        'Footer Cause Categories JSON',
+        'JSON array of category names used in footer cause links.',
+        4
+      ),
       textField('about_page_heading', 'About Page Heading'),
       textareaField('about_page_paragraph_1', 'About Paragraph 1'),
       textareaField('about_page_paragraph_2', 'About Paragraph 2'),
@@ -404,6 +425,18 @@ export function parseSiteSettingValue(value) {
     return JSON.parse(value);
   } catch (error) {
     return String(value).replace(/^"|"$/g, '');
+  }
+}
+
+export function parseJsonArraySetting(value, fallback = []) {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return fallback;
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch (error) {
+    return fallback;
   }
 }
 

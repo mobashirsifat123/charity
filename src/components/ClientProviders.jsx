@@ -1,20 +1,24 @@
 "use client";
-import { useEffect } from "react";
 import { AuthProvider } from "@/context/AuthContext";
+import { AudioPlayerProvider } from "@/context/AudioPlayerContext";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { ReadabilityProvider } from "@/context/ReadabilityContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import InitializeAOS from "@/helper/InitializeAOS";
 
 export default function ClientProviders({ children }) {
-    useEffect(() => {
-        import("bootstrap/dist/js/bootstrap.bundle.min.js");
-    }, []);
-
     return (
-        <SiteSettingsProvider>
-            <AuthProvider>
-                <InitializeAOS />
-                {children}
-            </AuthProvider>
-        </SiteSettingsProvider>
+        <LanguageProvider>
+            <AudioPlayerProvider>
+                <ReadabilityProvider>
+                    <SiteSettingsProvider>
+                        <AuthProvider>
+                            <InitializeAOS />
+                            {children}
+                        </AuthProvider>
+                    </SiteSettingsProvider>
+                </ReadabilityProvider>
+            </AudioPlayerProvider>
+        </LanguageProvider>
     );
 }

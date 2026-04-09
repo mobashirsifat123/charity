@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [nextPath, setNextPath] = useState('/dashboard');
+    const { t } = useLanguage();
     const router = useRouter();
 
     useEffect(() => {
@@ -41,7 +43,7 @@ export default function LoginPage() {
         
         // Ensure email is provided
         if (!formData.email) {
-            setError("Please enter your email address in the Email field to reset your password.");
+            setError(t('resetNeedsEmail', 'Please enter your email address in the Email field to reset your password.'));
             return;
         }
 
@@ -52,16 +54,43 @@ export default function LoginPage() {
         try {
             // Using supabase to send the reset email
             const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
-                redirectTo: `${window.location.origin}/dashboard`,
+                redirectTo: `${window.location.origin}/reset-password`,
             });
 
             if (resetError) throw resetError;
             
-            setSuccessMessage("Password reset email sent! Please check your inbox.");
+            setSuccessMessage(t('resetEmailSent', 'Password reset email sent! Please check your inbox.'));
         } catch (err) {
             console.error("Reset Password Error:", err);
-            setError(err.message || 'Failed to send password reset email');
+            setError(err.message || t('resetFailed', 'Failed to send password reset email'));
         } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        setError('');
+        setSuccessMessage('');
+        setLoading(true);
+
+        try {
+            const origin = typeof window !== 'undefined' ? window.location.origin : '';
+            const { error: oauthError } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'select_account',
+                    },
+                },
+            });
+
+            if (oauthError) {
+                throw oauthError;
+            }
+        } catch (err) {
+            setError(err.message || t('googleLoginFailed', 'Unable to start Google sign in.'));
             setLoading(false);
         }
     };
@@ -87,7 +116,7 @@ export default function LoginPage() {
                 router.push(nextPath);
             }
         } catch (err) {
-            setError(err.message || 'An error occurred during login');
+            setError(err.message || t('loginFailed', 'An error occurred during login'));
             console.error(err);
         } finally {
             setLoading(false);
@@ -98,10 +127,10 @@ export default function LoginPage() {
         <section className="page-wrapper">
             <HeaderOne />
             <BreadcrumbOne
-                title="Login"
+                title={t('login', 'Login')}
                 links={[
-                    { name: "Home", link: "/" },
-                    { name: "Login", link: "/login" }
+                    { name: t('home', 'Home'), link: "/" },
+                    { name: t('login', 'Login'), link: "/login" }
                 ]}
             />
 
@@ -111,8 +140,8 @@ export default function LoginPage() {
                         <div className="card shadow-lg border-0 rounded-4">
                             <div className="card-body p-5">
                                 <div className="text-center mb-4">
-                                    <h2 className="fw-bold text-primary mb-2">Welcome Back</h2>
-                                    <p className="text-muted">Sign in to continue to your account</p>
+                                    <h2 className="fw-bold text-primary mb-2">{t('welcomeBack', 'Welcome Back')}</h2>
+                                    <p className="text-muted">{t('signInIntro', 'Sign in to continue to your account')}</p>
                                 </div>
 
                                 {error && (
@@ -139,10 +168,26 @@ export default function LoginPage() {
                                     </div>
                                 )}
 
+                                <button
+                                    type="button"
+                                    className="btn btn-light btn-ripple w-100 py-3 fw-semibold border mb-4"
+                                    onClick={handleGoogleLogin}
+                                    disabled={loading}
+                                >
+                                    <i className="fa-brands fa-google me-2"></i>
+                                    {t('continueWithGoogle', 'Continue with Google')}
+                                </button>
+
+                                <div className="d-flex align-items-center gap-3 mb-4">
+                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
+                                    <span className="text-muted small">{t('orUseEmail', 'or use email')}</span>
+                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
+                                </div>
+
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-4">
                                         <label htmlFor="email" className="form-label fw-semibold">
-                                            Email Address
+                                            {t('emailAddress', 'Email Address')}
                                         </label>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
@@ -153,7 +198,7 @@ export default function LoginPage() {
                                                 className="form-control border-start-0 ps-0"
                                                 id="email"
                                                 name="email"
-                                                placeholder="Enter your email"
+                                                placeholder={t('enterYourEmail', 'Enter your email')}
                                                 value={formData.email}
                                                 onChange={handleChange}
                                                 required
@@ -164,14 +209,14 @@ export default function LoginPage() {
                                     <div className="mb-4">
                                         <div className="d-flex justify-content-between align-items-center mb-1">
                                             <label htmlFor="password" className="form-label fw-semibold mb-0">
-                                                Password
+                                                {t('password', 'Password')}
                                             </label>
                                             <button
                                                 type="button"
                                                 className="btn btn-link text-decoration-none small text-primary p-0"
                                                 onClick={handleResetPassword}
                                             >
-                                                Forgot Password?
+                                                {t('forgotPassword', 'Forgot Password?')}
                                             </button>
                                         </div>
                                         <div className="input-group">
@@ -183,7 +228,7 @@ export default function LoginPage() {
                                                 className="form-control border-start-0 ps-0"
                                                 id="password"
                                                 name="password"
-                                                placeholder="Enter your password"
+                                                placeholder={t('enterYourPassword', 'Enter your password')}
                                                 value={formData.password}
                                                 onChange={handleChange}
                                             />
@@ -203,23 +248,23 @@ export default function LoginPage() {
                                         disabled={loading}
                                     >
                                         {loading ? (
-                                            <>
-                                                <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                Processing...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Sign In <i className="fa-solid fa-arrow-right ms-2"></i>
-                                            </>
-                                        )}
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                    {t('processing', 'Processing...')}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {t('signIn', 'Sign In')} <i className="fa-solid fa-arrow-right ms-2"></i>
+                                                </>
+                                            )}
                                     </button>
                                 </form>
 
                                 <div className="text-center mt-4">
                                     <p className="text-muted mb-0">
-                                        Don&apos;t have an account?{' '}
+                                        {t('doNotHaveAccount', "Don't have an account?")}{' '}
                                         <Link href="/register" className="text-primary fw-semibold text-decoration-none">
-                                            Create Account
+                                            {t('createAccountInstead', 'Create Account')}
                                         </Link>
                                     </p>
                                 </div>

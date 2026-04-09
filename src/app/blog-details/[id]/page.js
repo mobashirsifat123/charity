@@ -19,8 +19,10 @@ import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import RelatedContentSection from "@/components/RelatedContentSection";
 import SaveContentButton from "@/components/SaveContentButton";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function BlogDetails() {
+  const { locale, t } = useLanguage();
   const params = useParams();
   const identifier = params?.id;
   const [blog, setBlog] = useState(null);
@@ -106,9 +108,9 @@ export default function BlogDetails() {
         <HeaderOne />
         <div className="container py-5 my-5 text-center">
           <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">{t("loading", "Loading...")}</span>
           </div>
-          <h5 className="mt-3 text-muted">Loading Article...</h5>
+          <h5 className="mt-3 text-muted">{t("loadingArticle", "Loading Article...")}</h5>
         </div>
         <FooterOne />
       </>
@@ -120,10 +122,10 @@ export default function BlogDetails() {
       <>
         <HeaderOne />
         <div className="container py-5 my-5 text-center">
-          <i className="bi bi-exclamation-triangle display-1 text-warning mb-3 d-block"></i>
-          <h2 className="fw-bold">Article Not Found</h2>
-          <p className="text-muted mb-4">The article you are looking for does not exist or has been removed.</p>
-          <Link href="/blog-grid" className="btn btn-primary rounded-pill px-4">Return to Articles</Link>
+          <i className="bi bi-exclamation-triangle display-1 mb-3 d-block" style={{ color: "var(--accent-color)" }}></i>
+          <h2 className="fw-bold">{t("articleNotFound", "Article Not Found")}</h2>
+          <p className="text-muted mb-4">{t("articleRemovedMessage", "The article you are looking for does not exist or has been removed.")}</p>
+          <Link href="/blog-grid" className="btn btn-primary rounded-pill px-4">{t("returnToArticles", "Return to Articles")}</Link>
         </div>
         <FooterOne />
       </>
@@ -139,11 +141,11 @@ export default function BlogDetails() {
     <>
       <HeaderOne />
 
-      <section className="position-relative bg-dark text-white py-5" style={{ minHeight: "350px" }}>
+      <section className="detail-hero py-5" style={{ minHeight: "350px" }}>
         {blog.image_url ? (
           <div
             className="position-absolute top-0 start-0 w-100 h-100"
-            style={{ backgroundImage: `url(${blog.image_url})`, backgroundSize: "cover", backgroundPosition: "center", opacity: "0.4" }}
+            style={{ backgroundImage: `url(${blog.image_url})`, backgroundSize: "cover", backgroundPosition: "center", opacity: "0.24" }}
           ></div>
         ) : null}
         <div className="container position-relative z-1 py-5">
@@ -153,12 +155,12 @@ export default function BlogDetails() {
                 <span className="badge bg-primary px-3 py-2 rounded-pill fs-6">
                   {getContentCategory(blog)}
                 </span>
-                {blog.featured ? <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6">Featured</span> : null}
+                {blog.featured ? <span className="badge bg-warning px-3 py-2 rounded-pill fs-6">{t("featured", "Featured")}</span> : null}
               </div>
               <h1 className="display-4 fw-bold mb-4">{blog.seo_title || blog.title}</h1>
-              <div className="d-flex align-items-center justify-content-center gap-4 text-white-50 flex-wrap">
-                <span><i className="bi bi-calendar3 me-2"></i>{new Date(blog.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</span>
-                <Link href={authorPath} className="text-white-50 text-decoration-none">
+              <div className="d-flex align-items-center justify-content-center gap-4 flex-wrap" style={{ color: "rgba(255,255,255,0.72)" }}>
+                <span><i className="bi bi-calendar3 me-2"></i>{new Date(blog.created_at).toLocaleDateString(locale === "ar" ? "ar" : undefined, { year: "numeric", month: "long", day: "numeric" })}</span>
+                <Link href={authorPath} className="text-decoration-none" style={{ color: "rgba(255,255,255,0.72)" }}>
                   <i className="bi bi-person-circle me-2"></i>{authorName}
                 </Link>
               </div>
@@ -167,11 +169,11 @@ export default function BlogDetails() {
         </div>
       </section>
 
-      <section className="py-5 bg-light">
+      <section className="py-5 page-surface-alt">
         <div className="container py-4">
           <div className="row justify-content-center">
             <div className="col-lg-9">
-              <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+              <div className="content-panel overflow-hidden mb-4">
                 <div className="card-body p-4 p-md-5">
                   <div className="d-flex flex-wrap gap-2 mb-4">
                     {tags.map((tag) => (
@@ -180,21 +182,21 @@ export default function BlogDetails() {
                       </span>
                     ))}
                   </div>
-                  <div className="blog-content fs-5 text-dark" style={{ lineHeight: "1.8" }} dangerouslySetInnerHTML={{ __html: blog.content }}></div>
+                  <div className="blog-content content-prose fs-5" dangerouslySetInnerHTML={{ __html: blog.content }}></div>
                 </div>
               </div>
 
-              <div className="card border-0 shadow-sm rounded-4 mb-5">
+              <div className="content-panel mb-5">
                 <div className="card-body p-4">
                   <div className="row g-3 align-items-center">
                     <div className="col-lg-7">
                       <h5 className="fw-bold mb-1">{authorName}</h5>
                       <p className="text-muted mb-2">{authorRole}</p>
-                      <p className="text-muted mb-0">{blog.author_bio || "Learn from clear, beneficial writing prepared for the IRWA audience."}</p>
+                      <p className="text-muted mb-0">{blog.author_bio || t("authorBioFallbackBlog", "Learn from clear, beneficial writing prepared for the IRWA audience.")}</p>
                     </div>
                     <div className="col-lg-5 text-lg-end">
                       <Link href={authorPath} className="btn btn-outline-primary rounded-pill px-4">
-                        View Profile
+                        {t("viewProfile", "View Profile")}
                       </Link>
                     </div>
                   </div>
@@ -202,22 +204,22 @@ export default function BlogDetails() {
               </div>
 
               <div className="d-flex justify-content-between align-items-center border-top border-bottom py-4 mb-5 flex-wrap gap-3">
-                <h5 className="fw-bold mb-0">Share this article:</h5>
+                <h5 className="fw-bold mb-0">{t("shareThisArticle", "Share this article:")}</h5>
                 <div className="d-flex gap-2 flex-wrap">
                   <SaveContentButton item={blog} type="blog" />
-                  <button type="button" className="btn btn-outline-primary rounded-circle" style={{ width: "45px", height: "45px" }} onClick={() => handleShare("facebook")}><i className="bi bi-facebook mx-auto"></i></button>
-                  <button type="button" className="btn btn-outline-info rounded-circle" style={{ width: "45px", height: "45px" }} onClick={() => handleShare("twitter")}><i className="bi bi-twitter mx-auto"></i></button>
-                  <button type="button" className="btn btn-outline-success rounded-circle" style={{ width: "45px", height: "45px" }} onClick={() => handleShare("whatsapp")}><i className="bi bi-whatsapp mx-auto"></i></button>
-                  <button type="button" className="btn btn-outline-secondary rounded-circle" style={{ width: "45px", height: "45px" }} onClick={() => handleShare("copy")}><i className="bi bi-link-45deg mx-auto"></i></button>
+                  <button type="button" className="icon-button" onClick={() => handleShare("facebook")}><i className="bi bi-facebook mx-auto"></i></button>
+                  <button type="button" className="icon-button" onClick={() => handleShare("twitter")}><i className="bi bi-twitter mx-auto"></i></button>
+                  <button type="button" className="icon-button" onClick={() => handleShare("whatsapp")}><i className="bi bi-whatsapp mx-auto"></i></button>
+                  <button type="button" className="icon-button" onClick={() => handleShare("copy")}><i className="bi bi-link-45deg mx-auto"></i></button>
                 </div>
               </div>
-              {copied ? <p className="text-success small mb-4">Article link copied.</p> : null}
+              {copied ? <p className="text-success small mb-4">{t("articleLinkCopied", "Article link copied.")}</p> : null}
 
-              <RelatedContentSection items={relatedBlogs} type="blog" title="Related Articles" />
+              <RelatedContentSection items={relatedBlogs} type="blog" title={t("relatedArticles", "Related Articles")} />
 
               <div className="text-center mt-5">
                 <Link href="/blog-grid" className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold border-2">
-                  <i className="bi bi-arrow-left me-2"></i> Back to all articles
+                  <i className="bi bi-arrow-left me-2"></i> {t("backToAllArticles", "Back to all articles")}
                 </Link>
               </div>
             </div>

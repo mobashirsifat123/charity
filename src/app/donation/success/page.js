@@ -3,10 +3,12 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 
 function DonationSuccessContent() {
+    const { locale, t } = useLanguage();
     const [status, setStatus] = useState('verifying'); // verifying, success, error
     const [donation, setDonation] = useState(null);
     const [error, setError] = useState('');
@@ -14,6 +16,8 @@ function DonationSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
+    const currency = (searchParams.get('currency') || 'USD').toUpperCase();
+    const donationType = searchParams.get('type') || 'donation';
 
     useEffect(() => {
         const verifyDonation = async () => {
@@ -61,9 +65,9 @@ function DonationSuccessContent() {
 
     // Format currency
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat(locale === 'ar' ? 'ar' : 'en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency,
         }).format(amount || 0);
     };
 
@@ -74,60 +78,62 @@ function DonationSuccessContent() {
             <div className="container py-5">
                 <div className="row justify-content-center">
                     <div className="col-lg-6 col-md-8">
-                        <div className="card border-0 shadow-lg rounded-4 text-center">
+                        <div className="content-panel text-center overflow-hidden">
                             <div className="card-body p-5">
                                 {status === 'verifying' && (
                                     <>
                                         <div className="mb-4">
                                             <div className="spinner-border text-primary" style={{ width: '4rem', height: '4rem' }} role="status">
-                                                <span className="visually-hidden">Verifying...</span>
+                                                <span className="visually-hidden">{t('verifyingPayment', 'Verifying Payment')}</span>
                                             </div>
                                         </div>
-                                        <h3 className="fw-bold">Verifying Payment</h3>
-                                        <p className="text-muted">Please wait while we confirm your donation...</p>
+                                        <h3 className="fw-bold">{t('verifyingPayment', 'Verifying Payment')}</h3>
+                                        <p className="text-muted">{t('pleaseWaitConfirmDonation', 'Please wait while we confirm your donation...')}</p>
                                     </>
                                 )}
 
                                 {status === 'success' && (
                                     <>
                                         <div className="mb-4">
-                                            <div className="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center" style={{ width: '100px', height: '100px' }}>
+                                            <div className="rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '100px', height: '100px', background: 'rgba(20, 90, 50, 0.12)' }}>
                                                 <i className="fa-solid fa-check text-success" style={{ fontSize: '3rem' }}></i>
                                             </div>
                                         </div>
-                                        <h2 className="fw-bold text-success mb-3">Thank You!</h2>
+                                        <h2 className="fw-bold text-success mb-3">{t('thankYou', 'Thank You!')}</h2>
                                         <p className="lead mb-4">
-                                            Your donation of <strong>{formatCurrency(donation?.amount)}</strong> has been received.
+                                            {(donationType === 'zakat'
+                                                ? 'Your zakat payment of {amount} has been received.'
+                                                : t('donationReceived', 'Your donation of {amount} has been received.')
+                                            ).replace('{amount}', formatCurrency(donation?.amount))}
                                         </p>
 
-                                        <div className="bg-light rounded-3 p-4 mb-4">
-                                            <p className="mb-2 text-muted small">Donation Details</p>
+                                        <div className="rounded-4 p-4 mb-4" style={{ background: 'var(--surface-alt)' }}>
+                                            <p className="mb-2 text-muted small">{t('donationDetails', 'Donation Details')}</p>
                                             <p className="mb-1">
-                                                <strong>Amount:</strong> {formatCurrency(donation?.amount)}
+                                                <strong>{t('amount', 'Amount')}:</strong> {formatCurrency(donation?.amount)}
                                             </p>
                                             <p className="mb-1">
-                                                <strong>Status:</strong>{' '}
-                                                <span className="badge bg-success">Completed</span>
+                                                <strong>{t('statusLabel', 'Status')}:</strong>{' '}
+                                                <span className="badge bg-success">{t('completed', 'Completed')}</span>
                                             </p>
                                             <p className="mb-0">
-                                                <strong>Reference:</strong>{' '}
+                                                <strong>{t('reference', 'Reference')}:</strong>{' '}
                                                 <code className="small">#{donation?.id}</code>
                                             </p>
                                         </div>
 
                                         <p className="text-muted mb-4">
-                                            Your generosity will make a real difference.
-                                            A confirmation email has been sent to your registered email address.
+                                            {t('reviewDonationDashboard', 'You can review this donation any time from your dashboard.')}
                                         </p>
 
                                         <div className="d-flex gap-3 justify-content-center flex-wrap">
-                                            <Link href="/dashboard" className="btn btn-primary btn-lg px-4">
+                                            <Link href="/dashboard" className="btn btn-primary btn-ripple btn-lg px-4">
                                                 <i className="fa-solid fa-chart-line me-2"></i>
-                                                View Dashboard
+                                                {t('viewDashboard', 'View Dashboard')}
                                             </Link>
-                                            <Link href="/" className="btn btn-outline-secondary btn-lg px-4">
+                                            <Link href="/" className="btn btn-outline-secondary btn-ripple btn-lg px-4">
                                                 <i className="fa-solid fa-home me-2"></i>
-                                                Back to Home
+                                                {t('backToHome', 'Back to Home')}
                                             </Link>
                                         </div>
                                     </>
@@ -136,21 +142,21 @@ function DonationSuccessContent() {
                                 {status === 'error' && (
                                     <>
                                         <div className="mb-4">
-                                            <div className="rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center" style={{ width: '100px', height: '100px' }}>
+                                            <div className="rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '100px', height: '100px', background: 'rgba(173, 76, 61, 0.12)' }}>
                                                 <i className="fa-solid fa-times text-danger" style={{ fontSize: '3rem' }}></i>
                                             </div>
                                         </div>
-                                        <h2 className="fw-bold text-danger mb-3">Verification Failed</h2>
+                                        <h2 className="fw-bold text-danger mb-3">{t('verificationFailed', 'Verification Failed')}</h2>
                                         <p className="text-muted mb-4">{error}</p>
 
                                         <div className="d-flex gap-3 justify-content-center flex-wrap">
-                                            <Link href="/" className="btn btn-primary btn-lg px-4">
+                                            <Link href="/" className="btn btn-primary btn-ripple btn-lg px-4">
                                                 <i className="fa-solid fa-redo me-2"></i>
-                                                Try Again
+                                                {t('tryAgain', 'Try Again')}
                                             </Link>
-                                            <Link href="/dashboard" className="btn btn-outline-secondary btn-lg px-4">
+                                            <Link href="/dashboard" className="btn btn-outline-secondary btn-ripple btn-lg px-4">
                                                 <i className="fa-solid fa-chart-line me-2"></i>
-                                                View Dashboard
+                                                {t('viewDashboard', 'View Dashboard')}
                                             </Link>
                                         </div>
                                     </>

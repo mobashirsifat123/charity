@@ -28,6 +28,30 @@ export const ADMIN_RESOURCE_CONFIG = {
     ],
     usesAdvancedContentSave: true,
   },
+  'fatwa-requests': {
+    table: 'fatwa_requests',
+    orders: [
+      { column: 'created_at', ascending: false },
+    ],
+  },
+  newsletter: {
+    table: 'newsletter_subscriptions',
+    orders: [
+      { column: 'created_at', ascending: false },
+    ],
+  },
+  scholars: {
+    table: 'scholar_profiles',
+    orders: [
+      { column: 'name', ascending: true },
+    ],
+  },
+  'article-categories': {
+    table: 'article_categories',
+    orders: [
+      { column: 'name', ascending: true },
+    ],
+  },
 };
 
 export function getAdminResourceConfig(resource) {

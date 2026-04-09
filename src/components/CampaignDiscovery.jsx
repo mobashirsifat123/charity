@@ -5,10 +5,12 @@ import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
 import Pagination from '@/components/Pagination';
 import DonateModal from '@/components/DonateModal';
+import { useLanguage } from '@/context/LanguageContext';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 // Campaign Card Component
 const CampaignCard = ({ campaign, onDonate }) => {
+    const { t } = useLanguage();
     const progress = campaign.goal_amount > 0
         ? Math.min((campaign.raised_amount / campaign.goal_amount) * 100, 100)
         : 0;
@@ -30,7 +32,7 @@ const CampaignCard = ({ campaign, onDonate }) => {
 
     return (
         <div className="col-lg-4 col-md-6 mb-4">
-            <div className="card campaign-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+            <div className="card campaign-card hover-lift hover-glow-primary h-100 border-0 shadow-sm rounded-4 overflow-hidden">
                 <div className="position-relative">
                     <img
                         src={getImageUrl(campaign.image_url)}
@@ -58,7 +60,7 @@ const CampaignCard = ({ campaign, onDonate }) => {
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                     }}>
-                        {campaign.description || 'Support this campaign and make a difference.'}
+                        {campaign.description || t('supportCause', 'Support a Cause')}
                     </p>
 
                     {/* Progress Bar */}
@@ -84,24 +86,14 @@ const CampaignCard = ({ campaign, onDonate }) => {
                     </div>
 
                     <button
-                        className="btn btn-primary w-100 rounded-pill"
+                        className="btn btn-primary btn-ripple hover-glow-primary w-100 rounded-pill"
                         onClick={() => onDonate(campaign)}
                     >
                         <i className="fa-solid fa-heart me-2"></i>
-                        Donate Now
+                        {t('donateNow', 'Donate Now')}
                     </button>
                 </div>
             </div>
-
-            <style jsx>{`
-                .campaign-card {
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                .campaign-card:hover {
-                    transform: translateY(-8px);
-                    box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
-                }
-            `}</style>
         </div>
     );
 };
@@ -109,6 +101,7 @@ const CampaignCard = ({ campaign, onDonate }) => {
 // Main Discovery Component
 function CampaignDiscoveryContent() {
     const { settings } = useSiteSettings();
+    const { locale, t } = useLanguage();
     const {
         campaigns,
         loading,
@@ -139,14 +132,14 @@ function CampaignDiscoveryContent() {
     };
 
     return (
-        <section id="campaigns" className="campaign-discovery py-5">
+        <section id="campaigns" className="campaign-discovery py-5 page-surface-alt">
             <div className="container">
                 {/* Header */}
                 <div className="text-center mb-5">
-                    <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
-                        <i className="fa-solid fa-handshake-angle me-2"></i>
-                        {settings.campaign_discovery_badge || 'Causes That Support the Mission'}
-                    </span>
+                        <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">
+                            <i className="fa-solid fa-handshake-angle me-2"></i>
+                            {settings.campaign_discovery_badge || 'Causes That Support the Mission'}
+                        </span>
                     <h2 className="display-5 fw-bold mb-3">
                         {settings.campaign_discovery_title || 'Support Our Causes'}
                     </h2>
@@ -161,7 +154,7 @@ function CampaignDiscoveryContent() {
                         <SearchBar
                             value={search}
                             onChange={setSearch}
-                            placeholder="Search campaigns by title or description..."
+                            placeholder={locale === 'ar' ? 'ابحث عن الحملات بالعنوان أو الوصف...' : 'Search campaigns by title or description...'}
                         />
                     </div>
                 </div>
@@ -178,9 +171,11 @@ function CampaignDiscoveryContent() {
                 {(search || category) && (
                     <div className="text-center mb-4">
                         <span className="text-muted">
-                            {total} campaign{total !== 1 ? 's' : ''} found
-                            {search && <span> for "{search}"</span>}
-                            {category && category !== 'all' && <span> in {category}</span>}
+                            {locale === 'ar'
+                                ? `تم العثور على ${total} حملة`
+                                : `${total} campaign${total !== 1 ? 's' : ''} found`}
+                            {search && <span> {locale === 'ar' ? `لـ "${search}"` : `for "${search}"`}</span>}
+                            {category && category !== 'all' && <span> {locale === 'ar' ? `ضمن ${category}` : `in ${category}`}</span>}
                         </span>
                         {(search || category) && (
                             <button
@@ -191,7 +186,7 @@ function CampaignDiscoveryContent() {
                                     setCategory('all');
                                 }}
                             >
-                                Clear filters
+                                {t('clearFilters', 'Clear filters')}
                             </button>
                         )}
                     </div>
@@ -203,7 +198,7 @@ function CampaignDiscoveryContent() {
                         <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
                             <span className="visually-hidden">Loading...</span>
                         </div>
-                        <p className="text-muted mt-3">Loading campaigns...</p>
+                        <p className="text-muted mt-3">{t('loadingCampaigns', 'Loading campaigns...')}</p>
                     </div>
                 )}
 
@@ -213,11 +208,11 @@ function CampaignDiscoveryContent() {
                         <div className="text-danger mb-3">
                             <i className="fa-solid fa-circle-exclamation" style={{ fontSize: '3rem' }}></i>
                         </div>
-                        <h4 className="text-danger">Error loading campaigns</h4>
+                        <h4 className="text-danger">{t('errorLoadingCampaigns', 'Error loading campaigns')}</h4>
                         <p className="text-muted">{error}</p>
-                        <button className="btn btn-primary" onClick={refetch}>
+                        <button className="btn btn-primary btn-ripple" onClick={refetch}>
                             <i className="fa-solid fa-redo me-2"></i>
-                            Try Again
+                            {t('tryAgain', 'Try Again')}
                         </button>
                     </div>
                 )}
@@ -231,7 +226,7 @@ function CampaignDiscoveryContent() {
                         <h4>{settings.campaign_section_empty_title || 'No Campaigns Yet'}</h4>
                         <p className="text-muted">
                             {search || category
-                                ? 'Try adjusting your search or filters'
+                                ? (locale === 'ar' ? 'جرّب تعديل البحث أو التصفية.' : 'Try adjusting your search or filters')
                                 : (settings.campaign_section_empty_description || 'Check back soon for new fundraising campaigns!')}
                         </p>
                     </div>
@@ -279,7 +274,7 @@ function CampaignDiscoveryContent() {
 export default function CampaignDiscovery() {
     return (
         <Suspense fallback={
-            <section id="campaigns" className="campaign-discovery py-5">
+            <section id="campaigns" className="campaign-discovery py-5 page-surface-alt">
                 <div className="container">
                     <div className="text-center py-5">
                         <div className="spinner-border text-primary" role="status">

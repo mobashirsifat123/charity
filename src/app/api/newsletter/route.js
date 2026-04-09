@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isMissingColumnError } from "@/lib/content-utils";
+import { hasValidSupabaseServerEnv } from "@/lib/server/env";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -9,11 +10,25 @@ const supabase = createClient(
 
 export async function POST(req) {
   try {
+    if (!hasValidSupabaseServerEnv()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Newsletter storage is not configured in this environment yet.",
+        },
+        { status: 503 }
+      );
+    }
+
     const body = await req.json();
     const email = String(body?.email || "").trim().toLowerCase();
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     if (!email) {
       return NextResponse.json({ success: false, message: "Email is required." }, { status: 400 });
+    }
+    if (!isValidEmail) {
+      return NextResponse.json({ success: false, message: "Please enter a valid email address." }, { status: 400 });
     }
 
     const { error } = await supabase.from("newsletter_subscriptions").upsert(
@@ -42,12 +57,17 @@ export async function POST(req) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Newsletter subscription error:", error);
+    const isNetworkFailure =
+      String(error?.message || "").toLowerCase().includes("fetch failed") ||
+      String(error?.cause?.code || "").toUpperCase() === "ECONNRESET";
     return NextResponse.json(
       {
         success: false,
-        message: error.message || "Unable to subscribe right now. Run the content-platform SQL upgrade if this is a new setup.",
+        message: isNetworkFailure
+          ? "Newsletter service is temporarily unavailable. Please try again shortly."
+          : (error.message || "Unable to subscribe right now. Run the content-platform SQL upgrade if this is a new setup."),
       },
-      { status: 500 }
+      { status: isNetworkFailure ? 503 : 500 }
     );
   }
 }

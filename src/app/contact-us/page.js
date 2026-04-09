@@ -2,10 +2,12 @@
 import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
+import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function ContactPage() {
   const { settings } = useSiteSettings();
+  const { t } = useLanguage();
   const email = settings.contact_email || "info@irwa.org";
   const phone = settings.contact_phone || "(+01)-793-7938";
   const phoneHref = phone.replace(/[^\d+]/g, "");
@@ -14,10 +16,10 @@ export default function ContactPage() {
     <section className="page-wrapper">
       <HeaderOne />
       <BreadcrumbOne
-        title="Contact Us"
+        title={t('contactUs', 'Contact Us')}
         links={[
-          { name: "Home", link: "/" },
-          { name: "Contact Us", link: "/contact-us" },
+          { name: t('home', 'Home'), link: "/" },
+          { name: t('contactUs', 'Contact Us'), link: "/contact-us" },
         ]}
       />
       <div className="container py-5">
@@ -32,19 +34,19 @@ export default function ContactPage() {
                 <div className="row g-4">
                   <div className="col-md-4">
                     <div className="border rounded-4 p-4 h-100">
-                      <h5 className="fw-bold">Email</h5>
+                      <h5 className="fw-bold">{t('email', 'Email')}</h5>
                       <a href={`mailto:${email}`} className="text-decoration-none">{email}</a>
                     </div>
                   </div>
                   <div className="col-md-4">
                     <div className="border rounded-4 p-4 h-100">
-                      <h5 className="fw-bold">Phone</h5>
+                      <h5 className="fw-bold">{t('phone', 'Phone')}</h5>
                       <a href={`tel:${phoneHref}`} className="text-decoration-none">{phone}</a>
                     </div>
                   </div>
                   <div className="col-md-4">
                     <div className="border rounded-4 p-4 h-100">
-                      <h5 className="fw-bold">Address</h5>
+                      <h5 className="fw-bold">{t('address', 'Address')}</h5>
                       <span className="text-decoration-none">{settings.contact_address || "123 Charity Lane, NY 10001"}</span>
                     </div>
                   </div>

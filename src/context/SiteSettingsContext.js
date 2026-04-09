@@ -1,36 +1,95 @@
 "use client";
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { DEFAULT_SITE_SETTINGS, mergeSiteSettings } from '@/lib/siteSettings';
+import { useLanguage } from '@/context/LanguageContext';
+import { localizeSiteSettings } from '@/lib/i18n';
 
 const SiteSettingsContext = createContext(null);
+const SITE_SETTINGS_CACHE_KEY = 'irwa-site-settings-cache-v1';
+
+const readCachedSiteSettings = () => {
+    if (typeof window === 'undefined') return null;
+
+    try {
+        const raw = window.localStorage.getItem(SITE_SETTINGS_CACHE_KEY);
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed?.data)) return null;
+
+        return parsed.data;
+    } catch (error) {
+        console.error('Failed to read cached site settings:', error);
+        return null;
+    }
+};
+
+const writeCachedSiteSettings = (data) => {
+    if (typeof window === 'undefined') return;
+
+    try {
+        window.localStorage.setItem(
+            SITE_SETTINGS_CACHE_KEY,
+            JSON.stringify({
+                savedAt: Date.now(),
+                data,
+            })
+        );
+    } catch (error) {
+        console.error('Failed to cache site settings:', error);
+    }
+};
 
 export function SiteSettingsProvider({ children }) {
-    const [settings, setSettings] = useState(DEFAULT_SITE_SETTINGS);
+    const [rawSettings, setRawSettings] = useState(DEFAULT_SITE_SETTINGS);
     const [loading, setLoading] = useState(true);
+    const { locale } = useLanguage();
 
-    const refreshSettings = useCallback(async () => {
-        setLoading(true);
+    const refreshSettings = useCallback(async ({ background = false } = {}) => {
+        if (!background) {
+            setLoading(true);
+        }
 
         try {
             const { data, error } = await supabase.from('site_settings').select('*');
             if (error) throw error;
 
-            setSettings(mergeSiteSettings(data || []));
+            const nextData = data || [];
+            setRawSettings(mergeSiteSettings(nextData));
+            writeCachedSiteSettings(nextData);
         } catch (error) {
             console.error("Failed to load global site settings:", error);
-            setSettings(DEFAULT_SITE_SETTINGS);
+            if (!background) {
+                setRawSettings(DEFAULT_SITE_SETTINGS);
+            }
         } finally {
-            setLoading(false);
+            if (!background) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
+        const cachedSettings = readCachedSiteSettings();
+
+        if (cachedSettings) {
+            setRawSettings(mergeSiteSettings(cachedSettings));
+            setLoading(false);
+            refreshSettings({ background: true });
+            return;
+        }
+
         refreshSettings();
     }, [refreshSettings]);
 
+    const settings = useMemo(
+        () => localizeSiteSettings(rawSettings, locale),
+        [rawSettings, locale]
+    );
+
     return (
-        <SiteSettingsContext.Provider value={{ settings, loading, refreshSettings }}>
+        <SiteSettingsContext.Provider value={{ settings, rawSettings, loading, refreshSettings }}>
             {children}
         </SiteSettingsContext.Provider>
     );

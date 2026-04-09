@@ -1,5 +1,6 @@
 const donationModel = require('../models/donationModel');
 const campaignModel = require('../models/campaignModel');
+const DB_UNAVAILABLE_MESSAGE = 'Backend database is unavailable. Configure DATABASE_URL (or DB_USER/DB_HOST/DB_NAME/DB_PASSWORD/DB_PORT).';
 
 /**
  * Process a donation
@@ -9,9 +10,10 @@ const processDonation = async (req, res) => {
     try {
         const { campaign_id, amount } = req.body;
         const userId = req.user.id; // From JWT token
+        const campaignId = String(campaign_id || '').trim();
 
         // Validate required fields
-        if (!campaign_id || !amount) {
+        if (!campaignId || !amount) {
             return res.status(400).json({
                 success: false,
                 message: 'Campaign ID and amount are required.',
@@ -28,7 +30,7 @@ const processDonation = async (req, res) => {
         }
 
         // Check if campaign exists
-        const campaign = await campaignModel.getCampaignById(parseInt(campaign_id));
+        const campaign = await campaignModel.getCampaignById(campaignId);
         if (!campaign) {
             return res.status(404).json({
                 success: false,
@@ -39,14 +41,14 @@ const processDonation = async (req, res) => {
         // Create donation record
         const donation = await donationModel.createDonation(
             userId,
-            parseInt(campaign_id),
+            campaignId,
             donationAmount
         );
 
         // Simulate payment processing (in production, integrate with payment gateway)
         // For now, mark as completed and update campaign raised amount
         await donationModel.updatePaymentStatus(donation.id, 'completed');
-        await campaignModel.updateRaisedAmount(parseInt(campaign_id), donationAmount);
+        await campaignModel.updateRaisedAmount(campaignId, donationAmount);
 
         return res.status(201).json({
             success: true,
@@ -54,13 +56,19 @@ const processDonation = async (req, res) => {
             data: {
                 donation_id: donation.id,
                 amount: donationAmount,
-                campaign_id: campaign_id,
+                campaign_id: campaignId,
                 payment_status: 'completed',
                 created_at: donation.created_at,
             },
         });
     } catch (error) {
         console.error('Process donation error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred while processing the donation.',
@@ -85,6 +93,12 @@ const getMyDonations = async (req, res) => {
         });
     } catch (error) {
         console.error('Get donations error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred while fetching donations.',

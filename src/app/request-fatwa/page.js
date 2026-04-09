@@ -4,10 +4,13 @@ import HeaderOne from "@/components/HeaderOne";
 import FooterOne from "@/components/FooterOne";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
 import { FATWA_CATEGORY_OPTIONS } from "@/lib/content-utils";
+import { useLanguage } from "@/context/LanguageContext";
+import { translateFatwaCategory } from "@/lib/i18n";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function RequestFatwaPage() {
   const { settings } = useSiteSettings();
+  const { locale, t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -39,7 +42,7 @@ export default function RequestFatwaPage() {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Unable to submit your request.");
+        throw new Error(data.message || t('unableToSubmitRequest', 'Unable to submit your request.'));
       }
 
       setFormData({
@@ -51,7 +54,7 @@ export default function RequestFatwaPage() {
       });
       setMessage({ type: "success", text: settings.request_fatwa_success_message || "Your question has been submitted successfully." });
     } catch (error) {
-      setMessage({ type: "danger", text: error.message || "Submission failed." });
+      setMessage({ type: "danger", text: error.message || t('submissionFailed', 'Submission failed.') });
     } finally {
       setLoading(false);
     }
@@ -61,10 +64,10 @@ export default function RequestFatwaPage() {
     <section className="page-wrapper">
       <HeaderOne />
       <BreadcrumbOne
-        title="Request a Fatwa"
+        title={t('requestFatwa', 'Request Fatwa')}
         links={[
-          { name: "Home", link: "/" },
-          { name: "Request a Fatwa", link: "/request-fatwa" },
+          { name: t('home', 'Home'), link: "/" },
+          { name: t('requestFatwa', 'Request Fatwa'), link: "/request-fatwa" },
         ]}
       />
 
@@ -81,27 +84,27 @@ export default function RequestFatwaPage() {
                 <form onSubmit={handleSubmit}>
                   <div className="row g-3">
                     <div className="col-md-6">
-                      <label className="form-label fw-semibold">Name</label>
+                      <label className="form-label fw-semibold">{t('name', 'Name')}</label>
                       <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label fw-semibold">Email</label>
+                      <label className="form-label fw-semibold">{t('email', 'Email')}</label>
                       <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6">
-                      <label className="form-label fw-semibold">Category</label>
+                      <label className="form-label fw-semibold">{t('category', 'Category')}</label>
                       <select name="category" className="form-select" value={formData.category} onChange={handleChange}>
                         {FATWA_CATEGORY_OPTIONS.map((option) => (
-                          <option key={option} value={option}>{option}</option>
+                          <option key={option} value={option}>{translateFatwaCategory(locale, option)}</option>
                         ))}
                       </select>
                     </div>
                     <div className="col-12">
-                      <label className="form-label fw-semibold">Question</label>
+                      <label className="form-label fw-semibold">{t('question', 'Question')}</label>
                       <input type="text" name="question" className="form-control" value={formData.question} onChange={handleChange} required />
                     </div>
                     <div className="col-12">
-                      <label className="form-label fw-semibold">Additional details</label>
+                      <label className="form-label fw-semibold">{t('additionalDetails', 'Additional details')}</label>
                       <textarea name="details" rows="6" className="form-control" value={formData.details} onChange={handleChange}></textarea>
                     </div>
                   </div>
@@ -109,11 +112,11 @@ export default function RequestFatwaPage() {
                     {loading ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2"></span>
-                        Submitting...
+                        {t('submitting', 'Submitting...')}
                       </>
                     ) : (
                       <>
-                        Submit Question <i className="fa-solid fa-paper-plane ms-2"></i>
+                        {t('submitQuestion', 'Submit Question')} <i className="fa-solid fa-paper-plane ms-2"></i>
                       </>
                     )}
                   </button>

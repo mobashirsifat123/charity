@@ -7,6 +7,12 @@ import {
   sortFeaturedFirst,
 } from "@/lib/content-utils";
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value = "") {
+  return UUID_PATTERN.test(String(value).trim());
+}
+
 export async function fetchPublishedBlogs(limit = null) {
   const query = supabase
     .from("blogs")
@@ -32,17 +38,29 @@ export async function fetchPublishedFatwas(limit = null) {
 }
 
 export async function fetchBlogByIdentifier(identifier) {
-  const rawId = extractIdentifierId(identifier);
-  const { data, error } = await supabase.from("blogs").select("*").eq("id", rawId).single();
-  if (error) throw error;
-  return data;
+  const normalizedIdentifier = String(identifier || "").trim();
+  const rawId = extractIdentifierId(normalizedIdentifier);
+
+  if (!isUuid(rawId)) return null;
+
+  const { data, error } = await supabase.from("blogs").select("*").eq("id", rawId).maybeSingle();
+  if (error) {
+    throw error;
+  }
+  return data || null;
 }
 
 export async function fetchFatwaByIdentifier(identifier) {
-  const rawId = extractIdentifierId(identifier);
-  const { data, error } = await supabase.from("fatwas").select("*").eq("id", rawId).single();
-  if (error) throw error;
-  return data;
+  const normalizedIdentifier = String(identifier || "").trim();
+  const rawId = extractIdentifierId(normalizedIdentifier);
+
+  if (!isUuid(rawId)) return null;
+
+  const { data, error } = await supabase.from("fatwas").select("*").eq("id", rawId).maybeSingle();
+  if (error) {
+    throw error;
+  }
+  return data || null;
 }
 
 export function getRelatedContent(items = [], currentRecord, type, limit = 3) {

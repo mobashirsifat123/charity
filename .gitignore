@@ -18,6 +18,10 @@ coverage/
 .next/
 out/
 build/
+*.tsbuildinfo
+
+# Local automation / browser-debug artifacts
+.playwright-cli/
 
 # IDE and OS files
 .DS_Store

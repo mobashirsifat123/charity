@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { isMissingColumnError } from '@/lib/content-utils';
+import { hasValidStripeSecret, hasValidSupabaseServerEnv } from '@/lib/server/env';
+import { resolveServerSiteUrl } from '@/lib/server/siteUrl';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
 const stripe = new Stripe(stripeSecretKey);
@@ -20,11 +22,21 @@ export async function POST(req) {
             return NextResponse.json({ success: false, message: 'A valid donation amount is required.' }, { status: 400 });
         }
 
-        if (!stripeSecretKey.startsWith('sk_') || stripeSecretKey.includes('placeholder')) {
+        if (!hasValidStripeSecret()) {
             return NextResponse.json(
                 {
                     success: false,
                     message: 'Stripe is not configured in this environment. Add a valid STRIPE_SECRET_KEY before testing checkout.',
+                },
+                { status: 503 }
+            );
+        }
+
+        if (!hasValidSupabaseServerEnv()) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Supabase service credentials are not configured in this environment yet.',
                 },
                 { status: 503 }
             );
@@ -75,7 +87,7 @@ export async function POST(req) {
         const donation = donationQuery.data;
 
         // 2. Create Stripe Checkout Session
-        const defaultSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+        const defaultSiteUrl = resolveServerSiteUrl(req);
         const normalizedSuccessUrl = successUrl
             ? `${successUrl}?session_id={CHECKOUT_SESSION_ID}`
             : `${defaultSiteUrl}/donation/success?session_id={CHECKOUT_SESSION_ID}`;

@@ -1,4 +1,5 @@
 const campaignModel = require('../models/campaignModel');
+const DB_UNAVAILABLE_MESSAGE = 'Backend database is unavailable. Configure DATABASE_URL (or DB_USER/DB_HOST/DB_NAME/DB_PASSWORD/DB_PORT).';
 
 /**
  * Get all campaigns with search, filter, and pagination
@@ -25,6 +26,12 @@ const getAllCampaigns = async (req, res) => {
         });
     } catch (error) {
         console.error('Get campaigns error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred while fetching campaigns.',
@@ -46,6 +53,12 @@ const getCategories = async (req, res) => {
         });
     } catch (error) {
         console.error('Get categories error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred while fetching categories.',
@@ -60,16 +73,17 @@ const getCategories = async (req, res) => {
 const getCampaignById = async (req, res) => {
     try {
         const { id } = req.params;
+        const campaignId = String(id || '').trim();
 
         // Validate ID
-        if (!id || isNaN(parseInt(id))) {
+        if (!campaignId) {
             return res.status(400).json({
                 success: false,
                 message: 'Valid campaign ID is required.',
             });
         }
 
-        const campaign = await campaignModel.getCampaignById(parseInt(id));
+        const campaign = await campaignModel.getCampaignById(campaignId);
 
         if (!campaign) {
             return res.status(404).json({
@@ -85,6 +99,12 @@ const getCampaignById = async (req, res) => {
         });
     } catch (error) {
         console.error('Get campaign error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred while fetching the campaign.',
@@ -132,6 +152,12 @@ const createCampaign = async (req, res) => {
         });
     } catch (error) {
         console.error('Create campaign error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         return res.status(500).json({
             success: false,
             message: 'An error occurred while creating the campaign.',

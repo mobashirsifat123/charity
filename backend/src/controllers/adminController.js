@@ -1,4 +1,5 @@
 const adminModel = require('../models/adminModel');
+const DB_UNAVAILABLE_MESSAGE = 'Backend database is unavailable. Configure DATABASE_URL (or DB_USER/DB_HOST/DB_NAME/DB_PASSWORD/DB_PORT).';
 
 /**
  * Get platform statistics (Admin only)
@@ -14,6 +15,12 @@ const getStats = async (req, res) => {
         });
     } catch (error) {
         console.error('Get stats error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         res.status(500).json({
             success: false,
             message: 'Failed to fetch platform statistics',
@@ -35,6 +42,12 @@ const getAllDonations = async (req, res) => {
         });
     } catch (error) {
         console.error('Get all donations error:', error);
+        if (error?.code === 'DB_NOT_CONFIGURED') {
+            return res.status(503).json({
+                success: false,
+                message: DB_UNAVAILABLE_MESSAGE,
+            });
+        }
         res.status(500).json({
             success: false,
             message: 'Failed to fetch donations',

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useCallback } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 /**
  * SearchBar - Search input with icon and debounce
@@ -9,6 +10,7 @@ import { useState, useCallback } from 'react';
  */
 const SearchBar = ({ value, onChange, placeholder = "Search campaigns..." }) => {
     const [localValue, setLocalValue] = useState(value || '');
+    const { t } = useLanguage();
 
     // Debounce search
     const handleChange = useCallback((e) => {
@@ -35,7 +37,7 @@ const SearchBar = ({ value, onChange, placeholder = "Search campaigns..." }) => 
                 <input
                     type="text"
                     className="form-control border-start-0 ps-0"
-                    placeholder={placeholder}
+                    placeholder={placeholder || t('searchSite', 'Search...')}
                     value={localValue}
                     onChange={handleChange}
                     style={{ boxShadow: 'none' }}
@@ -45,13 +47,13 @@ const SearchBar = ({ value, onChange, placeholder = "Search campaigns..." }) => 
                         type="button"
                         className="btn btn-link text-muted"
                         onClick={handleClear}
-                        title="Clear search"
+                        title={t('clearSearch', 'Clear search')}
                     >
                         <i className="fa-solid fa-times"></i>
                     </button>
                 )}
                 <button type="submit" className="btn btn-primary px-4">
-                    Search
+                    {t('searchButton', 'Search')}
                 </button>
             </div>
 

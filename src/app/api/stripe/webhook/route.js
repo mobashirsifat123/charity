@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { isMissingColumnError } from '@/lib/content-utils';
+import { hasValidStripeSecret, hasValidSupabaseServerEnv } from '@/lib/server/env';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
 const stripe = new Stripe(stripeSecretKey);
@@ -12,6 +13,20 @@ const supabase = createClient(
 );
 
 export async function POST(req) {
+    if (!hasValidStripeSecret()) {
+        return NextResponse.json(
+            { error: 'Stripe webhook is not configured in this environment.' },
+            { status: 503 }
+        );
+    }
+
+    if (!hasValidSupabaseServerEnv()) {
+        return NextResponse.json(
+            { error: 'Supabase service credentials are not configured in this environment.' },
+            { status: 503 }
+        );
+    }
+
     const rawBody = await req.text();
     const sig = req.headers.get('stripe-signature');
 
