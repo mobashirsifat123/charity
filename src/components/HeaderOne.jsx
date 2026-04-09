@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { parseJsonArraySetting } from "@/lib/siteSettings";
@@ -145,7 +144,7 @@ const HeaderOne = () => {
                   <div className='navbar-logo'>
                     <Link href='/' className='text-decoration-none'>
                       {settings.site_logo_url ? (
-                        <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} style={{ maxHeight: '45px' }} />
+                        <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--header' />
                       ) : (
                         <h3 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h3>
                       )}
@@ -183,12 +182,6 @@ const HeaderOne = () => {
                             }`}
                         >
                           <Link href='/fatwa'>{settings.nav_fatwas_label || 'Fatwas'}</Link>
-                        </li>
-                        <li
-                          className={`navbar__item nav-fade ${pathname === "/search" ? "active" : ""
-                            }`}
-                        >
-                          <Link href='/search'>{settings.nav_search_label || 'Search'}</Link>
                         </li>
                         {customNavLinks.map((item) => (
                           <li
@@ -230,7 +223,7 @@ const HeaderOne = () => {
                           className={`navbar__item navbar__item--has-children nav-fade ${[
                             "/faq",
                             "/donation",
-                            "/contact-us",
+                            "/about-us",
                           ].includes(pathname) || isAccountRoute
                             ? "active"
                             : ""
@@ -262,12 +255,12 @@ const HeaderOne = () => {
                             </li>
                             <li
                               className={
-                                ["/contact-us"].includes(pathname)
+                                ["/about-us"].includes(pathname)
                                   ? "active"
                                   : ""
                               }
                             >
-                              <Link href='/contact-us'>
+                              <Link href='/about-us#contact-us'>
                                 {settings.nav_contact_label || 'Contact Us'}
                               </Link>
                             </li>
@@ -298,10 +291,10 @@ const HeaderOne = () => {
                           </ul>
                         </li>
                         <li
-                          className={`navbar__item nav-fade ${["/contact-us"].includes(pathname) ? "active" : ""
+                          className={`navbar__item nav-fade ${["/about-us"].includes(pathname) ? "active" : ""
                             } `}
                         >
-                          <Link href='/contact-us'>{t('contactUs', 'Contact Us')}</Link>
+                          <Link href='/about-us#contact-us'>{t('contactUs', 'Contact Us')}</Link>
                         </li>
                       </ul>
                     </div>
@@ -317,20 +310,6 @@ const HeaderOne = () => {
                   </div>
                   <div className='navbar__options'>
                     <div className='navbar__mobile-options '>
-                      <div className='d-none d-md-flex'>
-                        <LanguageSwitcher />
-                      </div>
-                      <div className='search-box'>
-                        <button
-                          onClick={handleSearch}
-                          className='open-search'
-                          aria-label={t('search', 'Search')}
-                          title={t('search', 'Search')}
-                        >
-                          <i className='fa-solid fa-magnifying-glass' />
-                        </button>
-                      </div>
-
                       {/* Auth Buttons */}
                       {!loading && (
                         <>
@@ -367,17 +346,16 @@ const HeaderOne = () => {
                               </button>
                             </div>
                           ) : (
-                            <div className='d-none d-md-flex align-items-center gap-2'>
+                            <div className='d-none d-md-flex align-items-center gap-2 auth-nav-actions'>
                               <Link
                                 href='/login'
-                                className='btn--secondary'
-                                style={{ padding: '10px 20px' }}
+                                className='btn btn-light auth-nav-button auth-nav-button--ghost'
                               >
                                 {t('login', 'Login')}
                               </Link>
                               <Link
                                 href='/register'
-                                className='btn--primary'
+                                className='btn btn-primary auth-nav-button'
                               >
                                 {t('register', 'Register')} <i className='fa-solid fa-arrow-right' />
                               </Link>
@@ -453,7 +431,11 @@ const HeaderOne = () => {
           <div className='mobile-menu__header nav-fade'>
             <div className='logo'>
               <Link href='/' className='text-decoration-none'>
-                 <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h4>
+                {settings.site_logo_url ? (
+                  <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--mobile' />
+                ) : (
+                  <h4 className='m-0 fw-bold' style={{ color: 'var(--primary-color)' }}>{settings.site_name || 'IRWA'}</h4>
+                )}
               </Link>
             </div>
             <button
@@ -467,9 +449,6 @@ const HeaderOne = () => {
           <div className='mobile-menu__list' ref={mobileMenuListRef}></div>
 
           <div className='mobile-menu__cta nav-fade d-block d-md-none'>
-            <div className='mb-3'>
-              <LanguageSwitcher compact />
-            </div>
             {!loading && user ? (
               <div className='d-flex flex-column gap-2 mb-3'>
                 <Link href='/dashboard' className='btn--secondary'>

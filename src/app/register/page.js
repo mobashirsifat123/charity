@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import HeaderOne from '@/components/HeaderOne';
 import FooterOne from '@/components/FooterOne';
 import BreadcrumbOne from '@/components/BreadcrumbOne';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -23,6 +25,7 @@ export default function RegisterPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [nextPath, setNextPath] = useState('/dashboard');
     const { t } = useLanguage();
+    const { settings } = useSiteSettings();
     const router = useRouter();
 
     useEffect(() => {
@@ -135,12 +138,21 @@ export default function RegisterPage() {
                 ]}
             />
 
-            <div className="container py-5">
+            <div className="container py-5 auth-shell">
                 <div className="row justify-content-center">
                     <div className="col-lg-5 col-md-8">
-                        <div className="card shadow-lg border-0 rounded-4">
+                        <div className="card shadow-lg border-0 rounded-4 auth-card">
                             <div className="card-body p-5">
                                 <div className="text-center mb-4">
+                                    {settings.site_logo_url ? (
+                                        <Image
+                                            src={settings.site_logo_url}
+                                            alt={settings.site_name || 'IRWA'}
+                                            className="site-logo site-logo--auth mb-3"
+                                            width={220}
+                                            height={88}
+                                        />
+                                    ) : null}
                                     <h2 className="fw-bold text-primary mb-2">{t('joinOurCommunity', 'Join Our Community')}</h2>
                                     <p className="text-muted">{t('createAccountIntro', 'Create an account to start making a difference')}</p>
                                 </div>
@@ -170,7 +182,7 @@ export default function RegisterPage() {
 
                                 <button
                                     type="button"
-                                    className="btn btn-light btn-ripple w-100 py-3 fw-semibold border mb-4"
+                                    className="btn btn-light btn-ripple w-100 auth-provider-btn fw-semibold border mb-4"
                                     onClick={handleGoogleRegister}
                                     disabled={loading}
                                 >
@@ -286,7 +298,7 @@ export default function RegisterPage() {
 
                                     <button
                                         type="submit"
-                                        className="btn btn-primary w-100 py-3 fw-semibold"
+                                        className="btn btn-primary w-100 auth-submit-btn fw-semibold"
                                         disabled={loading}
                                     >
                                         {loading ? (

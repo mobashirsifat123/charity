@@ -1,4 +1,4 @@
-export const SUPPORTED_LOCALES = ['en', 'ar'];
+export const SUPPORTED_LOCALES = ['en', 'ar', 'bn'];
 export const RTL_LOCALES = ['ar'];
 
 export const UI_TRANSLATIONS = {
@@ -6,6 +6,7 @@ export const UI_TRANSLATIONS = {
     language: 'Language',
     english: 'English',
     arabic: 'Arabic',
+    bengali: 'Bengali',
     loading: 'Loading...',
     home: 'Home',
     aboutUs: 'About Us',
@@ -214,6 +215,7 @@ export const UI_TRANSLATIONS = {
     language: 'اللغة',
     english: 'English',
     arabic: 'العربية',
+    bengali: 'বাংলা',
     loading: 'جارٍ التحميل...',
     home: 'الرئيسية',
     aboutUs: 'من نحن',
@@ -586,6 +588,54 @@ export const ARABIC_SITE_SETTINGS = {
   cause_slider_title: 'حملات تحتاج دعمك',
   cause_slider_description: 'كل حملة تحدث فرقاً حقيقياً. كن جزءاً من هذا الأثر.',
   cause_slider_cta_text: 'عرض كل الحملات',
+};
+
+UI_TRANSLATIONS.bn = {
+  ...UI_TRANSLATIONS.en,
+  language: 'ভাষা',
+  english: 'English',
+  arabic: 'العربية',
+  bengali: 'বাংলা',
+  loading: 'লোড হচ্ছে...',
+  home: 'হোম',
+  aboutUs: 'আমাদের সম্পর্কে',
+  articles: 'প্রবন্ধ',
+  article: 'প্রবন্ধ',
+  fatwas: 'ফতোয়া',
+  fatwa: 'ফতোয়া',
+  fatwasAndRulings: 'ফতোয়া ও বিধান',
+  search: 'খুঁজুন',
+  causes: 'কার্যক্রম',
+  faq: 'জিজ্ঞাসা',
+  donate: 'দান করুন',
+  donateNow: 'এখন দান করুন',
+  contactUs: 'যোগাযোগ করুন',
+  requestFatwa: 'ফতোয়া চাইুন',
+  login: 'লগইন',
+  register: 'রেজিস্টার',
+  logout: 'লগআউট',
+  dashboard: 'ড্যাশবোর্ড',
+  welcomeBack: 'আবার স্বাগতম',
+  joinOurCommunity: 'আমাদের কমিউনিটিতে যোগ দিন',
+  createAccountIntro: 'একটি অ্যাকাউন্ট তৈরি করে যাত্রা শুরু করুন',
+  signInIntro: 'আপনার অ্যাকাউন্টে যেতে সাইন ইন করুন',
+  forgotPassword: 'পাসওয়ার্ড ভুলে গেছেন?',
+  signIn: 'সাইন ইন',
+  createAccount: 'অ্যাকাউন্ট তৈরি করুন',
+  createAccountInstead: 'অ্যাকাউন্ট তৈরি করুন',
+  alreadyHaveAccount: 'ইতিমধ্যেই অ্যাকাউন্ট আছে?',
+  doNotHaveAccount: 'এখনও অ্যাকাউন্ট নেই?',
+  readMore: 'আরও পড়ুন',
+  readArticle: 'প্রবন্ধ পড়ুন',
+  readFullAnswer: 'পূর্ণ উত্তর পড়ুন',
+  browseAllArticles: 'সব প্রবন্ধ দেখুন',
+  browseAllCampaigns: 'সব কার্যক্রম দেখুন',
+  submitQuestion: 'প্রশ্ন জমা দিন',
+  loadingArticle: 'প্রবন্ধ লোড হচ্ছে...',
+  retrievingRuling: 'ফতোয়া আনা হচ্ছে...',
+  noResultsFound: 'কোন ফল পাওয়া যায়নি',
+  allTopics: 'সব বিষয়',
+  backToHome: 'হোমে ফিরুন',
 };
 
 export function translateUi(locale, key, fallback = '') {

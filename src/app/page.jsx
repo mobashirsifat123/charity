@@ -7,6 +7,7 @@ import FatwaHighlights from "@/components/FatwaHighlights";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
 import PrayerTimesWidget from "@/components/home/PrayerTimesWidget";
+import QuranLearningShowcase from "@/components/QuranLearningShowcase";
 import TopBarOne from "@/components/TopBarOne";
 import { getFallbackPrayerTimes } from "@/lib/server/prayer-times";
 
@@ -17,7 +18,6 @@ const CtaSectionOne = dynamic(() => import("@/components/CtaSectionOne"));
 const TeamOne = dynamic(() => import("@/components/TeamOne"));
 const CommunityOne = dynamic(() => import("@/components/CommunityOne"));
 const TestimonialOne = dynamic(() => import("@/components/TestimonialOne"));
-const CauseSliderTwo = dynamic(() => import("@/components/CauseSliderTwo"));
 const DifferenceTwo = dynamic(() => import("@/components/DifferenceTwo"));
 
 const Page = async () => {
@@ -40,7 +40,7 @@ const Page = async () => {
       <TeamOne />
       <CommunityOne />
       <TestimonialOne />
-      <CauseSliderTwo />
+      <QuranLearningShowcase />
       <DifferenceTwo />
       <FooterOne />
     </section>

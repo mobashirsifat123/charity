@@ -22,6 +22,11 @@ export function LanguageProvider({ children }) {
 
       if (window.navigator.language?.toLowerCase().startsWith('ar')) {
         setLocale('ar');
+        return;
+      }
+
+      if (window.navigator.language?.toLowerCase().startsWith('bn')) {
+        setLocale('bn');
       }
     } catch (error) {
       console.error('Unable to initialize language preference:', error);

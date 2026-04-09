@@ -19,7 +19,7 @@ const HelpOne = () => {
             desc: settings.help_card_2_description || 'Join our team on the ground or help us remotely with your skills and expertise.',
             icon: 'fa-hands-holding-child',
             color: 'var(--secondary-color)',
-            link: settings.help_card_2_link || '/contact-us',
+            link: settings.help_card_2_link || '/about-us#contact-us',
             btnText: settings.help_card_2_button_text || 'Join Us',
         },
         {

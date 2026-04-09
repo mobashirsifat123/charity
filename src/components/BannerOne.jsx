@@ -1,5 +1,6 @@
 "use client";
 import Link from 'next/link';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/context/LanguageContext';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 
@@ -21,7 +22,7 @@ const BannerOne = () => {
         { icon: 'fa-book-open', title: settings.hero_card_1_title || 'Articles', color: 'var(--primary-color)', meta: settings.hero_card_1_meta || 'Reflections & learning' },
         { icon: 'fa-scale-balanced', title: settings.hero_card_2_title || 'Fatwas', color: 'var(--accent-color)', meta: settings.hero_card_2_meta || 'Trusted answers' },
         { icon: 'fa-mosque', title: settings.hero_card_3_title || 'Dawah', color: 'var(--secondary-color)', meta: settings.hero_card_3_meta || 'Community benefit' },
-        { icon: 'fa-hand-holding-heart', title: settings.hero_card_4_title || 'Causes', color: 'var(--accent-color)', meta: settings.hero_card_4_meta || 'Support in action' },
+        { icon: 'fa-book-quran', title: settings.hero_card_4_title || 'Learn Quran', color: 'var(--accent-color)', meta: settings.hero_card_4_meta || 'Short guided lessons' },
     ];
 
     return (
@@ -57,6 +58,12 @@ const BannerOne = () => {
                         >
                             {t('featuredMission', 'Featured Mission')}: {settings.hero_subtitle || 'Dawah, Guidance, and Giving'}
                         </span>
+                        <div className="mb-4 hero-language-picker">
+                            <div className="small text-uppercase fw-semibold mb-2 hero-language-picker__label">
+                                {t('language', 'Language')}
+                            </div>
+                            <LanguageSwitcher className="hero-language-switcher" />
+                        </div>
                         <h1 className="text-white fw-bold mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', lineHeight: 1.2 }}>
                             {settings.hero_title || 'Knowledge That Guides, Causes That Matter'}
                         </h1>
@@ -73,8 +80,8 @@ const BannerOne = () => {
                         </div>
 
                         <div className="d-flex flex-wrap gap-3 mt-4">
-                            <Link href={settings.hero_support_cta_link || '/#campaigns'} className="text-white text-decoration-none fw-semibold">
-                                {settings.hero_support_cta_text || 'Support our causes'} <i className="fa-solid fa-arrow-right ms-2" />
+                            <Link href={settings.hero_support_cta_link || '/quran'} className="text-white text-decoration-none fw-semibold">
+                                {settings.hero_support_cta_text || 'Learn Quran'} <i className="fa-solid fa-arrow-right ms-2" />
                             </Link>
                         </div>
 

@@ -25,6 +25,16 @@ export async function fetchPublishedBlogs(limit = null) {
   return sortFeaturedFirst(data || []);
 }
 
+export async function fetchArticleCategories() {
+  const { data, error } = await supabase
+    .from("article_categories")
+    .select("*")
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
 export async function fetchPublishedFatwas(limit = null) {
   const query = supabase
     .from("fatwas")

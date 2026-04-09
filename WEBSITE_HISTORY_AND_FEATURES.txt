@@ -232,3 +232,96 @@ Deployment hardening pass (April 9, 2026):
   - Supabase storage hostname typo in `next.config.js`
 - Reduced noisy fallback logging from intended course/impact fallback behavior so production build logs stay cleaner.
 - Re-ran lint and production build after the hardening pass to confirm the deploy-facing fixes remain safe.
+
+IRWAA logo rollout and auth UI refinement (April 9, 2026):
+- Added the new IRWAA logo asset to the app and made it the default shared site logo.
+- Updated the shared site settings so the logo now appears across the main brand surfaces without needing per-page hardcoding.
+- Refined logo usage in:
+  - desktop header
+  - mobile header
+  - footer
+  - login page
+  - registration page
+- Added a subtle site-wide background watermark using the IRWAA logo so the brand is visible across the experience without overwhelming readability.
+- Improved the header auth actions so the login and register buttons feel smaller, cleaner, and more balanced with the navigation.
+- Restyled the login and registration screens with stronger branding, calmer spacing, and more polished call-to-action buttons.
+- Replaced raw auth-page logo `<img>` elements with optimized Next.js `Image` usage to keep the implementation cleaner and lint-safe.
+- Re-ran lint and production build after the branding pass to confirm the new logo integration and auth polish are production-safe.
+
+Bengali language support and auto-translation layer (April 9, 2026):
+- Expanded the shared language system from English/Arabic to English/Arabic/Bengali.
+- Added Bengali to the language switcher so visitors can explicitly switch the site into Bangla.
+- Updated locale detection so browsers already configured for Bengali can default into the Bengali experience.
+- Added a lightweight site-wide Bengali auto-translation layer that translates rendered page content after Bengali is selected.
+- Added a translation API route to support Bengali translation requests and cache repeated translations.
+- Kept English and Arabic behavior unchanged, while ensuring the Bengali translator restores original content when a visitor switches back.
+- Re-ran lint and production build after the language upgrade to confirm the new locale and translation layer are production-safe.
+
+About page team-section expansion (April 9, 2026):
+- Added the same “Meet the Changemakers” team section to the About Us page so visitors can discover the organization story and the team in one place.
+- Reused the existing dynamic `TeamOne` component instead of duplicating content, so the About page stays synced automatically with homepage team updates.
+- Kept the section fully admin-managed:
+  - team members remain editable from the Team admin area
+  - team badge/title/description remain editable from site content/settings
+- Re-ran lint and production build after the About page update to confirm the new section is production-safe.
+
+Hero-only language selection behavior (April 9, 2026):
+- Moved the visible language switcher out of the header and mobile menu so visitors are no longer prompted to change language on every page.
+- Added the shared language switcher to the homepage hero as the primary place to manually choose English, Arabic, or Bengali.
+- Kept the selected language global across the full site experience, so once a visitor chooses a language it continues on other pages until they manually change it again.
+- Styled the hero language switcher to match the premium green-and-white design system without disrupting hero readability.
+- Re-ran lint and production build after the language-control update to confirm the new behavior is production-safe.
+
+Islamweb-inspired article hub redesign (April 9, 2026):
+- Rebuilt the public articles page into a richer editorial directory inspired by the Islamweb articles experience while keeping the IRWA green-and-white design system.
+- Added a multi-layer article layout including:
+  - featured lead articles
+  - sub-section category chips
+  - selected section shelves
+  - a denser latest-articles feed
+  - an editorial sidebar with search, subjects, authors, and latest links
+- Integrated article cover images into the featured strip and selected-section cards for a stronger editorial presentation.
+- Kept the page fully admin-driven by wiring it to existing dynamic sources:
+  - article records from the admin blog/article manager
+  - article categories from the article categories manager
+  - author/scholar metadata already attached to articles
+  - new article-directory layout copy/settings from the site content builder
+- Added new site-builder settings so admins can change the article directory title, description, section headings, selected categories, sidebar labels, and “more articles” link without touching code.
+- Added article category fetching support to the shared content data helpers so the page can render managed sub-sections from the database.
+- Re-ran lint and production build after the redesign to confirm the new article architecture is production-safe.
+
+Selective background image preview for About & Contact (April 9, 2026):
+- Added the provided desert image into the project as a dedicated background asset for visual testing on the About Us and Contact Us pages only.
+- Wrapped the About and Contact content cards inside a themed photo section with a soft overlay so the background can be evaluated without sacrificing readability.
+- Used a translucent surfaced card treatment over the photo instead of placing text directly on the image.
+- Kept the experiment isolated to those two pages so the rest of the site’s cleaner green-and-white reading experience remains untouched.
+- Re-ran lint and production build after the background preview update to confirm the change is production-safe.
+
+Contact section merged into About page (April 9, 2026):
+- Removed the standalone contact experience from primary navigation and merged the contact content directly into the About Us page as an anchored section underneath the main About content.
+- Added a dedicated `#contact-us` section inside the About page so visitors can read about the organization first and then reach contact details in the same flow.
+- Updated shared navigation and call-to-action links so “Contact Us” now points to `/about-us#contact-us`.
+- Kept the old `/contact-us` route as a redirect to the About page contact anchor so existing links still work.
+- Re-ran lint and production build after the merge to confirm the new structure is production-safe.
+
+Search navigation cleanup and page-level filters (April 9, 2026):
+- Removed the dedicated Search link from the main site navigation so the header feels cleaner and less crowded.
+- Removed the global header search trigger so search is no longer competing with the primary content navigation.
+- Moved search behavior into compact, page-level toolbars on the Fatwas and E-Books pages where it is more contextually useful.
+- Kept those new search/filter controls intentionally compact so they help discovery without taking over the page layout.
+- Left the sidebar browsing structures intact on Fatwas and E-Books, but removed the larger duplicated sidebar search blocks to save space.
+- Re-ran lint and production build after the search UX cleanup to confirm the new navigation and filter layout are production-safe.
+
+Homepage Quran learning conversion (April 9, 2026):
+- Replaced the old featured “Causes” homepage block with a dedicated Quran learning showcase.
+- Updated the homepage hero’s fourth quick-access card from “Causes” to “Learn Quran”.
+- Changed the hero support link fallback so it now points toward Quran learning instead of the causes section.
+- Added a new homepage Quran-learning component with room for multiple short video lessons presented as a premium learning grid.
+- Kept the new section admin-manageable through site builder settings, including:
+  - Quran learning badge
+  - section title
+  - section description
+  - CTA text/link
+  - a JSON list of short video lesson cards
+- Added new shared styling for the Quran learning showcase so it matches the green-and-white premium design system.
+- Re-ran lint and production build after the homepage conversion to confirm the new section is production-safe.

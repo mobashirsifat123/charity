@@ -26,6 +26,13 @@ export default function LanguageSwitcher({ compact = false, className = '' }) {
       >
         {t('arabic', 'Arabic')}
       </button>
+      <button
+        type="button"
+        className={`${buttonClass} ${locale === 'bn' ? 'btn-primary' : 'btn-light'}`}
+        onClick={() => setLocale('bn')}
+      >
+        {t('bengali', 'Bengali')}
+      </button>
     </div>
   );
 }

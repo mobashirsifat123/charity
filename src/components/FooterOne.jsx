@@ -24,7 +24,7 @@ const FooterOne = () => {
                         <div className="footer__about">
                             <Link href="/" className="text-decoration-none">
                                 {settings.site_logo_url ? (
-                                    <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} style={{ maxHeight: '45px' }} />
+                                    <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className="site-logo site-logo--footer" />
                                 ) : (
                                     <h3 className="text-white m-0">{settings.site_name || 'IRWA'}</h3>
                                 )}
@@ -52,7 +52,7 @@ const FooterOne = () => {
                             <li className="mb-2"><Link href="/#campaigns" className="text-light opacity-75 text-decoration-none">{settings.footer_causes_label || 'Our Causes'}</Link></li>
                             <li className="mb-2"><Link href="/donation" className="text-light opacity-75 text-decoration-none">{settings.footer_donate_label || 'Donate'}</Link></li>
                             <li className="mb-2"><Link href="/request-fatwa" className="text-light opacity-75 text-decoration-none">{settings.footer_request_fatwa_label || 'Request Fatwa'}</Link></li>
-                            <li className="mb-2"><Link href="/contact-us" className="text-light opacity-75 text-decoration-none">{settings.footer_contact_label || 'Contact'}</Link></li>
+                            <li className="mb-2"><Link href="/about-us#contact-us" className="text-light opacity-75 text-decoration-none">{settings.footer_contact_label || 'Contact'}</Link></li>
                             {customQuickLinks.map((item) => (
                                 <li key={`${item.href}-${item.label}`} className="mb-2">
                                     <Link href={item.href} className="text-light opacity-75 text-decoration-none">{item.label}</Link>

@@ -31,7 +31,7 @@ const TopBarOne = () => {
                                 {settings.top_bar_faq_label || 'FAQ'}
                             </Link>
                             <span className="opacity-25">|</span>
-                            <Link href="/contact-us" className="text-white text-decoration-none opacity-75 hover-opacity-100 transition-opacity">
+                            <Link href="/about-us#contact-us" className="text-white text-decoration-none opacity-75 hover-opacity-100 transition-opacity">
                                 {settings.top_bar_contact_label || 'Contact'}
                             </Link>
                             <div className="d-flex gap-2 ms-4 border-start border-light border-opacity-25 ps-4">

@@ -61,20 +61,6 @@ export default function EbooksPage() {
             <aside className="col-lg-4 col-xl-3">
               <div className="islamweb-like-panel sticky-lg-top" style={{ top: "110px" }}>
                 <div className="islamweb-like-block">
-                  <h5 className="islamweb-like-block-title">Search</h5>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search ebooks, authors, or subjects..."
-                    value={searchTerm}
-                    onChange={(event) => {
-                      setSearchTerm(event.target.value);
-                      resetToFirstPage();
-                    }}
-                  />
-                </div>
-
-                <div className="islamweb-like-block">
                   <h5 className="islamweb-like-block-title">Book Categories</h5>
                   <p className="text-muted small mb-3">
                     There are {categories.length - 1} book categories in this library.
@@ -124,6 +110,56 @@ export default function EbooksPage() {
                   <span className="text-muted small">
                     {filteredEbooks.length} book{filteredEbooks.length === 1 ? "" : "s"}
                   </span>
+                </div>
+
+                <div className="compact-directory-toolbar mb-4">
+                  <div className="row g-2 align-items-end">
+                    <div className="col-lg-7">
+                      <label className="compact-directory-label">Search</label>
+                      <input
+                        type="text"
+                        className="form-control compact-directory-input"
+                        placeholder="Search ebooks, authors, or subjects..."
+                        value={searchTerm}
+                        onChange={(event) => {
+                          setSearchTerm(event.target.value);
+                          resetToFirstPage();
+                        }}
+                      />
+                    </div>
+                    <div className="col-lg-4">
+                      <label className="compact-directory-label">Category</label>
+                      <select
+                        className="form-select compact-directory-input"
+                        value={category}
+                        onChange={(event) => {
+                          setCategory(event.target.value);
+                          resetToFirstPage();
+                        }}
+                      >
+                        {categories.map((item) => (
+                          <option key={item} value={item}>
+                            {item === "all" ? "All Ebooks" : item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-lg-1">
+                      <button
+                        type="button"
+                        className="btn btn-light compact-directory-reset w-100"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setCategory("all");
+                          resetToFirstPage();
+                        }}
+                        aria-label="Reset filters"
+                        title="Reset filters"
+                      >
+                        <i className="fa-solid fa-rotate-left" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {!displayedEbooks.length ? (
