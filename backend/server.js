@@ -2,6 +2,17 @@ const path = require('path');
 const dotenv = require('dotenv');
 const express = require('express');
 const cors = require('cors');
+const Sentry = require('@sentry/node');
+const { nodeProfilingIntegration } = require('@sentry/profiling-node');
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || 'https://dummy-dsn@sentry.io/12345',
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+});
 const helmet = require('helmet');
 const { generalLimiter, strictLimiter } = require('./src/middleware/rateLimiter');
 
@@ -20,6 +31,8 @@ const stripeRoutes = require('./src/routes/stripeRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5050;
+
+Sentry.setupExpressErrorHandler(app);
 
 // Middleware
 app.use(helmet());
