@@ -159,76 +159,9 @@ export default function LoginPage() {
                                     <div className="alert alert-danger alert-dismissible fade show" role="alert">
                                         <i className="fa-solid fa-circle-exclamation me-2"></i>
                                         {error}
-                                        <button
-                                            type="button"
-                                            className="btn-close"
-                                            onClick={() => setError('')}
-                                        ></button>
-                                    </div>
-                                )}
-                                
-                                {successMessage && (
-                                    <div className="alert alert-success alert-dismissible fade show" role="alert">
-                                        <i className="fa-solid fa-check-circle me-2"></i>
-                                        {successMessage}
-                                        <button
-                                            type="button"
-                                            className="btn-close"
-                                            onClick={() => setSuccessMessage('')}
-                                        ></button>
-                                    </div>
-                                )}
-
-                                <button
-                                    type="button"
-                                    className="btn btn-light btn-ripple w-100 auth-provider-btn fw-semibold border mb-4"
-                                    onClick={handleGoogleLogin}
-                                    disabled={loading}
-                                >
-                                    <i className="fa-brands fa-google me-2"></i>
-                                    {t('continueWithGoogle', 'Continue with Google')}
-                                </button>
-
-                                <div className="d-flex align-items-center gap-3 mb-4">
-                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
-                                    <span className="text-muted small">{t('orUseEmail', 'or use email')}</span>
-                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
-                                </div>
-
-                                <form onSubmit={handleSubmit}>
-                                    <div className="mb-4">
-                                        <label htmlFor="email" className="form-label fw-semibold">
-                                            {t('emailAddress', 'Email Address')}
-                                        </label>
-                                        <div className="input-group">
-                                            <span className="input-group-text bg-light border-end-0">
-                                                <i className="fa-solid fa-envelope text-muted"></i>
-                                            </span>
-                                            <input
-                                                type="email"
-                                                className="form-control border-start-0 ps-0"
-                                                id="email"
-                                                name="email"
-                                                placeholder={t('enterYourEmail', 'Enter your email')}
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <div className="d-flex justify-content-between align-items-center mb-1">
-                                            <label htmlFor="password" className="form-label fw-semibold mb-0">
-                                                {t('password', 'Password')}
-                                            </label>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link text-decoration-none small text-primary p-0"
-                                                onClick={handleResetPassword}
-                                            >
-                                                {t('forgotPassword', 'Forgot Password?')}
-                                            </button>
+                                        <Link href="/forgot-password" className="text-decoration-none small text-primary p-0">
+  {t('forgotPassword', 'Forgot Password?')}
+</Link>
                                         </div>
                                         <div className="input-group">
                                             <span className="input-group-text bg-light border-end-0">
