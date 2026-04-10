@@ -9,10 +9,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "prepare": "husky"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.48.0",
     "@stripe/stripe-js": "^8.7.0",
     "@supabase/supabase-js": "^2.99.1",
     "animate.css": "^4.1.1",
