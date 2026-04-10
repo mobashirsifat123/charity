@@ -237,7 +237,11 @@ function CampaignDiscoveryContent() {
                 {!loading && !error && campaigns.length > 0 && (
                     <>
                         <div className="row">
-                            {campaigns.map((campaign) => (
+                            {(!campaigns || campaigns.length === 0) && !loading ? (
+          <div className="col-12 py-5 text-center text-muted">
+            <p className="mb-0 fs-5">Check back soon for new campaigns.</p>
+          </div>
+        ) : campaigns.map((campaign) => (
                                 <CampaignCard
                                     key={campaign.id}
                                     campaign={campaign}

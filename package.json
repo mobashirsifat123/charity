@@ -25,6 +25,7 @@
     "react-countup": "^6.5.3",
     "react-dom": "^18.3.1",
     "react-fast-marquee": "^1.6.5",
+    "react-hot-toast": "^2.6.0",
     "react-modal-video": "^2.0.2",
     "react-on-screen": "^2.1.1",
     "react-quill": "^2.0.0",

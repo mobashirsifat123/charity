@@ -25,7 +25,7 @@ export default function DonationPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
     setCampaignId(params.get("campaign"));
   }, []);
 

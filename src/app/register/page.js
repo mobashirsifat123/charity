@@ -30,7 +30,7 @@ export default function RegisterPage() {
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        const params = new URLSearchParams(window.location.search);
+        const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
         setNextPath(params.get('next') || '/dashboard');
     }, []);
 

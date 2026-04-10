@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+import toast from "react-hot-toast";
 
 export default function NewsletterSignup({ compact = false }) {
   const { settings } = useSiteSettings();
@@ -15,7 +16,7 @@ export default function NewsletterSignup({ compact = false }) {
     setMessage({ type: "", text: "" });
 
     if (!email.trim()) {
-      setMessage({ type: "danger", text: t('pleaseEnterEmail', 'Please enter your email address.') });
+      toast.error(t('pleaseEnterEmail', 'Please enter your valid email address.'));
       return;
     }
 
@@ -35,9 +36,9 @@ export default function NewsletterSignup({ compact = false }) {
       }
 
       setEmail("");
-      setMessage({ type: "success", text: settings.newsletter_success_message || "You are subscribed for new articles and fatwas." });
+      toast.success(settings.newsletter_success_message || "Success! You are now subscribed to our newsletter.");
     } catch (error) {
-      setMessage({ type: "danger", text: error.message || t('subscriptionFailed', 'Subscription failed.') });
+      toast.error(error.message || t('subscriptionFailed', 'Oops, subscription failed. Try again later.'));
     } finally {
       setLoading(false);
     }
@@ -50,7 +51,7 @@ export default function NewsletterSignup({ compact = false }) {
         <p className={`text-muted ${compact ? "small mb-2" : "mb-3"}`}>
           {settings.newsletter_description || "Get notified when new Islamic insights and fatwas are published."}
         </p>
-        {message.text ? <div className={`alert alert-${message.type} py-2 small`}>{message.text}</div> : null}
+        
         <form onSubmit={handleSubmit}>
           <div className={`input-group ${compact ? "" : "input-group-lg"}`}>
             <input

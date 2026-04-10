@@ -19,7 +19,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
     setQuery(params.get("q") || "");
     setType(params.get("type") || "all");
     setCategory(params.get("category") || "all");

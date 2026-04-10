@@ -8,6 +8,7 @@ import "./globals.scss";
 import RouteScrollToTop from "@/helper/RouteScrollToTop";
 import ColorPalate from "@/helper/ColorPalate";
 import ClientProviders from "@/components/ClientProviders";
+import { Toaster } from "react-hot-toast";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://irwaa.com";
 const organizationSchema = {
@@ -125,6 +126,7 @@ export default function RootLayout({ children }) {
         <RouteScrollToTop />
         <ColorPalate />
 
+        <Toaster position="bottom-right" toastOptions={{ duration: 4000, style: { background: "#333", color: "#fff", } }} />
         <ClientProviders>
           {children}
         </ClientProviders>

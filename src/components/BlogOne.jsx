@@ -125,7 +125,11 @@ export default function BlogOne({ initialBlogs }) {
         </div>
 
         <div className="row g-4">
-          {posts.map((post, index) => (
+          {(!posts || posts.length === 0) && !loading ? (
+          <div className="col-12 py-5 text-center text-muted">
+            <p className="mb-0 fs-5">New insights and articles will be published here shortly.</p>
+          </div>
+        ) : posts.map((post, index) => (
             <div
               key={post.id}
               className="col-lg-4 col-md-6"

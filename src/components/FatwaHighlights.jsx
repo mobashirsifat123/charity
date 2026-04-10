@@ -137,7 +137,11 @@ export default function FatwaHighlights({ initialFatwas }) {
         </div>
 
         <div className="row g-4">
-          {fatwas.map((fatwa, index) => (
+          {(!fatwas || fatwas.length === 0) && !loading ? (
+          <div className="col-12 py-5 text-center text-muted">
+            <p className="mb-0 fs-5">No fatwas are currently available to display.</p>
+          </div>
+        ) : fatwas.map((fatwa, index) => (
             <div
               key={fatwa.id}
               className="col-lg-4 col-md-6"

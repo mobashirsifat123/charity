@@ -370,7 +370,7 @@ const HeaderOne = () => {
 
                       <Link
                         href='/donation'
-                        className='btn--primary d-none d-lg-none'
+                        className='btn--primary d-none d-xl-inline-block'
                       >
                         {t('donateNow', 'Donate Now')} <i className='fa-solid fa-arrow-right' />
                       </Link>

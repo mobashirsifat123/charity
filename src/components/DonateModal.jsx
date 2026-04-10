@@ -34,12 +34,12 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
         // Validate amount
         const donationAmount = parseFloat(amount);
         if (isNaN(donationAmount) || donationAmount <= 0) {
-            setError(t('invalidDonationAmount', 'Please enter a valid amount of at least $1.'));
+            toast.error(t('invalidDonationAmount', 'Please enter a valid amount of at least $1.'));
             return;
         }
 
         if (donationAmount < 1) {
-            setError(t('invalidDonationAmount', 'Please enter a valid amount of at least $1.'));
+            toast.error(t('invalidDonationAmount', 'Please enter a valid amount of at least $1.'));
             return;
         }
 
@@ -59,10 +59,10 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
                     userEmail: user.email,
                     userName: user.user_metadata?.full_name || user.email,
                     userId: user.id,
-                    successUrl: `${window.location.origin}/donation/success`,
+                    successUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/donation/success`,
                     cancelUrl: campaignId
-                        ? `${window.location.origin}/cause-details/${campaignId}`
-                        : `${window.location.origin}/donation`
+? `${typeof window !== "undefined" ? window.location.origin : ""}/cause-details/${campaignId}`
+: `${typeof window !== "undefined" ? window.location.origin : ""}/donation`
                 })
             });
             const data = await response.json();
@@ -71,7 +71,7 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
                 // Redirect to Stripe Checkout
                 window.location.href = data.url;
             } else {
-                setError(data.message || t('unableToStartCheckout', 'Unable to start checkout.'));
+                toast.error(data.message || t('unableToStartCheckout', 'Unable to start checkout.'));
                 setLoading(false);
             }
         } catch (err) {
@@ -125,12 +125,7 @@ const DonateModal = ({ isOpen, onClose, campaignId, campaignTitle, onSuccess }) 
 
                         <div className="modal-body pt-3">
                             <form onSubmit={handleSubmit}>
-                                {error && (
-                                    <div className="alert alert-danger py-2" role="alert">
-                                        <i className="fa-solid fa-circle-exclamation me-2"></i>
-                                        {error}
-                                    </div>
-                                )}
+                                
 
                                 {!user && (
                                     <div className="alert alert-warning py-2" role="alert">

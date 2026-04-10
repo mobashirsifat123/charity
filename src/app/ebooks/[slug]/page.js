@@ -89,7 +89,7 @@ export default async function EbookDetailPage({ params }) {
                     </div>
                     <p className="text-muted mb-4">{ebook.highlight}</p>
                     <div className="d-flex flex-wrap gap-3">
-                      <a href="#ebook-summary" className="btn btn-primary btn-ripple rounded-pill px-4">
+                      <a href="#ebook-summary" onClick={(e) => { e.preventDefault(); document.getElementById("ebook-summary")?.scrollIntoView({ behavior: "smooth" }); }} className="btn btn-primary btn-ripple rounded-pill px-4">
                         Read Summary
                       </a>
                       <Link href="/ebooks" className="btn btn-outline-primary btn-ripple rounded-pill px-4">
