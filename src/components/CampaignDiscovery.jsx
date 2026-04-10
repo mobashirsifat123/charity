@@ -1,5 +1,6 @@
 "use client";
 import { useState, Suspense } from 'react';
+import Image from "next/image";
 import useCampaigns from '@/hooks/useCampaigns';
 import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -34,7 +35,7 @@ const CampaignCard = ({ campaign, onDonate }) => {
         <div className="col-lg-4 col-md-6 mb-4">
             <div className="card campaign-card hover-lift hover-glow-primary h-100 border-0 shadow-sm rounded-4 overflow-hidden">
                 <div className="position-relative">
-                    <img
+                    <Image width={400} height={220}
                         src={getImageUrl(campaign.image_url)}
                         alt={campaign.title}
                         className="card-img-top"

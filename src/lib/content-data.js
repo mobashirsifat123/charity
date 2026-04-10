@@ -112,3 +112,17 @@ export function getUnifiedSearchResults({ blogs = [], fatwas = [], query = "", t
 
   return [...articleCards, ...fatwaCards].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 }
+
+export async function fetchPublishedCampaigns(limit = 6) {
+  const { data, error } = await supabase
+    .from("campaigns")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Error fetching campaigns:", error);
+    return [];
+  }
+  return data || [];
+}

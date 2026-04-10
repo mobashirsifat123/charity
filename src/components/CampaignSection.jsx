@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import Image from "next/image";
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import DonateModal from './DonateModal';
@@ -142,7 +143,7 @@ const CampaignSection = () => {
                                     <div className="cause__slider-single hover-lift">
                                         <div className="thumb">
                                             <Link href={`/cause-details/${campaign.id}`}>
-                                                <img
+                                                <Image width={400} height={240}
                                                     src={campaign.image_url || '/assets/images/cause/one.png'}
                                                     alt={campaign.title}
                                                     style={{ width: '100%', height: '200px', objectFit: 'cover' }}

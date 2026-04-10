@@ -7,7 +7,7 @@ import FatwaHighlights from "@/components/FatwaHighlights";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
 import PrayerTimesWidget from "@/components/home/PrayerTimesWidget";
-import { fetchPublishedBlogs, fetchPublishedFatwas } from "@/lib/content-data";
+import { fetchPublishedBlogs, fetchPublishedFatwas, fetchPublishedCampaigns } from "@/lib/content-data";
 import QuranLearningShowcase from "@/components/QuranLearningShowcase";
 import TopBarOne from "@/components/TopBarOne";
 import { getFallbackPrayerTimes } from "@/lib/server/prayer-times";
@@ -25,6 +25,7 @@ const Page = async () => {
   const fallbackPrayerTimes = await getFallbackPrayerTimes();
   let initialBlogs = null;
   let initialFatwas = null;
+  let initialCampaigns = null;
 
   try {
     initialBlogs = await fetchPublishedBlogs(3);
@@ -36,6 +37,12 @@ const Page = async () => {
     initialFatwas = await fetchPublishedFatwas(3);
   } catch (err) {
     console.error("Failed to fetch initial fatwas", err);
+  }
+
+  try {
+    initialCampaigns = await fetchPublishedCampaigns(6);
+  } catch (err) {
+    console.error("Failed to fetch initial campaigns", err);
   }
 
   return (
@@ -50,7 +57,7 @@ const Page = async () => {
       <PartnerOne />
       <DifferenceOne />
       <HelpOne />
-      <CampaignDiscovery />
+      <CampaignDiscovery initialCampaigns={initialCampaigns} />
       <CtaSectionOne />
       <TeamOne />
       <CommunityOne />
