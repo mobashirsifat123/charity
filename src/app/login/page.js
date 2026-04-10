@@ -82,10 +82,6 @@ export default function LoginPage() {
                 provider: 'google',
                 options: {
                     redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'select_account',
-                    },
                 },
             });
 

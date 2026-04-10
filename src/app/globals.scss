@@ -1965,6 +1965,65 @@ html[dir="rtl"] .navbar__sub-menu li.active a {
   color: var(--primary-color);
 }
 
+.compact-chip-scroll {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-first-hero .container {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.hero-quick-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.hero-quick-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.95rem 0.9rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  min-height: 118px;
+}
+
+.hero-quick-card:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.hero-quick-card__icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 1rem;
+}
+
+.hero-quick-card__title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.hero-quick-card__meta {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .quran-learning-showcase {
   background:
     radial-gradient(circle at top right, rgba(200, 169, 81, 0.08), transparent 32%),
@@ -2069,7 +2128,7 @@ html[dir="rtl"] .article-directory-sidebar-button {
   }
 
   .banner {
-    padding: 120px 0 80px;
+    padding: 96px 0 44px;
   }
 
   .navbar__menu-wrapper {
@@ -2103,5 +2162,168 @@ html[dir="rtl"] .article-directory-sidebar-button {
 
   .quran-learning-shell {
     grid-template-columns: 1fr;
+  }
+
+  .mobile-first-hero {
+    min-height: auto !important;
+  }
+
+  .mobile-first-hero h1 {
+    font-size: clamp(1.8rem, 7vw, 2.45rem) !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .mobile-first-hero p {
+    font-size: 0.98rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .hero-language-picker {
+    margin-bottom: 1rem !important;
+  }
+
+  .hero-language-switcher {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-language-switcher .btn {
+    flex: 1 1 30%;
+    min-width: 82px;
+    padding-inline: 0.55rem;
+  }
+
+  .hero-cta-group .btn {
+    width: 100%;
+    justify-content: center;
+    padding-inline: 1rem !important;
+  }
+
+  .hero-stats-row {
+    row-gap: 0.75rem !important;
+  }
+
+  .hero-stats-row h3 {
+    font-size: 1.2rem;
+  }
+
+  .hero-stats-row small {
+    font-size: 0.72rem;
+    line-height: 1.35;
+    display: inline-block;
+  }
+
+  .compact-directory-toolbar {
+    padding: 0.85rem;
+    border-radius: 18px;
+  }
+
+  .compact-directory-label {
+    font-size: 0.7rem;
+  }
+
+  .compact-directory-input,
+  .compact-directory-reset {
+    min-height: 42px;
+  }
+
+  .article-directory-header {
+    margin-bottom: 1rem !important;
+  }
+
+  .article-directory-title {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .article-directory-description {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .article-directory-surface {
+    border-radius: 22px;
+  }
+
+  .article-directory-section-header {
+    padding: 1rem 1rem 0.85rem;
+  }
+
+  .article-directory-featured-item,
+  .article-directory-selected,
+  .article-directory-latest-feed {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .article-directory-featured-item {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .article-directory-featured-title {
+    font-size: 1.18rem;
+  }
+
+  .article-directory-featured-item--lead .article-directory-featured-title {
+    font-size: 1.35rem;
+  }
+
+  .article-directory-feed-title {
+    font-size: 1.08rem;
+  }
+
+  .islamweb-like-feed {
+    padding: 1rem;
+    border-radius: 20px;
+  }
+
+  .islamweb-like-item-title {
+    font-size: 1.05rem;
+  }
+
+  .islamweb-like-item-excerpt {
+    font-size: 0.93rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .mobile-first-hero {
+    padding-top: 86px !important;
+    padding-bottom: 34px !important;
+  }
+
+  .hero-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .hero-quick-card {
+    min-height: 104px;
+    padding: 0.8rem;
+  }
+
+  .hero-quick-card__title {
+    font-size: 0.88rem;
+  }
+
+  .hero-quick-card__meta {
+    font-size: 0.74rem;
+  }
+
+  .article-directory-chip-grid {
+    padding: 1rem;
+    gap: 0.55rem;
+  }
+
+  .article-directory-chip {
+    padding: 0.62rem 0.8rem;
+    font-size: 0.82rem;
+  }
+
+  .compact-chip-scroll .article-directory-chip {
+    flex: 0 0 auto;
   }
 }

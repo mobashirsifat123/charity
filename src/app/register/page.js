@@ -64,27 +64,22 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
+            const origin = typeof window !== 'undefined' ? window.location.origin : '';
             const { data, error: signUpError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
+                options: {
+                    emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+                    data: {
+                        full_name: formData.name,
+                        name: formData.name,
+                    },
+                },
             });
 
             if (signUpError) {
                 setError(signUpError.message || t('registrationFailed', 'Registration failed'));
                 return;
-            }
-
-            // Push to custom users table immediately since they are created in trigger or we insert manually
-            const { error: insertError } = await supabase.from('users').insert({
-                name: formData.name,
-                email: formData.email,
-                password_hash: 'managed_by_supabase_auth',
-                role: 'donor'
-            });
-
-            if (insertError && insertError.code !== '23505') { // Ignore unique constraint for email
-               // Optional: handle if user table insert fails
-               console.error("Failed to insert into public.users", insertError);
             }
 
             if (data?.session) {
@@ -111,10 +106,6 @@ export default function RegisterPage() {
                 provider: 'google',
                 options: {
                     redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'select_account',
-                    },
                 },
             });
 

@@ -176,6 +176,36 @@ export default function BlogGrid() {
 
           <div className="row g-4">
             <div className="col-xl-8">
+              <div className="compact-directory-toolbar mb-4 d-xl-none">
+                <div className="row g-2 align-items-end">
+                  <div className="col-12">
+                    <label className="compact-directory-label">{t("search", "Search")}</label>
+                    <input
+                      type="text"
+                      className="form-control compact-directory-input"
+                      placeholder={t("searchArticlesPlaceholder", "Search articles, tags, or topics...")}
+                      value={searchTerm}
+                      onChange={(event) => setSearchTerm(event.target.value)}
+                    />
+                  </div>
+                  <div className="col-12">
+                    <label className="compact-directory-label">Subject</label>
+                    <div className="compact-chip-scroll">
+                      {allSubjects.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          className={`article-directory-chip ${selectedSubject === item ? "is-active" : ""}`}
+                          onClick={() => setSelectedSubject(item)}
+                        >
+                          {item === "all" ? t("allCategories", "All categories") : item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="article-directory-surface">
                 <div className="article-directory-section-header">
                   <h2 className="article-directory-section-title mb-0">
@@ -322,7 +352,7 @@ export default function BlogGrid() {
               </div>
             </div>
 
-            <aside className="col-xl-4">
+            <aside className="col-xl-4 d-none d-xl-block">
               <div className="article-directory-sidebar article-directory-surface sticky-lg-top" style={{ top: "110px" }}>
                 <div className="article-directory-sidebar-block">
                   <h3 className="article-directory-sidebar-title">

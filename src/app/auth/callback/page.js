@@ -19,12 +19,27 @@ function AuthCallbackContent() {
     const finishAuth = async () => {
       const nextPath = searchParams.get("next") || "/dashboard";
       const code = searchParams.get("code");
+      const hashParams =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.hash.replace(/^#/, ""))
+          : new URLSearchParams();
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
 
       try {
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             throw exchangeError;
+          }
+        } else if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (sessionError) {
+            throw sessionError;
           }
         }
 
@@ -35,6 +50,7 @@ function AuthCallbackContent() {
         if (!active) return;
 
         if (session) {
+          router.refresh();
           router.replace(nextPath);
           return;
         }

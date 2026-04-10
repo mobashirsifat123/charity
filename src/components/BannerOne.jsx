@@ -27,12 +27,12 @@ const BannerOne = () => {
 
     return (
         <section
-            className="banner aurora-grid"
+            className="banner aurora-grid mobile-first-hero"
             style={{
                 background: settings.hero_bg_image
                     ? `linear-gradient(rgba(8, 35, 26, 0.72), rgba(8, 35, 26, 0.72)), url(${settings.hero_bg_image}) center/cover no-repeat`
                     : 'linear-gradient(135deg, #07261d 0%, #0b3d2e 52%, #145a32 100%)',
-                minHeight: '90vh',
+                minHeight: '78vh',
                 display: 'flex',
                 alignItems: 'center',
                 position: 'relative',
@@ -70,7 +70,7 @@ const BannerOne = () => {
                         <p className="text-white mb-5" style={{ fontSize: '1.1rem', maxWidth: 520, opacity: 0.82 }}>
                             {settings.hero_description || 'Build a stronger Muslim community through beneficial articles, trusted fatwas, and causes that turn faith into action.'}
                         </p>
-                        <div className="d-flex flex-wrap gap-3">
+                        <div className="d-flex flex-wrap gap-3 hero-cta-group">
                             <Link href={settings.hero_primary_cta_link || '/fatwa'} className="btn btn-warning btn-lg fw-bold px-5 rounded-pill btn-ripple">
                                 {settings.hero_primary_cta_text || 'Explore Fatwas'} <i className="fa-solid fa-arrow-right ms-2" />
                             </Link>
@@ -85,7 +85,7 @@ const BannerOne = () => {
                             </Link>
                         </div>
 
-                        <div className="d-flex flex-wrap gap-2 mt-4">
+                        <div className="d-flex flex-wrap gap-2 mt-4 d-none d-lg-flex">
                             {systemPills.map((pill) => (
                                 <div key={pill.label} className="signal-chip">
                                     <span className={`signal-chip__dot ${pill.tone}`}></span>
@@ -94,8 +94,19 @@ const BannerOne = () => {
                             ))}
                         </div>
 
-                        {/* Stats */}
-                        <div className="row mt-5 gy-3">
+                        <div className="hero-quick-grid d-grid d-lg-none mt-4">
+                            {cards.map((card) => (
+                                <Link key={card.title} href={card.title === (settings.hero_card_4_title || 'Learn Quran') ? '/quran' : card.title === (settings.hero_card_2_title || 'Fatwas') ? '/fatwa' : card.title === (settings.hero_card_1_title || 'Articles') ? '/blog-grid' : '/about-us'} className="hero-quick-card text-decoration-none">
+                                    <span className="hero-quick-card__icon">
+                                        <i className={`fa-solid ${card.icon}`} style={{ color: card.color }} />
+                                    </span>
+                                    <span className="hero-quick-card__title">{card.title}</span>
+                                    <span className="hero-quick-card__meta">{card.meta}</span>
+                                </Link>
+                            ))}
+                        </div>
+
+                        <div className="row mt-4 mt-lg-5 gy-3 hero-stats-row">
                             {stats.map(stat => (
                                 <div key={stat.label} className="col-4">
                                     <h3 className="fw-bold mb-0" style={{ color: 'var(--accent-color)' }}>{stat.value}</h3>
@@ -105,7 +116,7 @@ const BannerOne = () => {
                         </div>
                     </div>
 
-                    <div className="col-lg-6" data-aos="fade-left">
+                    <div className="col-lg-6 d-none d-lg-block" data-aos="fade-left">
                         <div className="glass-surface workflow-panel p-4 p-xl-5">
                             <div className="d-flex align-items-center justify-content-between gap-3 mb-4">
                                 <div>

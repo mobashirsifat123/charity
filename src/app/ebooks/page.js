@@ -58,7 +58,7 @@ export default function EbooksPage() {
       <section className="py-5 bg-white">
         <div className="container">
           <div className="row g-4">
-            <aside className="col-lg-4 col-xl-3">
+            <aside className="col-lg-4 col-xl-3 d-none d-lg-block">
               <div className="islamweb-like-panel sticky-lg-top" style={{ top: "110px" }}>
                 <div className="islamweb-like-block">
                   <h5 className="islamweb-like-block-title">Book Categories</h5>

@@ -9,7 +9,6 @@ import {
   getContentCategory,
   getContentPath,
   getContentTitle,
-  getExcerpt,
   incrementViewCount,
   normalizeTags,
   slugify,
@@ -63,17 +62,6 @@ export default function BlogDetails() {
       active = false;
     };
   }, [identifier]);
-
-  useEffect(() => {
-    if (typeof document === "undefined" || !blog) return;
-    document.title = blog.seo_title || `${blog.title} | IRWA`;
-
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const description = blog.seo_description || getExcerpt(blog.content || "", 150);
-    if (metaDescription) {
-      metaDescription.setAttribute("content", description);
-    }
-  }, [blog]);
 
   const handleShare = async (platform) => {
     if (!blog) return;

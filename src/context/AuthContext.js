@@ -17,37 +17,35 @@ export function AuthProvider({ children }) {
             return sessionUser || null;
         }
 
-        let { data: userData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', sessionUser.email)
-            .maybeSingle();
+        let userData = null;
 
-        if (!userData) {
-            try {
-                await supabase.from('users').insert({
-                    name:
-                        sessionUser.user_metadata?.full_name ||
-                        sessionUser.user_metadata?.name ||
-                        sessionUser.email,
-                    email: sessionUser.email,
-                    password_hash: 'managed_by_supabase_auth',
-                    role: 'donor',
-                });
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('email', sessionUser.email)
+                .maybeSingle();
 
-                const result = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('email', sessionUser.email)
-                    .maybeSingle();
-
-                userData = result.data || null;
-            } catch (profileError) {
-                console.error('Unable to sync public.users profile:', profileError);
+            if (error) {
+                throw error;
             }
+
+            userData = data || null;
+        } catch (profileError) {
+            console.warn('Unable to read public.users profile during auth hydration. Falling back to Supabase auth user only.', profileError);
         }
 
-        return { ...sessionUser, ...userData };
+        return {
+            ...sessionUser,
+            ...userData,
+            name:
+                userData?.name ||
+                sessionUser.user_metadata?.full_name ||
+                sessionUser.user_metadata?.name ||
+                sessionUser.email,
+            email: userData?.email || sessionUser.email,
+            role: userData?.role || 'donor',
+        };
     };
 
     useEffect(() => {

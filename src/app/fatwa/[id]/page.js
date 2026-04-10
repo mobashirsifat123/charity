@@ -63,15 +63,6 @@ export default function FatwaDetails() {
     };
   }, [identifier]);
 
-  useEffect(() => {
-    if (typeof document === "undefined" || !fatwa) return;
-    document.title = fatwa.seo_title || `${getContentTitle(fatwa, "fatwa")} | IRWA`;
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute("content", fatwa.seo_description || (fatwa.answer || fatwa.content || "").slice(0, 150));
-    }
-  }, [fatwa]);
-
   const handleShare = async (platform) => {
     if (!fatwa) return;
 

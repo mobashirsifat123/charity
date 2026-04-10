@@ -332,3 +332,77 @@ IRWAA wordmark visibility fix (April 9, 2026):
 - Adjusted the shared brand layout styles so the wordmark stays visible, aligned, and non-wrapping across common screen sizes.
 - Updated the default site settings brand name to `IRWAA` for better consistency with the intended identity.
 - Re-ran lint and production build after the wordmark fix to confirm the branding update is production-safe.
+
+Mobile-first UX pass for key public pages (April 10, 2026):
+- Performed a focused mobile usability pass on the homepage, header, articles page, fatwas page, and ebooks page.
+- Improved the homepage first screen on mobile by:
+  - reducing hero height and vertical padding
+  - hiding the heavier desktop workflow panel on smaller screens
+  - adding a clear 2x2 quick-access grid for primary destinations
+  - making hero CTAs full-width and easier to tap
+  - tightening hero stat and language-switch layouts
+- Improved article browsing on mobile by:
+  - adding a compact top search/filter toolbar for smaller screens
+  - hiding the large desktop sidebar on mobile
+  - tightening typography, spacing, and card sizing for easier reading
+- Improved fatwa and ebook browsing on mobile by:
+  - hiding desktop-heavy sidebars on smaller screens
+  - keeping compact filter bars near the top of content
+  - preserving faster access to the main content list without extra scrolling
+- Added shared responsive utility styling to support mobile chips, compact filter bars, tighter section spacing, and more usable tap targets.
+- Re-ran lint and production build after the mobile-first pass to confirm the UX updates are production-safe.
+
+Technical SEO foundation pass (April 10, 2026):
+- Strengthened the global site metadata with:
+  - better default title/template handling
+  - richer description and keyword coverage
+  - canonical homepage definition
+  - Open Graph metadata
+  - Twitter card metadata
+  - crawler directives for richer previews
+- Added structured data in the root layout for:
+  - Organization schema
+  - WebSite schema with search action support
+- Added core technical SEO routes:
+  - `/robots.txt`
+  - `/sitemap.xml`
+  - `/manifest.webmanifest`
+- Added route-level metadata layouts for key public index pages:
+  - About
+  - Articles
+  - Fatwas
+  - E-Books
+- Added `noindex` metadata for internal/utility routes that should not rank in search results, including:
+  - Search
+  - Login
+  - Register
+  - Reset Password
+  - Request Fatwa
+- Kept search engine focus on the stronger public-facing knowledge pages while reducing index noise from low-value utility screens.
+- Re-ran lint and production build after the SEO pass to confirm the new metadata and crawl files are production-safe.
+
+Dynamic detail-page SEO pass (April 10, 2026):
+- Added server-rendered SEO metadata for individual article pages so each article now exposes:
+  - a dynamic title
+  - a dynamic description
+  - canonical URL data
+  - Open Graph and Twitter preview data
+- Added server-rendered SEO metadata for individual fatwa pages so each fatwa now exposes:
+  - a dynamic title
+  - a dynamic description
+  - canonical URL data
+  - Open Graph and Twitter preview data
+- Added structured data for detail pages:
+  - `Article` schema for article pages
+  - `QAPage` schema for fatwa pages
+- Removed the old client-only document title/meta mutation from detail pages so SEO no longer depends on browser-side hydration.
+- Kept the implementation aligned with Next.js 15 route-level metadata and existing Supabase content fetching.
+
+Auth stability and Supabase compatibility pass (April 10, 2026):
+- Hardened the browser Supabase client with explicit auth session persistence, token refresh, URL session detection, and PKCE flow settings.
+- Removed the brittle direct `public.users` insert from browser-side registration so account creation no longer depends on client-side table write permissions.
+- Improved auth hydration so login can still succeed even if reading the custom `public.users` profile is blocked or temporarily unavailable.
+- Preserved user display data by falling back to Supabase Auth user metadata when the custom profile table cannot be read.
+- Improved Google sign-in/sign-up UX by removing forced account re-selection so browser-signed Google accounts can flow more naturally.
+- Fixed auth callback handling to support both PKCE `code` redirects and token/hash-based redirects.
+- Fixed password reset handling to support both PKCE `code` redirects and token/hash-based recovery links.
