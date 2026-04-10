@@ -21,16 +21,16 @@ function resolveFrontendUrl(req) {
 
   const vercelUrl = stripTrailingSlash(process.env.VERCEL_URL);
   if (vercelUrl) {
-    return vercelUrl.startsWith('http') ? vercelUrl : `https://${vercelUrl}`;
+    return vercelUrl.startsWith('https') ? vercelUrl : `https://${vercelUrl}`;
   }
 
   const forwardedHost = resolveForwardedHeader(req?.headers?.['x-forwarded-host'] || req?.headers?.host, '');
-  const forwardedProto = resolveForwardedHeader(req?.headers?.['x-forwarded-proto'], 'http');
+  const forwardedProto = resolveForwardedHeader(req?.headers?.['x-forwarded-proto'], 'https');
   if (forwardedHost) {
     return `${forwardedProto}://${forwardedHost}`;
   }
 
-  return 'http://localhost:3000';
+  return 'https://irwaa.com';
 }
 
 module.exports = {
