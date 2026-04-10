@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import Image from "next/image";
 import Link from 'next/link';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { supabase } from '@/lib/supabaseClient';
@@ -56,7 +57,7 @@ const TeamOne = () => {
                                 <div className="card border-0 shadow-sm rounded-4 text-center overflow-hidden h-100 hover-lift">
                                     <div style={{ height: 250, backgroundColor: 'var(--surface-alt)', overflow: 'hidden' }}>
                                         {member.image_url ? (
-                                            <img src={member.image_url} alt={member.name} className="w-100 h-100 object-fit-cover" 
+                                            <Image src={member.image_url} alt={member.name} width={400} height={500} className="w-100 h-100 object-fit-cover" 
                                                 style={{ transition: 'transform 0.5s' }} />
                                         ) : (
                                             <div className="w-100 h-100 d-flex align-items-center justify-content-center text-secondary">

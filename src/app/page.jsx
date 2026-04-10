@@ -7,6 +7,7 @@ import FatwaHighlights from "@/components/FatwaHighlights";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
 import PrayerTimesWidget from "@/components/home/PrayerTimesWidget";
+import { fetchPublishedBlogs, fetchPublishedFatwas } from "@/lib/content-data";
 import QuranLearningShowcase from "@/components/QuranLearningShowcase";
 import TopBarOne from "@/components/TopBarOne";
 import { getFallbackPrayerTimes } from "@/lib/server/prayer-times";
@@ -22,6 +23,20 @@ const DifferenceTwo = dynamic(() => import("@/components/DifferenceTwo"));
 
 const Page = async () => {
   const fallbackPrayerTimes = await getFallbackPrayerTimes();
+  let initialBlogs = null;
+  let initialFatwas = null;
+
+  try {
+    initialBlogs = await fetchPublishedBlogs(3);
+  } catch (err) {
+    console.error("Failed to fetch initial blogs", err);
+  }
+
+  try {
+    initialFatwas = await fetchPublishedFatwas(3);
+  } catch (err) {
+    console.error("Failed to fetch initial fatwas", err);
+  }
 
   return (
     <section className='page-wrapper'>
@@ -30,8 +45,8 @@ const Page = async () => {
       <HeaderOne />
       <BannerOne />
       <PrayerTimesWidget initialData={fallbackPrayerTimes} />
-      <FatwaHighlights />
-      <BlogOne />
+      <FatwaHighlights initialFatwas={initialFatwas} />
+      <BlogOne initialBlogs={initialBlogs} />
       <PartnerOne />
       <DifferenceOne />
       <HelpOne />

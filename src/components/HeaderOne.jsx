@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -145,7 +146,7 @@ const HeaderOne = () => {
                     <Link href='/' className='text-decoration-none'>
                       {settings.site_logo_url ? (
                         <span className='site-brand site-brand--header'>
-                          <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--header' />
+                          <Image src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--header' width={150} height={52} style={{ width: "auto", height: "52px" }} priority />
                           <span className='site-brand__wordmark'>IRWAA</span>
                         </span>
                       ) : (
@@ -436,7 +437,7 @@ const HeaderOne = () => {
               <Link href='/' className='text-decoration-none'>
                 {settings.site_logo_url ? (
                   <span className='site-brand site-brand--mobile'>
-                    <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--mobile' />
+                    <Image src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className='site-logo site-logo--mobile' width={120} height={44} style={{ width: "auto", height: "44px" }} priority />
                     <span className='site-brand__wordmark'>IRWAA</span>
                   </span>
                 ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from 'next/link';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 
@@ -19,7 +20,7 @@ const DifferenceOne = () => {
                         <div className="position-relative">
                             <div className="rounded-4 overflow-hidden surface-placeholder" style={{ height: 400, width: '100%', position: 'relative' }}>
                                 {settings.impact_image_url ? (
-                                    <img
+                                    <Image width={600} height={600}
                                         src={settings.impact_image_url}
                                         alt={settings.impact_image_alt || 'Impact Image'}
                                         className="w-100 h-100 object-fit-cover"

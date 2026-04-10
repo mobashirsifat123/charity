@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 
@@ -49,7 +50,7 @@ const TestimonialOne = () => {
                                 "{settings.testimonial_quote || 'I was looking for a way to give back to education initiatives, and IRWA made the process incredibly transparent. Being able to see exactly where my money went and receiving updates from the campaign leaders is truly rewarding.'}"
                             </h4>
                             <div className="d-flex align-items-center justify-content-center mt-4">
-                                <img src={settings.testimonial_avatar_url || "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop"} 
+                                <Image src={settings.testimonial_avatar_url || "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop"} width={60} height={60} 
                                     alt="Reviewer" className="rounded-circle object-fit-cover me-3 shadow-sm" style={{ width: 60, height: 60 }} />
                                 <div className="text-start">
                                     <h6 className="fw-bold mb-0">{settings.testimonial_name || 'Emily Thompson'}</h6>

@@ -41,10 +41,10 @@ const formatDate = (dateString, locale) =>
     year: "numeric",
   });
 
-export default function FatwaHighlights() {
+export default function FatwaHighlights({ initialFatwas }) {
   const { locale, t } = useLanguage();
   const { settings } = useSiteSettings();
-  const [fatwas, setFatwas] = useState(FALLBACK_FATWAS);
+  const [fatwas, setFatwas] = useState(initialFatwas || FALLBACK_FATWAS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

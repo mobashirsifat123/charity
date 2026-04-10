@@ -271,7 +271,7 @@ function CampaignDiscoveryContent() {
 }
 
 // Wrapper with Suspense for useSearchParams
-export default function CampaignDiscovery() {
+export default function CampaignDiscovery({ initialCampaigns }) {
     return (
         <Suspense fallback={
             <section id="campaigns" className="campaign-discovery py-5 page-surface-alt">

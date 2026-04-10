@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { translateCampaignCategory } from '@/lib/i18n';
@@ -25,7 +26,7 @@ const FooterOne = () => {
                             <Link href="/" className="text-decoration-none">
                                 {settings.site_logo_url ? (
                                     <span className="site-brand site-brand--footer">
-                                        <img src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className="site-logo site-logo--footer" />
+                                        <Image src={settings.site_logo_url} alt={settings.site_name || 'Site Logo'} className="site-logo site-logo--footer" width={160} height={58} style={{ width: "auto", height: "58px" }} />
                                         <span className="site-brand__wordmark">IRWAA</span>
                                     </span>
                                 ) : (

@@ -45,10 +45,10 @@ const formatDate = (dateString, locale) =>
     year: "numeric",
   });
 
-export default function BlogOne() {
+export default function BlogOne({ initialBlogs }) {
   const { locale, t } = useLanguage();
   const { settings } = useSiteSettings();
-  const [posts, setPosts] = useState(FALLBACK_POSTS);
+  const [posts, setPosts] = useState(initialBlogs || FALLBACK_POSTS);
   const [loading, setLoading] = useState(true);
   const sectionTitle = settings.blog_title || "Islamic Insights";
   const tags = [
