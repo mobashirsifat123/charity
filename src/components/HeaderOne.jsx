@@ -427,7 +427,7 @@ const HeaderOne = () => {
       </header>
 
       <div
-        className={`mobile-menu mobile-menu--primary ${mobileMenu ? "show-menu" : ""
+        className={`mobile-menu mobile-menu--primary d-block d-xl-none ${mobileMenu ? "show-menu" : ""
           }`}
       >
         <nav className='mobile-menu__wrapper'>
