@@ -2,6 +2,8 @@ const path = require('path');
 const dotenv = require('dotenv');
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const { generalLimiter, strictLimiter } = require('./src/middleware/rateLimiter');
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
@@ -20,7 +22,9 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 // Middleware
+app.use(helmet());
 app.use(cors());
+app.use(generalLimiter);
 app.use(express.json());
 
 // Serve uploaded files statically
@@ -44,12 +48,12 @@ app.get('/', (req, res) => {
 });
 
 // Mount routes
-app.use('/auth', authRoutes);
+app.use('/auth', strictLimiter, authRoutes);
 app.use('/campaigns', campaignRoutes);
-app.use('/donations', donationRoutes);
+app.use('/donations', strictLimiter, donationRoutes);
 app.use('/admin', adminRoutes);
 app.use('/upload', uploadRoutes);
-app.use('/stripe', stripeRoutes);
+app.use('/stripe', strictLimiter, stripeRoutes);
 
 // 404 handler
 app.use((req, res) => {
