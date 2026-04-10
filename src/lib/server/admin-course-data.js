@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { hasValidSupabaseServerEnv } from "@/lib/server/env";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -12,6 +13,10 @@ const supabase = createClient(
 );
 
 export async function getAdminCourseCreateData() {
+  if (!hasValidSupabaseServerEnv()) {
+    return { scholars: [] };
+  }
+
   const { data, error } = await supabase
     .from("scholar_profiles")
     .select("id, name, credentials")
@@ -25,6 +30,10 @@ export async function getAdminCourseCreateData() {
 }
 
 export async function listAdminCourses() {
+  if (!hasValidSupabaseServerEnv()) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("courses")
     .select("*, scholar_profiles(id, name, credentials)")
@@ -56,6 +65,10 @@ export async function listAdminCourses() {
 }
 
 export async function getAdminCourseModulesData(courseId) {
+  if (!hasValidSupabaseServerEnv()) {
+    return { course: null, modules: [] };
+  }
+
   const [{ data: course, error: courseError }, { data: modules, error: modulesError }] = await Promise.all([
     supabase
       .from("courses")

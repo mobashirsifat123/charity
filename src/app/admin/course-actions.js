@@ -141,7 +141,7 @@ export async function createCourse(formData) {
   const payload = {
     title,
     description: description || null,
-    scholar_id: scholarId ? Number(scholarId) : null,
+    scholar_id: scholarId || null,
     cover_image: coverImageUrl || null,
   };
 
@@ -165,11 +165,16 @@ export async function createCourse(formData) {
 
 export async function createModule(courseId, formData) {
   await getAuthorizedCourseAdmin(formData);
+  const normalizedCourseId = String(courseId || "").trim();
 
   const title = String(formData.get("title") || "").trim();
   const videoUrl = String(formData.get("videoUrl") || "").trim();
   const orderIndex = Number(formData.get("orderIndex") || 0);
   const contentText = String(formData.get("contentText") || "").trim();
+
+  if (!normalizedCourseId) {
+    return { success: false, error: "Course ID is missing." };
+  }
 
   if (!title) {
     return { success: false, error: "Module title is required." };
@@ -182,7 +187,7 @@ export async function createModule(courseId, formData) {
   const { data, error } = await adminClient
     .from("course_modules")
     .insert({
-      course_id: Number(courseId),
+      course_id: normalizedCourseId,
       title,
       video_url: videoUrl || null,
       order_index: orderIndex,
@@ -195,8 +200,8 @@ export async function createModule(courseId, formData) {
     return { success: false, error: error.message || "Unable to add module." };
   }
 
-  revalidatePath(`/admin/courses/${courseId}/modules`);
-  revalidatePath(`/courses/${courseId}`);
+  revalidatePath(`/admin/courses/${normalizedCourseId}/modules`);
+  revalidatePath(`/courses/${normalizedCourseId}`);
 
   return {
     success: true,
@@ -212,7 +217,7 @@ export async function updateModule(id, data) {
   const videoUrl = String(payload.videoUrl || "").trim();
   const orderIndex = Number(payload.orderIndex || 0);
   const contentText = String(payload.contentText || "").trim();
-  const courseId = Number(payload.courseId || 0);
+  const courseId = String(payload.courseId || "").trim();
 
   if (!title) {
     return { success: false, error: "Module title is required." };
@@ -247,7 +252,7 @@ export async function updateModule(id, data) {
 export async function deleteModule(id, formData) {
   await getAuthorizedCourseAdmin(formData);
 
-  const courseId = Number(formData.get("courseId") || 0);
+  const courseId = String(formData.get("courseId") || "").trim();
 
   const { error } = await adminClient
     .from("course_modules")

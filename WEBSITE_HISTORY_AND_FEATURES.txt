@@ -406,3 +406,13 @@ Auth stability and Supabase compatibility pass (April 10, 2026):
 - Improved Google sign-in/sign-up UX by removing forced account re-selection so browser-signed Google accounts can flow more naturally.
 - Fixed auth callback handling to support both PKCE `code` redirects and token/hash-based redirects.
 - Fixed password reset handling to support both PKCE `code` redirects and token/hash-based recovery links.
+
+Database integration hardening pass (April 10, 2026):
+- Fixed the course progress server action to store Supabase module UUIDs correctly instead of coercing them into numbers.
+- Fixed course creation and module creation/update/delete flows to keep Supabase UUID identifiers intact for:
+  - `courses.id`
+  - `course_modules.id`
+  - `course_modules.course_id`
+  - `courses.scholar_id`
+- Added safer admin course-data fallbacks when Supabase server environment variables are missing or placeholder values are still present.
+- Reduced the chance of silent LMS/database failures caused by UUID-to-number conversion mismatches.

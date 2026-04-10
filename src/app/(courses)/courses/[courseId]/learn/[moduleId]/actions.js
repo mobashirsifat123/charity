@@ -22,10 +22,15 @@ const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 export async function markModuleComplete(moduleId, formData) {
+  const normalizedModuleId = String(moduleId || "").trim();
   const accessToken = String(formData.get('accessToken') || '').trim();
 
   if (!accessToken) {
     throw new Error('You must be logged in to save course progress.');
+  }
+
+  if (!normalizedModuleId) {
+    throw new Error('The selected course module is invalid.');
   }
 
   const { data: authData, error: authError } = await authClient.auth.getUser(accessToken);
@@ -45,7 +50,7 @@ export async function markModuleComplete(moduleId, formData) {
 
   const payload = {
     user_id: profile.id,
-    module_id: Number(moduleId),
+    module_id: normalizedModuleId,
     is_completed: true,
     completed_at: new Date().toISOString(),
   };
@@ -61,11 +66,11 @@ export async function markModuleComplete(moduleId, formData) {
   const { data: moduleRow } = await serviceClient
     .from('course_modules')
     .select('course_id')
-    .eq('id', moduleId)
+    .eq('id', normalizedModuleId)
     .maybeSingle();
 
   if (moduleRow?.course_id) {
     revalidatePath(`/courses/${moduleRow.course_id}`);
-    revalidatePath(`/courses/${moduleRow.course_id}/learn/${moduleId}`);
+    revalidatePath(`/courses/${moduleRow.course_id}/learn/${normalizedModuleId}`);
   }
 }
