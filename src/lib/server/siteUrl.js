@@ -17,5 +17,5 @@ export function resolveServerSiteUrl(request) {
     return `${forwardedProto}://${forwardedHost}`;
   }
 
-  return 'http://localhost:3000';
+  return 'https://irwaa.com';
 }

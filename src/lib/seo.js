@@ -1,6 +1,6 @@
 import { getAuthorName, getContentCategory, getContentTitle, getExcerpt } from "@/lib/content-utils";
 
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://irwaa.com";
 const defaultImagePath = "/branding/irwaa-logo.avif";
 
 export function toAbsoluteUrl(path = "/") {
