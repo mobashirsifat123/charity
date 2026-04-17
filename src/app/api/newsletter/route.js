@@ -3,11 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import { isMissingColumnError } from "@/lib/content-utils";
 import { hasValidSupabaseServerEnv } from "@/lib/server/env";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
-
 export async function POST(req) {
   try {
     if (!hasValidSupabaseServerEnv()) {
@@ -19,6 +14,11 @@ export async function POST(req) {
         { status: 503 }
       );
     }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
 
     const body = await req.json();
     const email = String(body?.email || "").trim().toLowerCase();

@@ -11,10 +11,6 @@ const getRequiredEnv = (name) => {
   return value;
 };
 
-const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL');
-const supabaseAnonKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
-const supabaseServiceRoleKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
-
 const clientOptions = {
   auth: {
     autoRefreshToken: false,
@@ -22,11 +18,25 @@ const clientOptions = {
   },
 };
 
+const getAdminEnv = () => ({
+  supabaseUrl: getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
+  supabaseAnonKey: getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+  supabaseServiceRoleKey: getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
+});
+
 export const createAdminSupabaseClient = () =>
-  createClient(supabaseUrl, supabaseServiceRoleKey, clientOptions);
+  createClient(
+    getAdminEnv().supabaseUrl,
+    getAdminEnv().supabaseServiceRoleKey,
+    clientOptions
+  );
 
 const createAuthSupabaseClient = () =>
-  createClient(supabaseUrl, supabaseAnonKey, clientOptions);
+  createClient(
+    getAdminEnv().supabaseUrl,
+    getAdminEnv().supabaseAnonKey,
+    clientOptions
+  );
 
 const unauthorized = (message, status = 401) =>
   NextResponse.json({ success: false, error: message }, { status });

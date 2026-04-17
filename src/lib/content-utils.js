@@ -30,13 +30,22 @@ export function slugify(value = "") {
 }
 
 export function getPlainText(value = "") {
-  return value.replace(/<[^>]*>?/gm, "").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/<[^>]*>?/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function getExcerpt(value = "", length = 160) {
   const text = getPlainText(value);
   if (text.length <= length) return text;
   return `${text.slice(0, length).trim()}...`;
+}
+
+export function estimateReadTime(value = "", wordsPerMinute = 180) {
+  const wordCount = getPlainText(value).split(/\s+/).filter(Boolean).length;
+
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
 export function normalizeTags(value) {
@@ -65,7 +74,9 @@ export function normalizeStatus(value = "") {
 
 export function buildContentIdentifier(record, fallbackTitle = "content") {
   if (!record?.id) return slugify(record?.slug || fallbackTitle);
-  const resolvedSlug = record?.slug?.trim() || slugify(record?.title || record?.question || fallbackTitle);
+  const resolvedSlug =
+    record?.slug?.trim() ||
+    slugify(record?.title || record?.question || fallbackTitle);
   return `${record.id}--${resolvedSlug || "content"}`;
 }
 
@@ -75,7 +86,9 @@ export function extractIdentifierId(value = "") {
 
 export function getContentPath(type, record) {
   const identifier = buildContentIdentifier(record, type);
-  return type === "blog" ? `/blog-details/${identifier}` : `/fatwa/${identifier}`;
+  return type === "blog"
+    ? `/blog-details/${identifier}`
+    : `/fatwa/${identifier}`;
 }
 
 export function getContentTitle(record, type) {
@@ -138,7 +151,9 @@ export function getSavedContentStorageKey(userId = "guest") {
 export function readSavedContent(userId = "guest") {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(window.localStorage.getItem(getSavedContentStorageKey(userId)) || "[]");
+    return JSON.parse(
+      window.localStorage.getItem(getSavedContentStorageKey(userId)) || "[]",
+    );
   } catch (error) {
     console.error("Failed to read saved content:", error);
     return [];
@@ -147,12 +162,19 @@ export function readSavedContent(userId = "guest") {
 
 export function writeSavedContent(userId = "guest", items = []) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(getSavedContentStorageKey(userId), JSON.stringify(items));
+  window.localStorage.setItem(
+    getSavedContentStorageKey(userId),
+    JSON.stringify(items),
+  );
 }
 
 export function isMissingColumnError(error) {
   const message = String(error?.message || "").toLowerCase();
-  return message.includes("column") || message.includes("schema cache") || message.includes("could not find");
+  return (
+    message.includes("column") ||
+    message.includes("schema cache") ||
+    message.includes("could not find")
+  );
 }
 
 export async function saveContentRecord({

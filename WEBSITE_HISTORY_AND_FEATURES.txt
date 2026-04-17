@@ -416,3 +416,19 @@ Database integration hardening pass (April 10, 2026):
   - `courses.scholar_id`
 - Added safer admin course-data fallbacks when Supabase server environment variables are missing or placeholder values are still present.
 - Reduced the chance of silent LMS/database failures caused by UUID-to-number conversion mismatches.
+
+Design, stability, and deployment hardening pass (April 17, 2026):
+- Upgraded the article experience with a stronger editorial directory, richer article cards, improved related-content visuals, and a calmer long-form reading layout.
+- Added a shared read-time helper so homepage article cards, article shelves, latest-feed items, related cards, and article detail pages show consistent reading-time metadata.
+- Improved shared readability styling with better typography, spacing, focus states, form controls, and mobile behavior for reading-heavy pages.
+- Fixed a broken article-feed layout where feed text could escape the intended grid structure because the feed body wrapper was missing.
+- Fixed the homepage article section so it fetches enough articles to properly fill the new lead-plus-supporting-story layout.
+- Fixed the blog directory for Next.js 15 static generation by wrapping `useSearchParams()` usage behind a Suspense boundary.
+- Fixed build-time deployment crashes caused by:
+  - a missing `article-subjects` dependency file in the tracked repo
+  - a broken ESLint 9 flat-config setup
+  - a stray duplicate `node_modules/@types/node 2` folder causing TypeScript to resolve an invalid `node 2` type library
+  - admin/newsletter/fatwa-request API routes initializing Supabase too early during build instead of at request time
+- Re-ran real repo verification in the Git-tracked project:
+  - `npm run lint` now completes without errors (warnings remain in older admin/search files)
+  - `npm run build` now completes successfully

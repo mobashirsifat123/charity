@@ -13,22 +13,8 @@ export default function ReadabilityToolbar({ title = "Reading controls" }) {
   } = useReadability();
 
   return (
-    <div
-      className="position-sticky top-0 z-3 mb-4"
-      style={{
-        paddingTop: "0.75rem",
-      }}
-    >
-      <div
-        className="d-inline-flex align-items-center gap-2 rounded-pill border shadow-sm px-2 py-2"
-        style={{
-          background: "rgba(255, 255, 255, 0.92)",
-          backdropFilter: "blur(12px)",
-          borderColor: "rgba(11, 61, 46, 0.12)",
-        }}
-        role="toolbar"
-        aria-label={title}
-      >
+    <div className="readability-toolbar-shell position-sticky top-0 z-3 mb-4">
+      <div className="readability-toolbar" role="toolbar" aria-label={title}>
         <span className="small fw-semibold text-muted px-2 d-none d-sm-inline">
           {title}
         </span>
@@ -62,7 +48,7 @@ export default function ReadabilityToolbar({ title = "Reading controls" }) {
           A+
         </button>
 
-        <span className="badge bg-dark-subtle rounded-pill ms-1" style={{ color: "var(--primary-color)" }}>
+        <span className="readability-toolbar__badge badge rounded-pill ms-1">
           {textSize}
         </span>
       </div>
