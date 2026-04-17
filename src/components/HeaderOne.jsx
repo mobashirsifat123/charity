@@ -15,6 +15,7 @@ const HeaderOne = () => {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scroll, setScroll] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const { user, logout, loading } = useAuth();
   const { t } = useLanguage();
   const { settings } = useSiteSettings();
@@ -60,6 +61,7 @@ const HeaderOne = () => {
   }, []);
 
   const mobileMenuListRef = useRef(null);
+  const accountMenuRef = useRef(null);
 
   useEffect(() => {
     if (!mobileMenu || !mobileMenuListRef.current) return;
@@ -131,6 +133,26 @@ const HeaderOne = () => {
       cleanupFns.forEach((cleanup) => cleanup());
     };
   }, [mobileMenu, user, loading, pathname]);
+
+  useEffect(() => {
+    setAccountMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+
+    const handleClickOutside = (event) => {
+      if (!accountMenuRef.current?.contains(event.target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [accountMenuOpen]);
 
   return (
     <>
@@ -319,35 +341,63 @@ const HeaderOne = () => {
                         <>
                           {user ? (
                             <div className='d-none d-md-flex align-items-center gap-3'>
-                              <span className='text-dark fw-semibold'>
-                                <i className='fa-solid fa-user me-2'></i>
-                                {t('welcome', 'Welcome')}, {user.name?.split(' ')[0]}
-                              </span>
-                              {user.role === 'admin' && (
-                                <Link
-                                  href='/admin/dashboard'
-                                  className='btn--primary'
-                                  style={{ padding: '10px 20px' }}
+                              <div className='account-menu' ref={accountMenuRef}>
+                                <button
+                                  type='button'
+                                  className='account-menu__trigger'
+                                  onClick={() => setAccountMenuOpen((previous) => !previous)}
+                                  aria-expanded={accountMenuOpen}
+                                  aria-haspopup='menu'
                                 >
-                                  <i className='fa-solid fa-shield-halved me-1' />
-                                  {t('admin', 'Admin')}
-                                </Link>
-                              )}
-                              <Link
-                                href='/dashboard'
-                                className='btn--secondary'
-                                style={{ padding: '10px 20px' }}
-                              >
-                                <i className='fa-solid fa-chart-line me-1' />
-                                {t('dashboard', 'Dashboard')}
-                              </Link>
-                              <button
-                                onClick={logout}
-                                className='btn--secondary'
-                                style={{ padding: '10px 20px', cursor: 'pointer' }}
-                              >
-                                {t('logout', 'Logout')} <i className='fa-solid fa-sign-out-alt ms-1' />
-                              </button>
+                                  <span className='account-menu__avatar'>
+                                    {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                                  </span>
+                                  <span className='visually-hidden'>{t('myAccount', 'My Account')}</span>
+                                </button>
+
+                                {accountMenuOpen ? (
+                                  <div className='account-menu__panel' role='menu'>
+                                    <div className='account-menu__summary'>
+                                      <div className='account-menu__summary-avatar'>
+                                        {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                                      </div>
+                                      <div className='account-menu__summary-content'>
+                                        <div className='account-menu__summary-name'>{user.name || 'IRWAA Member'}</div>
+                                        <div className='account-menu__summary-email'>{user.email}</div>
+                                        <div className='account-menu__summary-role'>
+                                          {user.role === 'admin' ? t('administrator', 'Administrator') : t('memberPortal', 'Member Portal')}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <Link href='/dashboard' className='account-menu__item' role='menuitem'>
+                                      <i className='fa-regular fa-user me-2' />
+                                      {t('viewProfile', 'View Profile')}
+                                    </Link>
+                                    <Link href='/dashboard' className='account-menu__item' role='menuitem'>
+                                      <i className='fa-solid fa-gear me-2' />
+                                      {t('accountSettings', 'Account Settings')}
+                                    </Link>
+                                    <Link href='/dashboard#donation-history' className='account-menu__item' role='menuitem'>
+                                      <i className='fa-solid fa-heart-circle-check me-2' />
+                                      {t('donationHistory', 'Donation History')}
+                                    </Link>
+                                    <Link href='/dashboard#saved-content' className='account-menu__item' role='menuitem'>
+                                      <i className='fa-regular fa-bookmark me-2' />
+                                      {t('savedContent', 'Saved Content')}
+                                    </Link>
+                                    {user.role === 'admin' ? (
+                                      <Link href='/admin/dashboard' className='account-menu__item' role='menuitem'>
+                                        <i className='fa-solid fa-shield-halved me-2' />
+                                        {t('adminPanel', 'Admin Panel')}
+                                      </Link>
+                                    ) : null}
+                                    <button type='button' className='account-menu__item' onClick={logout} role='menuitem'>
+                                      <i className='fa-solid fa-sign-out-alt me-2' />
+                                      {t('logout', 'Logout')}
+                                    </button>
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
                           ) : (
                             <div className='d-none d-md-flex align-items-center gap-2 auth-nav-actions'>

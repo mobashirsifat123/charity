@@ -14,7 +14,13 @@ export default function DashboardPage() {
     const [savedContent, setSavedContent] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { user, loading: authLoading } = useAuth();
+    const [profileName, setProfileName] = useState('');
+    const [profileMessage, setProfileMessage] = useState(null);
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
+    const [passwordMessage, setPasswordMessage] = useState(null);
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const { user, loading: authLoading, updateProfile, changePassword, logout, isAdmin } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
@@ -51,8 +57,46 @@ export default function DashboardPage() {
         if (user) {
             fetchDonations();
             setSavedContent(readSavedContent(user.id || 'guest'));
+            setProfileName(user.name || '');
         }
     }, [user, authLoading, router]);
+
+    const handleProfileSubmit = async (event) => {
+        event.preventDefault();
+        setProfileMessage(null);
+        setProfileSaving(true);
+
+        try {
+            await updateProfile({ name: profileName });
+            setProfileMessage({ type: 'success', text: 'Your profile has been updated.' });
+        } catch (err) {
+            setProfileMessage({ type: 'danger', text: err.message || 'Unable to update your profile right now.' });
+        } finally {
+            setProfileSaving(false);
+        }
+    };
+
+    const handlePasswordSubmit = async (event) => {
+        event.preventDefault();
+        setPasswordMessage(null);
+
+        if (passwordForm.password !== passwordForm.confirmPassword) {
+            setPasswordMessage({ type: 'danger', text: 'The new passwords do not match.' });
+            return;
+        }
+
+        setPasswordSaving(true);
+
+        try {
+            await changePassword({ password: passwordForm.password });
+            setPasswordForm({ password: '', confirmPassword: '' });
+            setPasswordMessage({ type: 'success', text: 'Your password has been changed successfully.' });
+        } catch (err) {
+            setPasswordMessage({ type: 'danger', text: err.message || 'Unable to change your password right now.' });
+        } finally {
+            setPasswordSaving(false);
+        }
+    };
 
     // Format date
     const formatDate = (dateString) => {
@@ -206,7 +250,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="col-lg-6 mb-3">
+                    <div className="col-lg-6 mb-3" id="saved-content">
                         <div className="card border-0 shadow-sm rounded-4 h-100">
                             <div className="card-body p-4">
                                 <div className="d-flex justify-content-between align-items-center mb-3">
@@ -230,8 +274,107 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
+                <div className="row mb-4" id="account-settings">
+                    <div className="col-lg-6 mb-3">
+                        <div className="card border-0 shadow-sm rounded-4 h-100">
+                            <div className="card-body p-4">
+                                <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                                    <div>
+                                        <h5 className="fw-bold mb-1">Account Settings</h5>
+                                        <p className="text-muted mb-0">View your profile information and update your display name.</p>
+                                    </div>
+                                    {isAdmin() ? (
+                                        <Link href="/admin/dashboard" className="btn btn-outline-primary rounded-pill px-4">
+                                            <i className="fa-solid fa-shield-halved me-2"></i>
+                                            Admin Panel
+                                        </Link>
+                                    ) : null}
+                                </div>
+
+                                {profileMessage ? <div className={`alert alert-${profileMessage.type}`}>{profileMessage.text}</div> : null}
+
+                                <form onSubmit={handleProfileSubmit}>
+                                    <div className="mb-3">
+                                        <label className="form-label fw-semibold" htmlFor="dashboardProfileName">Full Name</label>
+                                        <input
+                                            id="dashboardProfileName"
+                                            type="text"
+                                            className="form-control"
+                                            value={profileName}
+                                            onChange={(event) => setProfileName(event.target.value)}
+                                            placeholder="Your full name"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="form-label fw-semibold" htmlFor="dashboardProfileEmail">Email Address</label>
+                                        <input
+                                            id="dashboardProfileEmail"
+                                            type="email"
+                                            className="form-control"
+                                            value={user.email || ''}
+                                            readOnly
+                                        />
+                                    </div>
+                                    <button type="submit" className="btn btn-primary btn-ripple rounded-pill px-4" disabled={profileSaving}>
+                                        {profileSaving ? 'Saving...' : 'Save Profile'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-lg-6 mb-3">
+                        <div className="card border-0 shadow-sm rounded-4 h-100">
+                            <div className="card-body p-4">
+                                <h5 className="fw-bold mb-1">Security</h5>
+                                <p className="text-muted mb-3">Change your password securely or log out from your account.</p>
+
+                                {passwordMessage ? <div className={`alert alert-${passwordMessage.type}`}>{passwordMessage.text}</div> : null}
+
+                                <form onSubmit={handlePasswordSubmit}>
+                                    <div className="mb-3">
+                                        <label className="form-label fw-semibold" htmlFor="dashboardNewPassword">New Password</label>
+                                        <input
+                                            id="dashboardNewPassword"
+                                            type="password"
+                                            className="form-control"
+                                            value={passwordForm.password}
+                                            onChange={(event) => setPasswordForm((previous) => ({ ...previous, password: event.target.value }))}
+                                            placeholder="Enter a new password"
+                                            minLength={6}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="form-label fw-semibold" htmlFor="dashboardConfirmPassword">Confirm New Password</label>
+                                        <input
+                                            id="dashboardConfirmPassword"
+                                            type="password"
+                                            className="form-control"
+                                            value={passwordForm.confirmPassword}
+                                            onChange={(event) => setPasswordForm((previous) => ({ ...previous, confirmPassword: event.target.value }))}
+                                            placeholder="Confirm your new password"
+                                            minLength={6}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <button type="submit" className="btn btn-primary btn-ripple rounded-pill px-4" disabled={passwordSaving}>
+                                            {passwordSaving ? 'Updating...' : 'Change Password'}
+                                        </button>
+                                        <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={logout}>
+                                            Logout
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Donation History Table */}
-                <div className="card border-0 shadow-sm rounded-4">
+                <div className="card border-0 shadow-sm rounded-4" id="donation-history">
                     <div className="card-header bg-white border-0 p-4">
                         <h5 className="mb-0 fw-bold">
                             <i className="fa-solid fa-history me-2 text-primary"></i>

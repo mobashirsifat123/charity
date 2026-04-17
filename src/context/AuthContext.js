@@ -48,6 +48,23 @@ export function AuthProvider({ children }) {
         };
     };
 
+    const refreshUser = async () => {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        if (!session?.user) {
+            setUser(null);
+            return null;
+        }
+
+        const hydratedUser = await hydrateUser(session.user);
+        setUser(hydratedUser);
+        return hydratedUser;
+    };
+
     useEffect(() => {
         // Initial session fetch
         const initializeAuth = async () => {
@@ -89,6 +106,56 @@ export function AuthProvider({ children }) {
         router.push('/');
     };
 
+    const updateProfile = async ({ name }) => {
+        const trimmedName = String(name || '').trim();
+
+        if (!trimmedName) {
+            throw new Error('Name is required.');
+        }
+
+        const { error: authError } = await supabase.auth.updateUser({
+            data: {
+                full_name: trimmedName,
+                name: trimmedName,
+            },
+        });
+
+        if (authError) {
+            throw authError;
+        }
+
+        if (user?.email) {
+            const { error: profileError } = await supabase
+                .from('users')
+                .update({ name: trimmedName })
+                .eq('email', user.email);
+
+            if (profileError) {
+                console.warn('Unable to update public.users profile name from dashboard.', profileError);
+            }
+        }
+
+        return refreshUser();
+    };
+
+    const changePassword = async ({ password }) => {
+        const normalizedPassword = String(password || '');
+
+        if (normalizedPassword.length < 6) {
+            throw new Error('Password must be at least 6 characters.');
+        }
+
+        const { error } = await supabase.auth.updateUser({
+            password: normalizedPassword,
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        return true;
+    };
+
     // Check if user is authenticated
     const isAuthenticated = () => {
         return !!user;
@@ -103,6 +170,9 @@ export function AuthProvider({ children }) {
         user,
         loading,
         logout,
+        refreshUser,
+        updateProfile,
+        changePassword,
         isAuthenticated,
         isAdmin,
     };
