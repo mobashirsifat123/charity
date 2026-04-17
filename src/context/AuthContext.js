@@ -45,6 +45,13 @@ export function AuthProvider({ children }) {
                 sessionUser.email,
             email: userData?.email || sessionUser.email,
             role: userData?.role || 'donor',
+            avatar_url:
+                userData?.avatar_url ||
+                sessionUser.user_metadata?.avatar_url ||
+                sessionUser.user_metadata?.picture ||
+                sessionUser.identities?.[0]?.identity_data?.avatar_url ||
+                sessionUser.identities?.[0]?.identity_data?.picture ||
+                '',
         };
     };
 

@@ -154,6 +154,10 @@ const HeaderOne = () => {
     };
   }, [accountMenuOpen]);
 
+  const accountAvatarUrl = user?.avatar_url || "";
+  const accountInitial = (user?.name || user?.email || "U").charAt(0).toUpperCase();
+  const isAdminUser = user?.role === "admin";
+
   return (
     <>
       <header
@@ -350,8 +354,23 @@ const HeaderOne = () => {
                                   aria-haspopup='menu'
                                 >
                                   <span className='account-menu__avatar'>
-                                    {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                                    {accountAvatarUrl ? (
+                                      <Image
+                                        src={accountAvatarUrl}
+                                        alt={user.name || user.email || 'IRWAA member'}
+                                        width={36}
+                                        height={36}
+                                        className='account-menu__avatar-image'
+                                      />
+                                    ) : (
+                                      accountInitial
+                                    )}
                                   </span>
+                                  {isAdminUser ? (
+                                    <span className='account-menu__badge' aria-hidden='true'>
+                                      <i className='fa-solid fa-crown'></i>
+                                    </span>
+                                  ) : null}
                                   <span className='visually-hidden'>{t('myAccount', 'My Account')}</span>
                                 </button>
 
@@ -359,7 +378,17 @@ const HeaderOne = () => {
                                   <div className='account-menu__panel' role='menu'>
                                     <div className='account-menu__summary'>
                                       <div className='account-menu__summary-avatar'>
-                                        {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                                        {accountAvatarUrl ? (
+                                          <Image
+                                            src={accountAvatarUrl}
+                                            alt={user.name || user.email || 'IRWAA member'}
+                                            width={44}
+                                            height={44}
+                                            className='account-menu__avatar-image'
+                                          />
+                                        ) : (
+                                          accountInitial
+                                        )}
                                       </div>
                                       <div className='account-menu__summary-content'>
                                         <div className='account-menu__summary-name'>{user.name || 'IRWAA Member'}</div>
@@ -369,6 +398,10 @@ const HeaderOne = () => {
                                         </div>
                                       </div>
                                     </div>
+                                    <Link href='/dashboard' className='account-menu__item account-menu__item--primary' role='menuitem'>
+                                      <i className='fa-solid fa-house-user me-2' />
+                                      {t('memberDashboard', 'Member Dashboard')}
+                                    </Link>
                                     <Link href='/dashboard' className='account-menu__item' role='menuitem'>
                                       <i className='fa-regular fa-user me-2' />
                                       {t('viewProfile', 'View Profile')}
