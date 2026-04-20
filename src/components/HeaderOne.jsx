@@ -433,14 +433,17 @@ const HeaderOne = () => {
                                 className="account-menu"
                                 ref={accountMenuRef}
                               >
-                                <button
-                                  type="button"
+                                <Link
+                                  href="/dashboard"
                                   className="account-menu__trigger"
-                                  onClick={() =>
-                                    setAccountMenuOpen((previous) => !previous)
-                                  }
-                                  aria-expanded={accountMenuOpen}
-                                  aria-haspopup="menu"
+                                  aria-label={t(
+                                    "memberDashboard",
+                                    "Member Dashboard",
+                                  )}
+                                  title={t(
+                                    "memberDashboard",
+                                    "Member Dashboard",
+                                  )}
                                 >
                                   <span className="account-menu__avatar">
                                     {accountAvatarUrl ? (
@@ -468,8 +471,24 @@ const HeaderOne = () => {
                                     </span>
                                   ) : null}
                                   <span className="visually-hidden">
-                                    {t("myAccount", "My Account")}
+                                    {t("memberDashboard", "Member Dashboard")}
                                   </span>
+                                </Link>
+
+                                <button
+                                  type="button"
+                                  className="account-menu__toggle"
+                                  onClick={() =>
+                                    setAccountMenuOpen((previous) => !previous)
+                                  }
+                                  aria-expanded={accountMenuOpen}
+                                  aria-haspopup="menu"
+                                  aria-label={t(
+                                    "openAccountMenu",
+                                    "Open account menu",
+                                  )}
+                                >
+                                  <i className="fa-solid fa-chevron-down"></i>
                                 </button>
 
                                 {accountMenuOpen ? (

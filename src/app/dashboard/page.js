@@ -1,452 +1,638 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
-import HeaderOne from '@/components/HeaderOne';
-import FooterOne from '@/components/FooterOne';
-import BreadcrumbOne from '@/components/BreadcrumbOne';
-import { readSavedContent } from '@/lib/content-utils';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
+import HeaderOne from "@/components/HeaderOne";
+import FooterOne from "@/components/FooterOne";
+import BreadcrumbOne from "@/components/BreadcrumbOne";
+import { readSavedContent } from "@/lib/content-utils";
 
 export default function DashboardPage() {
-    const [donations, setDonations] = useState([]);
-    const [savedContent, setSavedContent] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [profileName, setProfileName] = useState('');
-    const [profileMessage, setProfileMessage] = useState(null);
-    const [profileSaving, setProfileSaving] = useState(false);
-    const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' });
-    const [passwordMessage, setPasswordMessage] = useState(null);
-    const [passwordSaving, setPasswordSaving] = useState(false);
-    const { user, loading: authLoading, updateProfile, changePassword, logout, isAdmin } = useAuth();
-    const router = useRouter();
+  const [donations, setDonations] = useState([]);
+  const [savedContent, setSavedContent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profileMessage, setProfileMessage] = useState(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+  const [passwordMessage, setPasswordMessage] = useState(null);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const {
+    user,
+    loading: authLoading,
+    updateProfile,
+    changePassword,
+    logout,
+    isAdmin,
+  } = useAuth();
+  const router = useRouter();
 
-    useEffect(() => {
-        const fetchDonations = async () => {
-            try {
-                const { data, error: fetchError } = await supabase
-                    .from('donations')
-                    .select('*, campaigns(title)')
-                    .eq('donor_email', user.email)
-                    .order('created_at', { ascending: false });
-                    
-                if (fetchError) throw fetchError;
-                
-                const formattedDonations = (data || []).map(d => ({
-                   ...d,
-                   campaign_title: d.campaigns?.title || 'Unknown Campaign'
-                }));
-                
-                setDonations(formattedDonations);
-            } catch (err) {
-                setError(err.message || 'Failed to load donation history');
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("donations")
+          .select("*, campaigns(title)")
+          .eq("donor_email", user.email)
+          .order("created_at", { ascending: false });
 
-        // Redirect to login if not authenticated
-        if (!authLoading && !user) {
-            router.push('/login');
-            return;
-        }
+        if (fetchError) throw fetchError;
 
-        // Fetch donations when authenticated
-        if (user) {
-            fetchDonations();
-            setSavedContent(readSavedContent(user.id || 'guest'));
-            setProfileName(user.name || '');
-        }
-    }, [user, authLoading, router]);
+        const formattedDonations = (data || []).map((d) => ({
+          ...d,
+          campaign_title: d.campaigns?.title || "Unknown Campaign",
+        }));
 
-    const handleProfileSubmit = async (event) => {
-        event.preventDefault();
-        setProfileMessage(null);
-        setProfileSaving(true);
-
-        try {
-            await updateProfile({ name: profileName });
-            setProfileMessage({ type: 'success', text: 'Your profile has been updated.' });
-        } catch (err) {
-            setProfileMessage({ type: 'danger', text: err.message || 'Unable to update your profile right now.' });
-        } finally {
-            setProfileSaving(false);
-        }
+        setDonations(formattedDonations);
+      } catch (err) {
+        setError(err.message || "Failed to load donation history");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const handlePasswordSubmit = async (event) => {
-        event.preventDefault();
-        setPasswordMessage(null);
-
-        if (passwordForm.password !== passwordForm.confirmPassword) {
-            setPasswordMessage({ type: 'danger', text: 'The new passwords do not match.' });
-            return;
-        }
-
-        setPasswordSaving(true);
-
-        try {
-            await changePassword({ password: passwordForm.password });
-            setPasswordForm({ password: '', confirmPassword: '' });
-            setPasswordMessage({ type: 'success', text: 'Your password has been changed successfully.' });
-        } catch (err) {
-            setPasswordMessage({ type: 'danger', text: err.message || 'Unable to change your password right now.' });
-        } finally {
-            setPasswordSaving(false);
-        }
-    };
-
-    // Format date
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
-    };
-
-    // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(amount);
-    };
-
-    // Get status badge class
-    const getStatusBadge = (status) => {
-        switch (status?.toLowerCase()) {
-            case 'completed':
-                return 'bg-success';
-            case 'pending':
-                return 'bg-warning';
-            case 'failed':
-                return 'bg-danger';
-            default:
-                return 'bg-secondary';
-        }
-    };
-
-    // Calculate total donations
-    const totalDonated = donations.reduce((sum, d) => {
-        if (d.payment_status === 'completed') {
-            return sum + parseFloat(d.amount);
-        }
-        return sum;
-    }, 0);
-
-    // Show loading while checking auth
-    if (authLoading) {
-        return (
-            <section className="page-wrapper">
-                <HeaderOne />
-                <div className="container py-5">
-                    <div className="text-center py-5">
-                        <div className="spinner-border text-primary" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                <FooterOne />
-            </section>
-        );
+    // Redirect to login if not authenticated
+    if (!authLoading && !user) {
+      router.push("/login");
+      return;
     }
 
-    // Redirect handled in useEffect
-    if (!user) {
-        return null;
+    // Fetch donations when authenticated
+    if (user) {
+      fetchDonations();
+      setSavedContent(readSavedContent(user.id || "guest"));
+      setProfileName(user.name || "");
+    }
+  }, [user, authLoading, router]);
+
+  const handleProfileSubmit = async (event) => {
+    event.preventDefault();
+    setProfileMessage(null);
+    setProfileSaving(true);
+
+    try {
+      await updateProfile({ name: profileName });
+      setProfileMessage({
+        type: "success",
+        text: "Your profile has been updated.",
+      });
+    } catch (err) {
+      setProfileMessage({
+        type: "danger",
+        text: err.message || "Unable to update your profile right now.",
+      });
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    setPasswordMessage(null);
+
+    if (passwordForm.password !== passwordForm.confirmPassword) {
+      setPasswordMessage({
+        type: "danger",
+        text: "The new passwords do not match.",
+      });
+      return;
     }
 
+    setPasswordSaving(true);
+
+    try {
+      await changePassword({ password: passwordForm.password });
+      setPasswordForm({ password: "", confirmPassword: "" });
+      setPasswordMessage({
+        type: "success",
+        text: "Your password has been changed successfully.",
+      });
+    } catch (err) {
+      setPasswordMessage({
+        type: "danger",
+        text: err.message || "Unable to change your password right now.",
+      });
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
+  // Get status badge class
+  const getStatusBadge = (status) => {
+    switch (status?.toLowerCase()) {
+      case "completed":
+        return "bg-success";
+      case "pending":
+        return "bg-warning";
+      case "failed":
+        return "bg-danger";
+      default:
+        return "bg-secondary";
+    }
+  };
+
+  // Calculate total donations
+  const totalDonated = donations.reduce((sum, d) => {
+    if (d.payment_status === "completed") {
+      return sum + parseFloat(d.amount);
+    }
+    return sum;
+  }, 0);
+  const memberAvatarUrl =
+    user?.avatar_url ||
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    "";
+  const memberInitial = (user?.name || user?.email || "U")
+    .charAt(0)
+    .toUpperCase();
+
+  // Show loading while checking auth
+  if (authLoading) {
     return (
-        <section className="page-wrapper">
-            <HeaderOne />
-            <BreadcrumbOne
-                title="My Dashboard"
-                links={[
-                    { name: "Home", link: "/" },
-                    { name: "Dashboard", link: "/dashboard" }
-                ]}
-            />
-
-            <div className="container py-5">
-                {/* Welcome Card */}
-                <div className="row mb-4">
-                    <div className="col-12">
-                        <div className="card border-0 shadow-sm rounded-4 text-white overflow-hidden" style={{ background: 'linear-gradient(135deg, #0a281f 0%, #0b3d2e 60%, #145a32 100%)' }}>
-                            <div className="card-body p-4">
-                                <div className="row align-items-center">
-                                    <div className="col-md-8">
-                                        <h2 className="fw-bold mb-2">
-                                            <i className="fa-solid fa-hand-wave me-2"></i>
-                                            Welcome back, {user.name || user.email}!
-                                        </h2>
-                                        <p className="mb-0 opacity-75">
-                                            Thank you for your generous contributions to our causes.
-                                        </p>
-                                    </div>
-                                    <div className="col-md-4 text-md-end mt-3 mt-md-0">
-                                        <div className="rounded-4 p-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.14)' }}>
-                                            <small className="d-block mb-1">Total Donated</small>
-                                            <h3 className="fw-bold mb-0">{formatCurrency(totalDonated)}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Stats Row */}
-                <div className="row mb-4">
-                    <div className="col-md-4 mb-3 mb-md-0">
-                        <div className="card border-0 shadow-sm rounded-3 h-100">
-                            <div className="card-body text-center p-4">
-                                <div className="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '60px', height: '60px' }}>
-                                    <i className="fa-solid fa-heart text-primary" style={{ fontSize: '1.5rem' }}></i>
-                                </div>
-                                <h4 className="fw-bold">{donations.length}</h4>
-                                <p className="text-muted mb-0">Total Donations</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-4 mb-3 mb-md-0">
-                        <div className="card border-0 shadow-sm rounded-3 h-100">
-                            <div className="card-body text-center p-4">
-                                <div className="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '60px', height: '60px' }}>
-                                    <i className="fa-solid fa-check text-success" style={{ fontSize: '1.5rem' }}></i>
-                                </div>
-                                <h4 className="fw-bold">
-                                    {donations.filter(d => d.payment_status === 'completed').length}
-                                </h4>
-                                <p className="text-muted mb-0">Completed</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="card border-0 shadow-sm rounded-3 h-100">
-                            <div className="card-body text-center p-4">
-                                <div className="rounded-circle bg-info bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '60px', height: '60px' }}>
-                                    <i className="fa-solid fa-calendar text-info" style={{ fontSize: '1.5rem' }}></i>
-                                </div>
-                                <h4 className="fw-bold">
-                                    {user.created_at ? formatDate(user.created_at) : 'N/A'}
-                                </h4>
-                                <p className="text-muted mb-0">Member Since</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row mb-4">
-                    <div className="col-lg-6 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <h5 className="fw-bold mb-3">Profile Overview</h5>
-                                <p className="mb-2"><strong>Name:</strong> {user.name || 'IRWA Member'}</p>
-                                <p className="mb-2"><strong>Email:</strong> {user.email}</p>
-                                <p className="mb-0"><strong>Role:</strong> {user.role || 'donor'}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-6 mb-3" id="saved-content">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 className="fw-bold mb-0">Saved Content</h5>
-                                    <span className="badge bg-primary rounded-pill">{savedContent.length}</span>
-                                </div>
-                                {savedContent.length ? (
-                                    savedContent.slice(0, 5).map((item) => (
-                                        <div key={`${item.type}-${item.id}`} className="border-bottom pb-2 mb-2">
-                                            <Link href={item.href} className="fw-semibold text-decoration-none d-block">
-                                                {item.title}
-                                            </Link>
-                                            <small className="text-muted">{item.category}</small>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-muted mb-0">Save articles and fatwas to revisit them later.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row mb-4" id="account-settings">
-                    <div className="col-lg-6 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
-                                    <div>
-                                        <h5 className="fw-bold mb-1">Account Settings</h5>
-                                        <p className="text-muted mb-0">View your profile information and update your display name.</p>
-                                    </div>
-                                    {isAdmin() ? (
-                                        <Link href="/admin/dashboard" className="btn btn-outline-primary rounded-pill px-4">
-                                            <i className="fa-solid fa-shield-halved me-2"></i>
-                                            Admin Panel
-                                        </Link>
-                                    ) : null}
-                                </div>
-
-                                {profileMessage ? <div className={`alert alert-${profileMessage.type}`}>{profileMessage.text}</div> : null}
-
-                                <form onSubmit={handleProfileSubmit}>
-                                    <div className="mb-3">
-                                        <label className="form-label fw-semibold" htmlFor="dashboardProfileName">Full Name</label>
-                                        <input
-                                            id="dashboardProfileName"
-                                            type="text"
-                                            className="form-control"
-                                            value={profileName}
-                                            onChange={(event) => setProfileName(event.target.value)}
-                                            placeholder="Your full name"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="form-label fw-semibold" htmlFor="dashboardProfileEmail">Email Address</label>
-                                        <input
-                                            id="dashboardProfileEmail"
-                                            type="email"
-                                            className="form-control"
-                                            value={user.email || ''}
-                                            readOnly
-                                        />
-                                    </div>
-                                    <button type="submit" className="btn btn-primary btn-ripple rounded-pill px-4" disabled={profileSaving}>
-                                        {profileSaving ? 'Saving...' : 'Save Profile'}
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="col-lg-6 mb-3">
-                        <div className="card border-0 shadow-sm rounded-4 h-100">
-                            <div className="card-body p-4">
-                                <h5 className="fw-bold mb-1">Security</h5>
-                                <p className="text-muted mb-3">Change your password securely or log out from your account.</p>
-
-                                {passwordMessage ? <div className={`alert alert-${passwordMessage.type}`}>{passwordMessage.text}</div> : null}
-
-                                <form onSubmit={handlePasswordSubmit}>
-                                    <div className="mb-3">
-                                        <label className="form-label fw-semibold" htmlFor="dashboardNewPassword">New Password</label>
-                                        <input
-                                            id="dashboardNewPassword"
-                                            type="password"
-                                            className="form-control"
-                                            value={passwordForm.password}
-                                            onChange={(event) => setPasswordForm((previous) => ({ ...previous, password: event.target.value }))}
-                                            placeholder="Enter a new password"
-                                            minLength={6}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="form-label fw-semibold" htmlFor="dashboardConfirmPassword">Confirm New Password</label>
-                                        <input
-                                            id="dashboardConfirmPassword"
-                                            type="password"
-                                            className="form-control"
-                                            value={passwordForm.confirmPassword}
-                                            onChange={(event) => setPasswordForm((previous) => ({ ...previous, confirmPassword: event.target.value }))}
-                                            placeholder="Confirm your new password"
-                                            minLength={6}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="d-flex flex-wrap gap-2">
-                                        <button type="submit" className="btn btn-primary btn-ripple rounded-pill px-4" disabled={passwordSaving}>
-                                            {passwordSaving ? 'Updating...' : 'Change Password'}
-                                        </button>
-                                        <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={logout}>
-                                            Logout
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Donation History Table */}
-                <div className="card border-0 shadow-sm rounded-4" id="donation-history">
-                    <div className="card-header bg-white border-0 p-4">
-                        <h5 className="mb-0 fw-bold">
-                            <i className="fa-solid fa-history me-2 text-primary"></i>
-                            Donation History
-                        </h5>
-                    </div>
-                    <div className="card-body p-4 pt-0">
-                        {loading ? (
-                            <div className="text-center py-5">
-                                <div className="spinner-border text-primary" role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                        ) : error ? (
-                            <div className="alert alert-danger">{error}</div>
-                        ) : donations.length === 0 ? (
-                            <div className="text-center py-5">
-                                <i className="fa-solid fa-hand-holding-heart text-muted mb-3" style={{ fontSize: '4rem' }}></i>
-                                <h5>No donations yet</h5>
-                                <p className="text-muted mb-4">
-                                    Be the change! Start making a difference today.
-                                </p>
-                                <Link href="/" className="btn btn-primary btn-ripple">
-                                    <i className="fa-solid fa-heart me-2"></i>
-                                    Browse Campaigns
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="table-responsive">
-                                <table className="table table-hover align-middle mb-0">
-                                    <thead className="table-light">
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Campaign</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {donations.map((donation) => (
-                                            <tr key={donation.id}>
-                                                <td>
-                                                    <span className="text-muted">
-                                                        {formatDate(donation.created_at)}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <strong>
-                                                        {donation.campaign_title || `Campaign #${donation.campaign_id}`}
-                                                    </strong>
-                                                </td>
-                                                <td>
-                                                    <span className="fw-bold text-success">
-                                                        {formatCurrency(donation.amount)}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span className={`badge ${getStatusBadge(donation.payment_status)}`}>
-                                                        {donation.payment_status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                </div>
+      <section className="page-wrapper">
+        <HeaderOne />
+        <div className="container py-5">
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
-
-            <FooterOne />
-        </section>
+          </div>
+        </div>
+        <FooterOne />
+      </section>
     );
+  }
+
+  // Redirect handled in useEffect
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <section className="page-wrapper">
+      <HeaderOne />
+      <BreadcrumbOne
+        title="My Dashboard"
+        links={[
+          { name: "Home", link: "/" },
+          { name: "Dashboard", link: "/dashboard" },
+        ]}
+      />
+
+      <div className="container py-5">
+        {/* Welcome Card */}
+        <div className="row mb-4">
+          <div className="col-12">
+            <div
+              className="card border-0 shadow-sm rounded-4 text-white overflow-hidden"
+              style={{
+                background:
+                  "linear-gradient(135deg, #0a281f 0%, #0b3d2e 60%, #145a32 100%)",
+              }}
+            >
+              <div className="card-body p-4">
+                <div className="row align-items-center">
+                  <div className="col-md-8">
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="member-dashboard-avatar">
+                        {memberAvatarUrl ? (
+                          <Image
+                            src={memberAvatarUrl}
+                            alt={user.name || user.email || "IRWAA member"}
+                            width={76}
+                            height={76}
+                            className="member-dashboard-avatar__image"
+                          />
+                        ) : (
+                          memberInitial
+                        )}
+                        {isAdmin() ? (
+                          <span
+                            className="member-dashboard-avatar__badge"
+                            aria-hidden="true"
+                          >
+                            <i className="fa-solid fa-crown"></i>
+                          </span>
+                        ) : null}
+                      </div>
+                      <div>
+                        <h2 className="fw-bold mb-2">
+                          Welcome back, {user.name || user.email}!
+                        </h2>
+                        <p className="mb-0 opacity-75">
+                          This is your member portal. View your details, manage
+                          security, saved content, and donation activity here.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-4 text-md-end mt-3 mt-md-0">
+                    {isAdmin() ? (
+                      <Link
+                        href="/admin/dashboard"
+                        className="btn btn-light rounded-pill fw-bold mb-3"
+                      >
+                        <i className="fa-solid fa-shield-halved me-2"></i>
+                        Admin Panel
+                      </Link>
+                    ) : null}
+                    <div
+                      className="rounded-4 p-3 d-inline-block"
+                      style={{
+                        background: "rgba(255,255,255,0.12)",
+                        border: "1px solid rgba(255,255,255,0.14)",
+                      }}
+                    >
+                      <small className="d-block mb-1">Total Donated</small>
+                      <h3 className="fw-bold mb-0">
+                        {formatCurrency(totalDonated)}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="row mb-4">
+          <div className="col-md-4 mb-3 mb-md-0">
+            <div className="card border-0 shadow-sm rounded-3 h-100">
+              <div className="card-body text-center p-4">
+                <div
+                  className="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i
+                    className="fa-solid fa-heart text-primary"
+                    style={{ fontSize: "1.5rem" }}
+                  ></i>
+                </div>
+                <h4 className="fw-bold">{donations.length}</h4>
+                <p className="text-muted mb-0">Total Donations</p>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4 mb-3 mb-md-0">
+            <div className="card border-0 shadow-sm rounded-3 h-100">
+              <div className="card-body text-center p-4">
+                <div
+                  className="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i
+                    className="fa-solid fa-check text-success"
+                    style={{ fontSize: "1.5rem" }}
+                  ></i>
+                </div>
+                <h4 className="fw-bold">
+                  {
+                    donations.filter((d) => d.payment_status === "completed")
+                      .length
+                  }
+                </h4>
+                <p className="text-muted mb-0">Completed</p>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card border-0 shadow-sm rounded-3 h-100">
+              <div className="card-body text-center p-4">
+                <div
+                  className="rounded-circle bg-info bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                  style={{ width: "60px", height: "60px" }}
+                >
+                  <i
+                    className="fa-solid fa-calendar text-info"
+                    style={{ fontSize: "1.5rem" }}
+                  ></i>
+                </div>
+                <h4 className="fw-bold">
+                  {user.created_at ? formatDate(user.created_at) : "N/A"}
+                </h4>
+                <p className="text-muted mb-0">Member Since</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mb-4">
+          <div className="col-lg-6 mb-3">
+            <div className="card border-0 shadow-sm rounded-4 h-100">
+              <div className="card-body p-4">
+                <h5 className="fw-bold mb-3">Profile Overview</h5>
+                <p className="mb-2">
+                  <strong>Name:</strong> {user.name || "IRWA Member"}
+                </p>
+                <p className="mb-2">
+                  <strong>Email:</strong> {user.email}
+                </p>
+                <p className="mb-0">
+                  <strong>Role:</strong> {user.role || "donor"}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="col-lg-6 mb-3" id="saved-content">
+            <div className="card border-0 shadow-sm rounded-4 h-100">
+              <div className="card-body p-4">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h5 className="fw-bold mb-0">Saved Content</h5>
+                  <span className="badge bg-primary rounded-pill">
+                    {savedContent.length}
+                  </span>
+                </div>
+                {savedContent.length ? (
+                  savedContent.slice(0, 5).map((item) => (
+                    <div
+                      key={`${item.type}-${item.id}`}
+                      className="border-bottom pb-2 mb-2"
+                    >
+                      <Link
+                        href={item.href}
+                        className="fw-semibold text-decoration-none d-block"
+                      >
+                        {item.title}
+                      </Link>
+                      <small className="text-muted">{item.category}</small>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted mb-0">
+                    Save articles and fatwas to revisit them later.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mb-4" id="account-settings">
+          <div className="col-lg-6 mb-3">
+            <div className="card border-0 shadow-sm rounded-4 h-100">
+              <div className="card-body p-4">
+                <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                  <div>
+                    <h5 className="fw-bold mb-1">Account Settings</h5>
+                    <p className="text-muted mb-0">
+                      View your profile information and update your display
+                      name.
+                    </p>
+                  </div>
+                  {isAdmin() ? (
+                    <Link
+                      href="/admin/dashboard"
+                      className="btn btn-outline-primary rounded-pill px-4"
+                    >
+                      <i className="fa-solid fa-shield-halved me-2"></i>
+                      Admin Panel
+                    </Link>
+                  ) : null}
+                </div>
+
+                {profileMessage ? (
+                  <div className={`alert alert-${profileMessage.type}`}>
+                    {profileMessage.text}
+                  </div>
+                ) : null}
+
+                <form onSubmit={handleProfileSubmit}>
+                  <div className="mb-3">
+                    <label
+                      className="form-label fw-semibold"
+                      htmlFor="dashboardProfileName"
+                    >
+                      Full Name
+                    </label>
+                    <input
+                      id="dashboardProfileName"
+                      type="text"
+                      className="form-control"
+                      value={profileName}
+                      onChange={(event) => setProfileName(event.target.value)}
+                      placeholder="Your full name"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      className="form-label fw-semibold"
+                      htmlFor="dashboardProfileEmail"
+                    >
+                      Email Address
+                    </label>
+                    <input
+                      id="dashboardProfileEmail"
+                      type="email"
+                      className="form-control"
+                      value={user.email || ""}
+                      readOnly
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-ripple rounded-pill px-4"
+                    disabled={profileSaving}
+                  >
+                    {profileSaving ? "Saving..." : "Save Profile"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-lg-6 mb-3">
+            <div className="card border-0 shadow-sm rounded-4 h-100">
+              <div className="card-body p-4">
+                <h5 className="fw-bold mb-1">Security</h5>
+                <p className="text-muted mb-3">
+                  Change your password securely or log out from your account.
+                </p>
+
+                {passwordMessage ? (
+                  <div className={`alert alert-${passwordMessage.type}`}>
+                    {passwordMessage.text}
+                  </div>
+                ) : null}
+
+                <form onSubmit={handlePasswordSubmit}>
+                  <div className="mb-3">
+                    <label
+                      className="form-label fw-semibold"
+                      htmlFor="dashboardNewPassword"
+                    >
+                      New Password
+                    </label>
+                    <input
+                      id="dashboardNewPassword"
+                      type="password"
+                      className="form-control"
+                      value={passwordForm.password}
+                      onChange={(event) =>
+                        setPasswordForm((previous) => ({
+                          ...previous,
+                          password: event.target.value,
+                        }))
+                      }
+                      placeholder="Enter a new password"
+                      minLength={6}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      className="form-label fw-semibold"
+                      htmlFor="dashboardConfirmPassword"
+                    >
+                      Confirm New Password
+                    </label>
+                    <input
+                      id="dashboardConfirmPassword"
+                      type="password"
+                      className="form-control"
+                      value={passwordForm.confirmPassword}
+                      onChange={(event) =>
+                        setPasswordForm((previous) => ({
+                          ...previous,
+                          confirmPassword: event.target.value,
+                        }))
+                      }
+                      placeholder="Confirm your new password"
+                      minLength={6}
+                      required
+                    />
+                  </div>
+                  <div className="d-flex flex-wrap gap-2">
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-ripple rounded-pill px-4"
+                      disabled={passwordSaving}
+                    >
+                      {passwordSaving ? "Updating..." : "Change Password"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary rounded-pill px-4"
+                      onClick={logout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Donation History Table */}
+        <div
+          className="card border-0 shadow-sm rounded-4"
+          id="donation-history"
+        >
+          <div className="card-header bg-white border-0 p-4">
+            <h5 className="mb-0 fw-bold">
+              <i className="fa-solid fa-history me-2 text-primary"></i>
+              Donation History
+            </h5>
+          </div>
+          <div className="card-body p-4 pt-0">
+            {loading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="alert alert-danger">{error}</div>
+            ) : donations.length === 0 ? (
+              <div className="text-center py-5">
+                <i
+                  className="fa-solid fa-hand-holding-heart text-muted mb-3"
+                  style={{ fontSize: "4rem" }}
+                ></i>
+                <h5>No donations yet</h5>
+                <p className="text-muted mb-4">
+                  Be the change! Start making a difference today.
+                </p>
+                <Link href="/" className="btn btn-primary btn-ripple">
+                  <i className="fa-solid fa-heart me-2"></i>
+                  Browse Campaigns
+                </Link>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Date</th>
+                      <th>Campaign</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {donations.map((donation) => (
+                      <tr key={donation.id}>
+                        <td>
+                          <span className="text-muted">
+                            {formatDate(donation.created_at)}
+                          </span>
+                        </td>
+                        <td>
+                          <strong>
+                            {donation.campaign_title ||
+                              `Campaign #${donation.campaign_id}`}
+                          </strong>
+                        </td>
+                        <td>
+                          <span className="fw-bold text-success">
+                            {formatCurrency(donation.amount)}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${getStatusBadge(donation.payment_status)}`}
+                          >
+                            {donation.payment_status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <FooterOne />
+    </section>
+  );
 }

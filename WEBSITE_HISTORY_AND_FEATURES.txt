@@ -443,3 +443,13 @@ Final push cleanup and auth/member portal stability pass (April 20, 2026):
 - Verified the deployable repo with:
   - `npm run lint`
   - `npm run build`
+
+Member dashboard access fix (April 20, 2026):
+- Changed the signed-in Google/member avatar in the header so clicking the picture goes directly to `/dashboard`.
+- Kept a small separate chevron beside the avatar for quick account-menu actions such as logout and admin shortcuts.
+- Added the Google/member profile photo into the dashboard hero so each member can immediately recognize their account.
+- Added an admin crown badge and prominent Admin Panel button inside the dashboard for admin users only.
+- Fixed a dashboard prerender bug where the page could read `user.avatar_url` before auth hydration completed.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
