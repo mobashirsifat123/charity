@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isApprovedAdminEmail, normalizeEmail } from "@/lib/adminEmails";
 
 const AUTH_CLIENT_OPTIONS = {
   auth: {
@@ -7,12 +8,6 @@ const AUTH_CLIENT_OPTIONS = {
     persistSession: false,
   },
 };
-
-function normalizeEmail(value = "") {
-  return String(value || "")
-    .trim()
-    .toLowerCase();
-}
 
 function normalizeRole(value = "") {
   return String(value || "donor")
@@ -123,6 +118,7 @@ async function loadOrCreateProfile({
   const email = normalizeEmail(authUser.email);
   const fallbackName =
     String(desiredName || deriveName(authUser)).trim() || email;
+  const safeRole = isApprovedAdminEmail(email) ? "admin" : "donor";
 
   let profile = null;
 
@@ -142,7 +138,7 @@ async function loadOrCreateProfile({
     const insertPayload = {
       email,
       name: fallbackName,
-      role: "donor",
+      role: safeRole,
     };
 
     const { data: insertedProfile, error: insertError } = await adminClient
@@ -154,13 +150,24 @@ async function loadOrCreateProfile({
     if (!insertError && insertedProfile) {
       profile = insertedProfile;
     }
+  } else if (normalizeRole(profile.role) !== safeRole) {
+    const { data: updatedProfile, error: updateError } = await adminClient
+      .from("users")
+      .update({ role: safeRole })
+      .eq("email", email)
+      .select("*")
+      .maybeSingle();
+
+    if (!updateError && updatedProfile) {
+      profile = updatedProfile;
+    }
   }
 
   return {
     ...(profile || {}),
     email,
     name: profile?.name || fallbackName,
-    role: normalizeRole(profile?.role),
+    role: safeRole,
     avatar_url: profile?.avatar_url || deriveAvatarUrl(authUser),
   };
 }
@@ -210,6 +217,7 @@ export async function PATCH(request) {
     }
 
     const email = normalizeEmail(auth.authUser.email);
+    const safeRole = isApprovedAdminEmail(email) ? "admin" : "donor";
     const { data: existingProfile, error: readError } = await auth.adminClient
       .from("users")
       .select("*")
@@ -223,7 +231,7 @@ export async function PATCH(request) {
     if (existingProfile) {
       const { error: updateError } = await auth.adminClient
         .from("users")
-        .update({ name })
+        .update({ name, role: safeRole })
         .eq("email", email);
 
       if (updateError) {
@@ -235,7 +243,7 @@ export async function PATCH(request) {
         .insert({
           email,
           name,
-          role: "donor",
+          role: safeRole,
         });
 
       if (insertError) {

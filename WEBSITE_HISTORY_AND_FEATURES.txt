@@ -478,3 +478,12 @@ Admin role safety correction (April 20, 2026):
 - New member profiles are now created as normal `donor` users only.
 - Admin visibility now depends only on the `public.users.role = 'admin'` value stored in Supabase.
 - This prevents normal logged-in members from seeing the Admin Panel link unless their database role is explicitly admin.
+
+Approved-admin allowlist correction (April 20, 2026):
+- Added a strict approved-admin email allowlist for the two intended admin accounts only.
+- The member profile API now promotes only approved admin emails to `admin` and forces all other users to `donor`, even if old database rows were accidentally marked admin.
+- Server-side admin API protection now checks the approved-admin email allowlist before allowing admin access.
+- Client-side auth hydration also prevents non-approved users from seeing admin UI if an old browser/database fallback reports an incorrect admin role.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

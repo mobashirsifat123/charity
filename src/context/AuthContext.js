@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabaseClient";
+import { isApprovedAdminEmail } from "@/lib/adminEmails";
 
 const AuthContext = createContext(null);
 
@@ -23,13 +24,20 @@ function buildHydratedUser(sessionUser, profileData = null) {
     sessionUser.identities?.[0]?.identity_data?.name ||
     fallbackEmail;
 
+  const email = profileData?.email || fallbackEmail;
+  const safeRole = isApprovedAdminEmail(email)
+    ? normalizeRole(profileData?.role) === "admin"
+      ? "admin"
+      : "donor"
+    : "donor";
+
   return {
     ...sessionUser,
     ...(profileData || {}),
     auth_user_id: sessionUser.id,
     name: profileData?.name || fallbackName,
-    email: profileData?.email || fallbackEmail,
-    role: normalizeRole(profileData?.role),
+    email,
+    role: safeRole,
     avatar_url:
       profileData?.avatar_url ||
       sessionUser.user_metadata?.avatar_url ||
