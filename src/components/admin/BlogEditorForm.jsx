@@ -44,7 +44,9 @@ export default function BlogEditorForm({ blogId = null }) {
 
   const fetchBlog = async () => {
     try {
-      const result = await adminFetchJson(`/api/admin/resources/blogs/${blogId}`);
+      const result = await adminFetchJson(
+        `/api/admin/resources/blogs/${blogId}`,
+      );
       const data = result.data;
       if (data) {
         setFormData({
@@ -74,7 +76,10 @@ export default function BlogEditorForm({ blogId = null }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -96,7 +101,8 @@ export default function BlogEditorForm({ blogId = null }) {
         tags: normalizeTags(formData.tags),
         featured: !!formData.featured,
         slug: resolvedSlug || null,
-        author_name: formData.author_name || user?.name || user?.email || "IRWA Team",
+        author_name:
+          formData.author_name || user?.name || user?.email || "IRWA Team",
         author_role: formData.author_role || "Contributor",
         author_bio: formData.author_bio || "",
         seo_title: formData.seo_title || formData.title,
@@ -128,7 +134,10 @@ export default function BlogEditorForm({ blogId = null }) {
       }
     } catch (error) {
       console.error("Error saving blog:", error);
-      setMessage({ type: "danger", text: error.message || "Failed to save article." });
+      setMessage({
+        type: "danger",
+        text: error.message || "Failed to save article.",
+      });
     } finally {
       setSaving(false);
     }
@@ -151,9 +160,16 @@ export default function BlogEditorForm({ blogId = null }) {
             <i className="fa-solid fa-pen-nib text-primary me-2"></i>
             {isEdit ? "Edit Article" : "Write New Article"}
           </h2>
-          <p className="text-muted mb-0">Manage article content, publishing status, metadata, and homepage visibility.</p>
+          <p className="text-muted mb-0">
+            Manage article content, publishing status, metadata, and homepage
+            visibility.
+          </p>
         </div>
-        <button type="button" onClick={() => router.push("/admin/blogs")} className="btn btn-outline-secondary rounded-pill px-4 align-self-start align-self-lg-center">
+        <button
+          type="button"
+          onClick={() => router.push("/admin/blogs")}
+          className="btn btn-outline-secondary rounded-pill px-4 align-self-start align-self-lg-center"
+        >
           Back to Articles
         </button>
       </div>
@@ -161,9 +177,16 @@ export default function BlogEditorForm({ blogId = null }) {
       <div className="card border-0 shadow-sm rounded-4">
         <div className="card-body p-4 p-md-5">
           {message.text ? (
-            <div className={`alert alert-${message.type} alert-dismissible fade show`} role="alert">
+            <div
+              className={`alert alert-${message.type} alert-dismissible fade show`}
+              role="alert"
+            >
               {message.text}
-              <button type="button" className="btn-close" onClick={() => setMessage({ type: "", text: "" })}></button>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setMessage({ type: "", text: "" })}
+              ></button>
             </div>
           ) : null}
 
@@ -171,76 +194,190 @@ export default function BlogEditorForm({ blogId = null }) {
             <div className="row g-4">
               <div className="col-md-8">
                 <label className="form-label fw-bold">Article Title</label>
-                <input type="text" className="form-control form-control-lg bg-light border-0" name="title" value={formData.title} onChange={handleChange} required />
+                <input
+                  type="text"
+                  className="form-control form-control-lg bg-light border-0"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                />
               </div>
               <div className="col-md-4">
                 <label className="form-label fw-bold">Status</label>
-                <select className="form-select form-select-lg bg-light border-0" name="status" value={formData.status} onChange={handleChange}>
+                <select
+                  className="form-select form-select-lg bg-light border-0"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
                 </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label fw-bold">Category</label>
-                <select className="form-select bg-light border-0" name="category" value={formData.category} onChange={handleChange}>
+                <select
+                  className="form-select bg-light border-0"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                >
                   <option value="">Select category</option>
                   {BLOG_CATEGORY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>{option}</option>
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="col-md-4">
                 <label className="form-label fw-bold">Tags</label>
-                <input type="text" className="form-control bg-light border-0" name="tags" value={formData.tags} onChange={handleChange} placeholder="faith, community, family" />
+                <input
+                  type="text"
+                  className="form-control bg-light border-0"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                  placeholder="faith, community, family"
+                />
               </div>
               <div className="col-md-4 d-flex align-items-end">
                 <div className="form-check form-switch">
-                  <input className="form-check-input" type="checkbox" role="switch" id="featuredArticle" name="featured" checked={formData.featured} onChange={handleChange} />
-                  <label className="form-check-label fw-bold ms-2" htmlFor="featuredArticle">Featured on homepage</label>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="featuredArticle"
+                    name="featured"
+                    checked={formData.featured}
+                    onChange={handleChange}
+                  />
+                  <label
+                    className="form-check-label fw-bold ms-2"
+                    htmlFor="featuredArticle"
+                  >
+                    Featured on homepage and article directory
+                  </label>
                 </div>
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-bold">Slug</label>
-                <input type="text" className="form-control bg-light border-0" name="slug" value={formData.slug} onChange={handleChange} placeholder="leave blank to auto-generate" />
+                <input
+                  type="text"
+                  className="form-control bg-light border-0"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleChange}
+                  placeholder="leave blank to auto-generate"
+                />
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-bold">Feature Image URL</label>
-                <input type="url" className="form-control bg-light border-0" name="image_url" value={formData.image_url} onChange={handleChange} placeholder="https://example.com/image.jpg" />
+                <input
+                  type="url"
+                  className="form-control bg-light border-0"
+                  name="image_url"
+                  value={formData.image_url}
+                  onChange={handleChange}
+                  placeholder="https://example.com/image.jpg"
+                />
               </div>
               <div className="col-12">
                 <label className="form-label fw-bold">Content</label>
-                <textarea className="form-control bg-light border-0" name="content" rows="14" value={formData.content} onChange={handleChange} required style={{ fontFamily: "monospace" }}></textarea>
+                <textarea
+                  className="form-control bg-light border-0"
+                  name="content"
+                  rows="14"
+                  value={formData.content}
+                  onChange={handleChange}
+                  required
+                  style={{ fontFamily: "monospace" }}
+                ></textarea>
               </div>
 
               <div className="col-md-4">
                 <label className="form-label fw-bold">Author Name</label>
-                <input type="text" className="form-control bg-light border-0" name="author_name" value={formData.author_name} onChange={handleChange} />
+                <input
+                  type="text"
+                  className="form-control bg-light border-0"
+                  name="author_name"
+                  value={formData.author_name}
+                  onChange={handleChange}
+                />
               </div>
               <div className="col-md-4">
                 <label className="form-label fw-bold">Author Role</label>
-                <input type="text" className="form-control bg-light border-0" name="author_role" value={formData.author_role} onChange={handleChange} placeholder="Contributor / Editor" />
+                <input
+                  type="text"
+                  className="form-control bg-light border-0"
+                  name="author_role"
+                  value={formData.author_role}
+                  onChange={handleChange}
+                  placeholder="Contributor / Editor"
+                />
               </div>
               <div className="col-md-4">
-                <label className="form-label fw-bold">Social Preview Image</label>
-                <input type="url" className="form-control bg-light border-0" name="social_image" value={formData.social_image} onChange={handleChange} />
+                <label className="form-label fw-bold">
+                  Social Preview Image
+                </label>
+                <input
+                  type="url"
+                  className="form-control bg-light border-0"
+                  name="social_image"
+                  value={formData.social_image}
+                  onChange={handleChange}
+                />
               </div>
               <div className="col-12">
                 <label className="form-label fw-bold">Author Bio</label>
-                <textarea className="form-control bg-light border-0" name="author_bio" rows="3" value={formData.author_bio} onChange={handleChange}></textarea>
+                <textarea
+                  className="form-control bg-light border-0"
+                  name="author_bio"
+                  rows="3"
+                  value={formData.author_bio}
+                  onChange={handleChange}
+                ></textarea>
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-bold">SEO Title</label>
-                <input type="text" className="form-control bg-light border-0" name="seo_title" value={formData.seo_title} onChange={handleChange} />
+                <input
+                  type="text"
+                  className="form-control bg-light border-0"
+                  name="seo_title"
+                  value={formData.seo_title}
+                  onChange={handleChange}
+                />
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-bold">SEO Description</label>
-                <textarea className="form-control bg-light border-0" name="seo_description" rows="2" value={formData.seo_description} onChange={handleChange}></textarea>
+                <textarea
+                  className="form-control bg-light border-0"
+                  name="seo_description"
+                  rows="2"
+                  value={formData.seo_description}
+                  onChange={handleChange}
+                ></textarea>
               </div>
             </div>
 
             <div className="mt-5">
-              <button type="submit" className="btn btn-primary btn-lg px-5 fw-bold rounded-pill" disabled={saving}>
-                {saving ? <><span className="spinner-border spinner-border-sm me-2"></span>Saving...</> : <><i className="fa-solid fa-cloud-arrow-up me-2"></i>{isEdit ? "Save Changes" : "Publish Article"}</>}
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg px-5 fw-bold rounded-pill"
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-cloud-arrow-up me-2"></i>
+                    {isEdit ? "Save Changes" : "Publish Article"}
+                  </>
+                )}
               </button>
             </div>
           </form>

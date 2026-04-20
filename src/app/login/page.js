@@ -1,291 +1,340 @@
 "use client";
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { supabase } from '@/lib/supabaseClient';
-import HeaderOne from '@/components/HeaderOne';
-import FooterOne from '@/components/FooterOne';
-import BreadcrumbOne from '@/components/BreadcrumbOne';
-import { useLanguage } from '@/context/LanguageContext';
-import { useSiteSettings } from '@/context/SiteSettingsContext';
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+
+import { supabase } from "@/lib/supabaseClient";
+import HeaderOne from "@/components/HeaderOne";
+import FooterOne from "@/components/FooterOne";
+import BreadcrumbOne from "@/components/BreadcrumbOne";
+import { useLanguage } from "@/context/LanguageContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 export default function LoginPage() {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [nextPath, setNextPath] = useState('/dashboard');
-    const { t } = useLanguage();
-    const { settings } = useSiteSettings();
-    const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [nextPath, setNextPath] = useState("/dashboard");
+  const { t } = useLanguage();
+  const { settings } = useSiteSettings();
+  const router = useRouter();
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const params = new URLSearchParams(window.location.search);
-        setNextPath(params.get('next') || '/dashboard');
-    }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setNextPath(params.get("next") || "/dashboard");
+  }, []);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        setError('');
-        setSuccessMessage('');
-    };
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+    setError("");
+    setSuccessMessage("");
+  };
 
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        
-        // Ensure email is provided
-        if (!formData.email) {
-            setError(t('resetNeedsEmail', 'Please enter your email address in the Email field to reset your password.'));
-            return;
-        }
+  const handleResetPassword = async () => {
+    if (!formData.email) {
+      setError(
+        t(
+          "resetNeedsEmail",
+          "Please enter your email address first, then we can send you a password reset link.",
+        ),
+      );
+      return;
+    }
 
-        setError('');
-        setSuccessMessage('');
-        setLoading(true);
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
 
-        try {
-            // Using supabase to send the reset email
-            const { error: resetError } = await supabase.auth.resetPasswordForEmail(formData.email, {
-                redirectTo: `${window.location.origin}/reset-password`,
-            });
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        formData.email,
+        {
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      );
 
-            if (resetError) throw resetError;
-            
-            setSuccessMessage(t('resetEmailSent', 'Password reset email sent! Please check your inbox.'));
-        } catch (err) {
-            console.error("Reset Password Error:", err);
-            setError(err.message || t('resetFailed', 'Failed to send password reset email'));
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (resetError) {
+        throw resetError;
+      }
 
-    const handleGoogleLogin = async () => {
-        setError('');
-        setSuccessMessage('');
-        setLoading(true);
+      setSuccessMessage(
+        t(
+          "resetEmailSent",
+          "Password reset email sent. Please check your inbox.",
+        ),
+      );
+    } catch (resetError) {
+      console.error("Reset Password Error:", resetError);
+      setError(
+        resetError.message ||
+          t(
+            "resetFailed",
+            "We could not send your password reset email right now.",
+          ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        try {
-            const origin = typeof window !== 'undefined' ? window.location.origin : '';
-            const { error: oauthError } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-                },
-            });
+  const handleGoogleLogin = async () => {
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
 
-            if (oauthError) {
-                throw oauthError;
-            }
-        } catch (err) {
-            setError(err.message || t('googleLoginFailed', 'Unable to start Google sign in.'));
-            setLoading(false);
-        }
-    };
+    try {
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        },
+      });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccessMessage('');
-        setLoading(true);
+      if (oauthError) {
+        throw oauthError;
+      }
+    } catch (oauthError) {
+      console.error("Google sign in error:", oauthError);
+      setError(
+        oauthError.message ||
+          t("googleLoginFailed", "Unable to start Google sign in right now."),
+      );
+      setLoading(false);
+    }
+  };
 
-        // Explicit error bounds on signInWithPassword
-        try {
-            const { data, error: authError } = await supabase.auth.signInWithPassword({
-                email: formData.email,
-                password: formData.password,
-            });
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
 
-            if (authError) {
-                throw authError;
-            }
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+      );
 
-            if (data?.session) {
-                router.push(nextPath);
-            }
-        } catch (err) {
-            setError(err.message || t('loginFailed', 'An error occurred during login'));
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (authError) {
+        throw authError;
+      }
 
-    return (
-        <section className="page-wrapper">
-            <HeaderOne />
-            <BreadcrumbOne
-                title={t('login', 'Login')}
-                links={[
-                    { name: t('home', 'Home'), link: "/" },
-                    { name: t('login', 'Login'), link: "/login" }
-                ]}
-            />
+      if (data?.session) {
+        router.replace(nextPath);
+      }
+    } catch (authError) {
+      console.error("Email/password login error:", authError);
+      setError(
+        authError.message ||
+          t("loginFailed", "An error occurred during login."),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <div className="container py-5 auth-shell">
-                <div className="row justify-content-center">
-                    <div className="col-lg-5 col-md-8">
-                        <div className="card shadow-lg border-0 rounded-4 auth-card">
-                            <div className="card-body p-5">
-                                <div className="text-center mb-4">
-                                    {settings.site_logo_url ? (
-                                        <div className="site-brand site-brand--auth mb-3 justify-content-center">
-                                            <Image
-                                                src={settings.site_logo_url}
-                                                alt="IRWAA"
-                                                className="site-logo site-logo--auth"
-                                                width={220}
-                                                height={88}
-                                            />
-                                            <span className="site-brand__wordmark">IRWAA</span>
-                                        </div>
-                                    ) : null}
-                                    <h2 className="fw-bold text-primary mb-2">{t('welcomeBack', 'Welcome Back')}</h2>
-                                    <p className="text-muted">{t('signInIntro', 'Sign in to continue to your account')}</p>
-                                </div>
+  return (
+    <section className="page-wrapper">
+      <HeaderOne />
+      <BreadcrumbOne
+        title={t("login", "Login")}
+        links={[
+          { name: t("home", "Home"), link: "/" },
+          { name: t("login", "Login"), link: "/login" },
+        ]}
+      />
 
-                                {error && (
-                                    <div className="alert alert-danger alert-dismissible fade show" role="alert">
-                                        <i className="fa-solid fa-circle-exclamation me-2"></i>
-                                        {error}
-                                        <button
-                                            type="button"
-                                            className="btn-close"
-                                            onClick={() => setError('')}
-                                        ></button>
-                                    </div>
-                                )}
-
-                                {successMessage && (
-                                    <div className="alert alert-success alert-dismissible fade show" role="alert">
-                                        <i className="fa-solid fa-check-circle me-2"></i>
-                                        {successMessage}
-                                        <button
-                                            type="button"
-                                            className="btn-close"
-                                            onClick={() => setSuccessMessage('')}
-                                        ></button>
-                                    </div>
-                                )}
-
-                                <button
-                                    type="button"
-                                    className="btn btn-light btn-ripple w-100 auth-provider-btn fw-semibold border mb-4"
-                                    onClick={handleGoogleLogin}
-                                    disabled={loading}
-                                >
-                                    <i className="fa-brands fa-google me-2"></i>
-                                    {t('continueWithGoogle', 'Continue with Google')}
-                                </button>
-
-                                <div className="d-flex align-items-center gap-3 mb-4">
-                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
-                                    <span className="text-muted small">{t('orUseEmail', 'or use email')}</span>
-                                    <div className="flex-grow-1" style={{ height: '1px', background: 'var(--border-color)' }}></div>
-                                </div>
-
-                                <form onSubmit={handleSubmit}>
-                                    <div className="mb-4">
-                                        <label htmlFor="email" className="form-label fw-semibold">
-                                            {t('emailAddress', 'Email Address')}
-                                        </label>
-                                        <div className="input-group">
-                                            <span className="input-group-text bg-light border-end-0">
-                                                <i className="fa-solid fa-envelope text-muted"></i>
-                                            </span>
-                                            <input
-                                                type="email"
-                                                className="form-control border-start-0 ps-0"
-                                                id="email"
-                                                name="email"
-                                                placeholder={t('enterYourEmail', 'Enter your email')}
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <div className="d-flex justify-content-between align-items-center mb-1">
-                                            <label htmlFor="password" className="form-label fw-semibold mb-0">
-                                                {t('password', 'Password')}
-                                            </label>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link text-decoration-none small text-primary p-0"
-                                                onClick={handleResetPassword}
-                                            >
-                                                {t('forgotPassword', 'Forgot Password?')}
-                                            </button>
-                                        </div>
-                                        <div className="input-group">
-                                            <span className="input-group-text bg-light border-end-0">
-                                                <i className="fa-solid fa-lock text-muted"></i>
-                                            </span>
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                className="form-control border-start-0 ps-0"
-                                                id="password"
-                                                name="password"
-                                                placeholder={t('enterYourPassword', 'Enter your password')}
-                                                value={formData.password}
-                                                onChange={handleChange}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="input-group-text bg-light border-start-0"
-                                                onClick={() => setShowPassword((prev) => !prev)}
-                                            >
-                                                <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary w-100 auth-submit-btn fw-semibold"
-                                        disabled={loading}
-                                    >
-                                        {loading ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                    {t('processing', 'Processing...')}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {t('signIn', 'Sign In')} <i className="fa-solid fa-arrow-right ms-2"></i>
-                                                </>
-                                            )}
-                                    </button>
-                                </form>
-
-                                <div className="text-center mt-4">
-                                    <p className="text-muted mb-0">
-                                        {t('doNotHaveAccount', "Don't have an account?")}{' '}
-                                        <Link href="/register" className="text-primary fw-semibold text-decoration-none">
-                                            {t('createAccountInstead', 'Create Account')}
-                                        </Link>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+      <div className="container py-5 auth-shell">
+        <div className="row justify-content-center">
+          <div className="col-lg-5 col-md-8">
+            <div className="card shadow-lg border-0 rounded-4 auth-card">
+              <div className="card-body p-5">
+                <div className="text-center mb-4">
+                  {settings.site_logo_url ? (
+                    <div className="site-brand site-brand--auth mb-3 justify-content-center">
+                      <Image
+                        src={settings.site_logo_url}
+                        alt="IRWAA"
+                        className="site-logo site-logo--auth"
+                        width={220}
+                        height={88}
+                      />
+                      <span className="site-brand__wordmark">IRWAA</span>
                     </div>
+                  ) : null}
+                  <h2 className="fw-bold text-primary mb-2">
+                    {t("welcomeBack", "Welcome Back")}
+                  </h2>
+                  <p className="text-muted mb-0">
+                    {t("signInIntro", "Sign in to continue to your account.")}
+                  </p>
                 </div>
-            </div>
 
-            <FooterOne />
-        </section>
-    );
+                {error ? (
+                  <div className="alert alert-danger" role="alert">
+                    <i className="fa-solid fa-circle-exclamation me-2"></i>
+                    {error}
+                  </div>
+                ) : null}
+
+                {successMessage ? (
+                  <div className="alert alert-success" role="alert">
+                    <i className="fa-solid fa-circle-check me-2"></i>
+                    {successMessage}
+                  </div>
+                ) : null}
+
+                <button
+                  type="button"
+                  className="btn btn-light btn-ripple w-100 auth-provider-btn fw-semibold border mb-4"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                >
+                  <i className="fa-brands fa-google me-2"></i>
+                  {t("continueWithGoogle", "Continue with Google")}
+                </button>
+
+                <div className="d-flex align-items-center gap-3 mb-4">
+                  <div
+                    className="flex-grow-1"
+                    style={{ height: "1px", background: "var(--border-color)" }}
+                  ></div>
+                  <span className="text-muted small">
+                    {t("orContinueWithEmail", "or continue with email")}
+                  </span>
+                  <div
+                    className="flex-grow-1"
+                    style={{ height: "1px", background: "var(--border-color)" }}
+                  ></div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label fw-semibold">
+                      {t("emailAddress", "Email Address")}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light border-end-0">
+                        <i className="fa-solid fa-envelope text-muted"></i>
+                      </span>
+                      <input
+                        type="email"
+                        className="form-control border-start-0 ps-0"
+                        id="email"
+                        name="email"
+                        placeholder={t("enterYourEmail", "Enter your email")}
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label
+                      htmlFor="password"
+                      className="form-label fw-semibold"
+                    >
+                      {t("password", "Password")}
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light border-end-0">
+                        <i className="fa-solid fa-lock text-muted"></i>
+                      </span>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="form-control border-start-0 ps-0"
+                        id="password"
+                        name="password"
+                        placeholder={t(
+                          "enterYourPassword",
+                          "Enter your password",
+                        )}
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="input-group-text bg-light border-start-0"
+                        onClick={() => setShowPassword((previous) => !previous)}
+                      >
+                        <i
+                          className={`fa-solid ${
+                            showPassword ? "fa-eye-slash" : "fa-eye"
+                          } text-muted`}
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="d-flex justify-content-end mb-4">
+                    <button
+                      type="button"
+                      className="btn btn-link px-0 text-decoration-none fw-semibold"
+                      onClick={handleResetPassword}
+                      disabled={loading}
+                    >
+                      {t("forgotPassword", "Forgot Password?")}
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100 auth-submit-btn fw-semibold"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        ></span>
+                        {t("processing", "Processing...")}
+                      </>
+                    ) : (
+                      <>
+                        {t("signIn", "Sign In")}{" "}
+                        <i className="fa-solid fa-arrow-right ms-2"></i>
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="text-center mt-4">
+                  <p className="text-muted mb-0">
+                    {t("doNotHaveAccount", "Don't have an account?")}{" "}
+                    <Link
+                      href="/register"
+                      className="text-primary fw-semibold text-decoration-none"
+                    >
+                      {t("createAccountInstead", "Create Account")}
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <FooterOne />
+    </section>
+  );
 }

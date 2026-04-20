@@ -432,3 +432,14 @@ Design, stability, and deployment hardening pass (April 17, 2026):
 - Re-ran real repo verification in the Git-tracked project:
   - `npm run lint` now completes without errors (warnings remain in older admin/search files)
   - `npm run build` now completes successfully
+
+Final push cleanup and auth/member portal stability pass (April 20, 2026):
+- Synced the latest member-auth and article-admin updates into the GitHub-tracked repo before deployment.
+- Preserved the Google OAuth callback/session exchange flow so signed-in users can land in a real member session and see the member dashboard entry.
+- Kept the server-backed authenticated profile endpoint for loading/creating member profiles and preserving admin access for configured admin emails.
+- Ensured the header member avatar remains visible on desktop and mobile, with an admin-only crown/admin-panel link for admin accounts.
+- Removed accidental duplicate copied route files before pushing so Vercel does not deploy junk app routes.
+- Cleaned remaining lint warnings in older admin/search/settings/favicon files.
+- Verified the deployable repo with:
+  - `npm run lint`
+  - `npm run build`
