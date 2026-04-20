@@ -453,3 +453,14 @@ Member dashboard access fix (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Bengali-first language and homepage copy pass (April 20, 2026):
+- Made Bengali the default visitor language while still preserving manual English/Arabic/Bengali switching.
+- Added Bengali-localized homepage hero defaults so the hero opens with stronger faith-centered Bangla copy.
+- Replaced the old generic hero line with a stronger message about Quran learning, trusted answers, meaningful causes, and faith becoming light/action.
+- Removed the generic “Featured Mission” prefix from the hero badge so it now works as a clean intro line.
+- Improved the Bengali auto-translation layer so it also responds to async text updates inside existing DOM nodes, not only newly inserted elements.
+- Added safeguards to avoid re-translating text that is already Bengali.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

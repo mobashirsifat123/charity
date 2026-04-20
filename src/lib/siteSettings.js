@@ -16,10 +16,10 @@ export const DEFAULT_SITE_SETTINGS = {
   hero_bg_image: "",
   cause_bg_image: "",
   community_bg_image: "",
-  hero_subtitle: "Dawah, Guidance, and Giving",
-  hero_title: "Knowledge That Guides, Causes That Matter",
+  hero_subtitle: "IRWAA: Knowledge, Guidance, and Community",
+  hero_title: "Come Back to Allah With Knowledge, Mercy, and Action",
   hero_description:
-    "Build a stronger Muslim community through beneficial articles, trusted fatwas, and causes that turn faith into action.",
+    "For every heart searching for clarity, IRWAA brings Quran learning, trusted answers, and meaningful causes together so faith can become light in our homes and action in our communities.",
   hero_primary_cta_text: "Explore Fatwas",
   hero_primary_cta_link: "/fatwa",
   hero_secondary_cta_text: "Read Articles",

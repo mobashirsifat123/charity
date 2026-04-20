@@ -24,6 +24,10 @@ function shouldTranslateText(text) {
   return /[\p{L}]/u.test(value);
 }
 
+function hasBengaliText(text) {
+  return /[\u0980-\u09FF]/.test(String(text || ""));
+}
+
 export default function BengaliAutoTranslator() {
   const { locale } = useLanguage();
   const pathname = usePathname();
@@ -79,12 +83,17 @@ export default function BengaliAutoTranslator() {
             if (parent.closest("[data-no-translate='true']")) {
               return NodeFilter.FILTER_REJECT;
             }
-            return shouldTranslateText(node.textContent) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            return shouldTranslateText(node.textContent)
+              ? NodeFilter.FILTER_ACCEPT
+              : NodeFilter.FILTER_REJECT;
           }
 
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node;
-            if (TEXT_EXCLUDE_TAGS.has(element.tagName) || element.getAttribute("data-no-translate") === "true") {
+            if (
+              TEXT_EXCLUDE_TAGS.has(element.tagName) ||
+              element.getAttribute("data-no-translate") === "true"
+            ) {
               return NodeFilter.FILTER_REJECT;
             }
             return NodeFilter.FILTER_SKIP;
@@ -121,21 +130,39 @@ export default function BengaliAutoTranslator() {
       const texts = [];
 
       textNodes.forEach((node) => {
-        const original = textNodeCache.get(node) ?? node.textContent;
-        if (!textNodeCache.has(node)) {
-          textNodeCache.set(node, original);
+        const currentText = node.textContent;
+        if (hasBengaliText(currentText)) {
+          return;
         }
-        if (shouldTranslateText(original)) {
+
+        const cachedOriginal = textNodeCache.get(node);
+        const original =
+          cachedOriginal && cachedOriginal === currentText
+            ? cachedOriginal
+            : currentText;
+
+        textNodeCache.set(node, original);
+
+        if (shouldTranslateText(original) && !hasBengaliText(original)) {
           texts.push(original);
         }
       });
 
       attributeNodes.forEach(({ element, attributeName, value }) => {
-        rememberAttribute(element, attributeName, element.getAttribute(attributeName));
+        if (hasBengaliText(value)) return;
+        rememberAttribute(
+          element,
+          attributeName,
+          element.getAttribute(attributeName),
+        );
         texts.push(value);
       });
 
-      const uniqueTexts = [...new Set(texts.map((value) => String(value || "").trim()).filter(Boolean))];
+      const uniqueTexts = [
+        ...new Set(
+          texts.map((value) => String(value || "").trim()).filter(Boolean),
+        ),
+      ];
       if (!uniqueTexts.length) return;
 
       const response = await fetch("/api/translate", {
@@ -164,6 +191,7 @@ export default function BengaliAutoTranslator() {
 
       attributeNodes.forEach(({ element, attributeName, value }) => {
         if (!element?.isConnected) return;
+        if (hasBengaliText(element.getAttribute(attributeName))) return;
         element.setAttribute(attributeName, translations[value] || value);
       });
     };
@@ -186,34 +214,48 @@ export default function BengaliAutoTranslator() {
       console.error("Unable to auto-translate page into Bengali:", error);
     });
 
-    const observer = new MutationObserver((mutations) => {
-      const addedElements = [];
+    let translateTimer = null;
+    const scheduleTranslate = () => {
+      window.clearTimeout(translateTimer);
+      translateTimer = window.setTimeout(() => {
+        translateNodes(document.body).catch((error) => {
+          console.error("Unable to translate updated Bengali content:", error);
+        });
+      }, 180);
+    };
 
+    const observer = new MutationObserver((mutations) => {
+      let shouldRun = false;
       mutations.forEach((mutation) => {
+        if (mutation.type === "characterData") {
+          shouldRun = true;
+        }
+
         mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            addedElements.push(node);
-          } else if (node.nodeType === Node.TEXT_NODE && node.parentElement) {
-            addedElements.push(node.parentElement);
+          if (
+            node.nodeType === Node.ELEMENT_NODE ||
+            node.nodeType === Node.TEXT_NODE
+          ) {
+            shouldRun = true;
           }
         });
       });
 
-      if (!addedElements.length) return;
-      const root = addedElements[0];
-      translateNodes(root).catch((error) => {
-        console.error("Unable to translate updated Bengali content:", error);
-      });
+      if (shouldRun) {
+        scheduleTranslate();
+      }
     });
 
     observer.observe(document.body, {
       childList: true,
+      characterData: true,
       subtree: true,
     });
 
     observerRef.current = observer;
 
     return () => {
+      window.clearTimeout(translateTimer);
       stopObserver();
     };
   }, [locale, pathname]);

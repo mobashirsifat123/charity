@@ -1,16 +1,18 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { RTL_LOCALES, SUPPORTED_LOCALES, translateUi } from '@/lib/i18n';
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { RTL_LOCALES, SUPPORTED_LOCALES, translateUi } from "@/lib/i18n";
 
-const STORAGE_KEY = 'irwa-locale';
+const STORAGE_KEY = "irwa-locale";
 
 const LanguageContext = createContext(null);
 
-const normalizeLocale = (value) => (SUPPORTED_LOCALES.includes(value) ? value : 'en');
+const DEFAULT_LOCALE = "bn";
+const normalizeLocale = (value) =>
+  SUPPORTED_LOCALES.includes(value) ? value : DEFAULT_LOCALE;
 
 export function LanguageProvider({ children }) {
-  const [locale, setLocale] = useState('en');
+  const [locale, setLocale] = useState(DEFAULT_LOCALE);
 
   useEffect(() => {
     try {
@@ -20,16 +22,14 @@ export function LanguageProvider({ children }) {
         return;
       }
 
-      if (window.navigator.language?.toLowerCase().startsWith('ar')) {
-        setLocale('ar');
+      if (window.navigator.language?.toLowerCase().startsWith("ar")) {
+        setLocale("ar");
         return;
       }
 
-      if (window.navigator.language?.toLowerCase().startsWith('bn')) {
-        setLocale('bn');
-      }
+      setLocale(DEFAULT_LOCALE);
     } catch (error) {
-      console.error('Unable to initialize language preference:', error);
+      console.error("Unable to initialize language preference:", error);
     }
   }, []);
 
@@ -38,13 +38,13 @@ export function LanguageProvider({ children }) {
     const isRtl = RTL_LOCALES.includes(nextLocale);
 
     document.documentElement.lang = nextLocale;
-    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-    document.documentElement.setAttribute('data-locale', nextLocale);
+    document.documentElement.dir = isRtl ? "rtl" : "ltr";
+    document.documentElement.setAttribute("data-locale", nextLocale);
 
     try {
       window.localStorage.setItem(STORAGE_KEY, nextLocale);
     } catch (error) {
-      console.error('Unable to persist language preference:', error);
+      console.error("Unable to persist language preference:", error);
     }
   }, [locale]);
 
@@ -55,9 +55,9 @@ export function LanguageProvider({ children }) {
     return {
       locale: normalizedLocale,
       isRtl,
-      dir: isRtl ? 'rtl' : 'ltr',
+      dir: isRtl ? "rtl" : "ltr",
       setLocale: (nextLocale) => setLocale(normalizeLocale(nextLocale)),
-      t: (key, fallback = '') => translateUi(normalizedLocale, key, fallback),
+      t: (key, fallback = "") => translateUi(normalizedLocale, key, fallback),
     };
   }, [locale]);
 
@@ -71,7 +71,7 @@ export function LanguageProvider({ children }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
 
   return context;
