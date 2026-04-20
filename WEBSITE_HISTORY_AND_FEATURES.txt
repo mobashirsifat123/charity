@@ -487,3 +487,10 @@ Approved-admin allowlist correction (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Admin display fallback correction (April 20, 2026):
+- Fixed client-side auth hydration so approved admin emails show as `admin` even if the profile API/database profile response is briefly stale.
+- Normal users remain forced to `donor` because the approved-admin email allowlist still gates all admin UI and server access.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
