@@ -356,7 +356,9 @@ export async function createArticle(formData) {
 
   revalidatePath("/admin/blogs");
   revalidatePath("/admin/articles");
+  revalidatePath("/");
   revalidatePath("/blog-grid");
+  revalidatePath("/search");
 
   return {
     success: true,

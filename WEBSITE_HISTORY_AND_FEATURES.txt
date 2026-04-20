@@ -528,3 +528,12 @@ Admin Server Action authorization fix (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Admin persistence and cross-device freshness fix (April 20, 2026):
+- Removed stale browser `localStorage` caching for public site settings so another device no longer keeps old homepage/about/article copy after an admin save.
+- Added a no-cache public site settings endpoint that reads the latest saved Supabase settings and is used by the global settings provider.
+- Hardened the admin Site Builder save API so every Supabase write is checked; failed setting rows now return an error instead of a false success message.
+- Added immediate public page revalidation after Site Builder changes, article/fatwa/campaign resource edits, and admin image uploads/deletions.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
