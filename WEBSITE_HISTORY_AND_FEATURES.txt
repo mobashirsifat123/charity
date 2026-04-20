@@ -494,3 +494,11 @@ Admin display fallback correction (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Admin content save `password_hash` fix (April 20, 2026):
+- Fixed the Admin Site Builder save error caused by trying to insert Google OAuth users into the legacy `public.users` table without a required `password_hash`.
+- Admin/profile helpers now return safe synthetic OAuth profiles when no legacy user row exists, instead of inserting incomplete `users` rows.
+- Existing user rows can still have roles corrected safely, but new OAuth-only admins are no longer blocked from editing site settings.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

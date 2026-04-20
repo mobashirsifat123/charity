@@ -101,32 +101,15 @@ export async function requireAdmin(request) {
   let safeProfile = profile;
 
   if (!safeProfile) {
-    const { data: insertedProfile, error: insertError } = await supabase
-      .from("users")
-      .insert({
+    safeProfile = {
+      id: userData.user.id,
+      email,
+      name:
+        userData.user.user_metadata?.full_name ||
+        userData.user.user_metadata?.name ||
         email,
-        name:
-          userData.user.user_metadata?.full_name ||
-          userData.user.user_metadata?.name ||
-          email,
-        role: "admin",
-      })
-      .select("id, email, role, name")
-      .maybeSingle();
-
-    if (insertError) {
-      return {
-        errorResponse: NextResponse.json(
-          {
-            success: false,
-            error: insertError.message || "Failed to create admin profile.",
-          },
-          { status: 500 },
-        ),
-      };
-    }
-
-    safeProfile = insertedProfile;
+      role: "admin",
+    };
   } else if (safeProfile.role !== "admin") {
     const { data: updatedProfile, error: updateError } = await supabase
       .from("users")

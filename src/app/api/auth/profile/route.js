@@ -134,23 +134,7 @@ async function loadOrCreateProfile({
 
   profile = existingProfile || null;
 
-  if (!profile) {
-    const insertPayload = {
-      email,
-      name: fallbackName,
-      role: safeRole,
-    };
-
-    const { data: insertedProfile, error: insertError } = await adminClient
-      .from("users")
-      .insert(insertPayload)
-      .select("*")
-      .maybeSingle();
-
-    if (!insertError && insertedProfile) {
-      profile = insertedProfile;
-    }
-  } else if (normalizeRole(profile.role) !== safeRole) {
+  if (profile && normalizeRole(profile.role) !== safeRole) {
     const { data: updatedProfile, error: updateError } = await adminClient
       .from("users")
       .update({ role: safeRole })
@@ -236,18 +220,6 @@ export async function PATCH(request) {
 
       if (updateError) {
         throw updateError;
-      }
-    } else {
-      const { error: insertError } = await auth.adminClient
-        .from("users")
-        .insert({
-          email,
-          name,
-          role: safeRole,
-        });
-
-      if (insertError) {
-        throw insertError;
       }
     }
 
