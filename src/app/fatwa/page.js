@@ -6,6 +6,7 @@ import Link from "next/link";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
 import { useLanguage } from "@/context/LanguageContext";
 import { fetchPublishedFatwas } from "@/lib/content-data";
 import {
@@ -52,13 +53,23 @@ export default function FatwaList() {
   }, []);
 
   const categories = useMemo(
-    () => ["all", ...Array.from(new Set(fatwas.map((item) => getContentCategory(item)).filter(Boolean)))],
-    [fatwas]
+    () => [
+      "all",
+      ...Array.from(
+        new Set(fatwas.map((item) => getContentCategory(item)).filter(Boolean)),
+      ),
+    ],
+    [fatwas],
   );
 
   const authors = useMemo(
-    () => ["all", ...Array.from(new Set(fatwas.map((item) => item.author_name).filter(Boolean)))],
-    [fatwas]
+    () => [
+      "all",
+      ...Array.from(
+        new Set(fatwas.map((item) => item.author_name).filter(Boolean)),
+      ),
+    ],
+    [fatwas],
   );
 
   const filteredFatwas = useMemo(() => {
@@ -67,31 +78,46 @@ export default function FatwaList() {
     return fatwas.filter((fatwa) => {
       const matchesSearch =
         !lowerSearch ||
-        (fatwa.title || fatwa.question || "").toLowerCase().includes(lowerSearch) ||
-        (fatwa.answer || fatwa.content || "").toLowerCase().includes(lowerSearch) ||
+        (fatwa.title || fatwa.question || "")
+          .toLowerCase()
+          .includes(lowerSearch) ||
+        (fatwa.answer || fatwa.content || "")
+          .toLowerCase()
+          .includes(lowerSearch) ||
         getContentCategory(fatwa).toLowerCase().includes(lowerSearch) ||
-        normalizeTags(fatwa.tags).join(" ").toLowerCase().includes(lowerSearch) ||
+        normalizeTags(fatwa.tags)
+          .join(" ")
+          .toLowerCase()
+          .includes(lowerSearch) ||
         (fatwa.author_name || "").toLowerCase().includes(lowerSearch);
 
-      const matchesCategory = category === "all" || getContentCategory(fatwa) === category;
-      const matchesAuthor = author === "all" || (fatwa.author_name || "") === author;
+      const matchesCategory =
+        category === "all" || getContentCategory(fatwa) === category;
+      const matchesAuthor =
+        author === "all" || (fatwa.author_name || "") === author;
 
       return matchesSearch && matchesCategory && matchesAuthor;
     });
   }, [fatwas, searchTerm, category, author]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredFatwas.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredFatwas.length / ITEMS_PER_PAGE),
+  );
   const displayedFatwas = filteredFatwas.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   const latestFatwas = useMemo(
     () =>
       [...fatwas]
-        .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0))
+        .sort(
+          (left, right) =>
+            new Date(right.created_at || 0) - new Date(left.created_at || 0),
+        )
         .slice(0, 8),
-    [fatwas]
+    [fatwas],
   );
 
   const resetToFirstPage = () => setCurrentPage(1);
@@ -107,11 +133,27 @@ export default function FatwaList() {
         ]}
       />
 
+      <section className="knowledge-page-search-strip">
+        <div className="container">
+          <KnowledgeSearchBar
+            variant="light"
+            defaultType="fatwa"
+            placeholder={t(
+              "searchFatwasPlaceholder",
+              "Search fatwas, questions, scholars, and topics...",
+            )}
+          />
+        </div>
+      </section>
+
       <section className="py-5 bg-white">
         <div className="container">
           <div className="row g-4">
             <aside className="col-lg-4 col-xl-3 d-none d-lg-block">
-              <div className="islamweb-like-panel sticky-lg-top" style={{ top: "110px" }}>
+              <div
+                className="islamweb-like-panel sticky-lg-top"
+                style={{ top: "110px" }}
+              >
                 <div className="islamweb-like-block">
                   <h5 className="islamweb-like-block-title">By Subject</h5>
                   <ul className="islamweb-like-list">
@@ -125,7 +167,9 @@ export default function FatwaList() {
                             resetToFirstPage();
                           }}
                         >
-                          {item === "all" ? t("allTopics", "All topics") : translateFatwaCategory(locale, item)}
+                          {item === "all"
+                            ? t("allTopics", "All topics")
+                            : translateFatwaCategory(locale, item)}
                         </button>
                       </li>
                     ))}
@@ -157,13 +201,18 @@ export default function FatwaList() {
                   <ul className="islamweb-like-list">
                     {latestFatwas.map((fatwa) => (
                       <li key={buildContentIdentifier(fatwa, "fatwa")}>
-                        <Link href={getContentPath("fatwa", fatwa)} className="islamweb-like-mini-link">
+                        <Link
+                          href={getContentPath("fatwa", fatwa)}
+                          className="islamweb-like-mini-link"
+                        >
                           {fatwa.title || fatwa.question || "Untitled Fatwa"}
                         </Link>
                       </li>
                     ))}
                     {!latestFatwas.length ? (
-                      <li className="text-muted small">No published fatwas yet.</li>
+                      <li className="text-muted small">
+                        No published fatwas yet.
+                      </li>
                     ) : null}
                   </ul>
                 </div>
@@ -173,12 +222,18 @@ export default function FatwaList() {
             <div className="col-lg-8 col-xl-9">
               <div className="islamweb-like-feed">
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                  <h2 className="mb-0">{t("fatwasAndRulings", "Fatwas & Rulings")}</h2>
+                  <h2 className="mb-0">
+                    {t("fatwasAndRulings", "Fatwas & Rulings")}
+                  </h2>
                   <div className="d-flex align-items-center gap-3">
                     <span className="text-muted small">
-                      {filteredFatwas.length} item{filteredFatwas.length === 1 ? "" : "s"}
+                      {filteredFatwas.length} item
+                      {filteredFatwas.length === 1 ? "" : "s"}
                     </span>
-                    <Link href="/request-fatwa" className="btn btn-sm btn-outline-primary">
+                    <Link
+                      href="/request-fatwa"
+                      className="btn btn-sm btn-outline-primary"
+                    >
                       {t("requestFatwa", "Request Fatwa")}
                     </Link>
                   </div>
@@ -187,11 +242,16 @@ export default function FatwaList() {
                 <div className="compact-directory-toolbar mb-4">
                   <div className="row g-2 align-items-end">
                     <div className="col-lg-5">
-                      <label className="compact-directory-label">{t("search", "Search")}</label>
+                      <label className="compact-directory-label">
+                        {t("search", "Search")}
+                      </label>
                       <input
                         type="text"
                         className="form-control compact-directory-input"
-                        placeholder={t("searchFatwasPlaceholder", "Search by topic, question, tag, or scholar...")}
+                        placeholder={t(
+                          "searchFatwasPlaceholder",
+                          "Search by topic, question, tag, or scholar...",
+                        )}
                         value={searchTerm}
                         onChange={(event) => {
                           setSearchTerm(event.target.value);
@@ -211,7 +271,9 @@ export default function FatwaList() {
                       >
                         {categories.map((item) => (
                           <option key={item} value={item}>
-                            {item === "all" ? t("allTopics", "All topics") : translateFatwaCategory(locale, item)}
+                            {item === "all"
+                              ? t("allTopics", "All topics")
+                              : translateFatwaCategory(locale, item)}
                           </option>
                         ))}
                       </select>
@@ -256,12 +318,19 @@ export default function FatwaList() {
                   <div className="p-4 text-muted">Loading fatwas...</div>
                 ) : !displayedFatwas.length ? (
                   <div className="p-4 border rounded-3 text-muted">
-                    {t("noRulingsFound", "No rulings found")} - {t("fatwaFilterEmpty", "Could not find any fatwa matching your current filters.")}
+                    {t("noRulingsFound", "No rulings found")} -{" "}
+                    {t(
+                      "fatwaFilterEmpty",
+                      "Could not find any fatwa matching your current filters.",
+                    )}
                   </div>
                 ) : (
                   <div className="islamweb-like-items">
                     {displayedFatwas.map((fatwa) => (
-                      <article className="islamweb-like-item" key={buildContentIdentifier(fatwa, "fatwa")}>
+                      <article
+                        className="islamweb-like-item"
+                        key={buildContentIdentifier(fatwa, "fatwa")}
+                      >
                         <h3 className="islamweb-like-item-title">
                           <Link href={getContentPath("fatwa", fatwa)}>
                             {fatwa.title || fatwa.question || "Untitled Fatwa"}
@@ -271,18 +340,30 @@ export default function FatwaList() {
                           {getExcerpt(fatwa.answer || fatwa.content || "", 300)}
                         </p>
                         <div className="islamweb-like-item-meta">
-                          <span>{translateFatwaCategory(locale, getContentCategory(fatwa))}</span>
+                          <span>
+                            {translateFatwaCategory(
+                              locale,
+                              getContentCategory(fatwa),
+                            )}
+                          </span>
                           <span>•</span>
                           <span>{fatwa.author_name || "IRWA Scholar"}</span>
                           <span>•</span>
                           <span>
                             {new Date(fatwa.created_at).toLocaleDateString(
                               locale === "ar" ? "ar" : "en-US",
-                              { year: "numeric", month: "2-digit", day: "2-digit" }
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              },
                             )}
                           </span>
                         </div>
-                        <Link href={getContentPath("fatwa", fatwa)} className="islamweb-like-more">
+                        <Link
+                          href={getContentPath("fatwa", fatwa)}
+                          className="islamweb-like-more"
+                        >
                           More
                         </Link>
                       </article>
@@ -293,11 +374,15 @@ export default function FatwaList() {
                 {totalPages > 1 ? (
                   <nav className="mt-4" aria-label="Fatwas pagination">
                     <ul className="pagination mb-0">
-                      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                      >
                         <button
                           type="button"
                           className="page-link"
-                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          }
                         >
                           Previous
                         </button>
@@ -316,11 +401,17 @@ export default function FatwaList() {
                           </button>
                         </li>
                       ))}
-                      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                      >
                         <button
                           type="button"
                           className="page-link"
-                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(prev + 1, totalPages),
+                            )
+                          }
                         >
                           Next
                         </button>

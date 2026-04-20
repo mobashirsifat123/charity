@@ -2102,7 +2102,7 @@ html[dir="rtl"] .navbar__menu-wrapper {
 
 .navbar__list {
   display: flex;
-  gap: 30px;
+  gap: clamp(14px, 1.8vw, 26px);
 }
 
 .navbar__list li {
@@ -2113,7 +2113,7 @@ html[dir="rtl"] .navbar__menu-wrapper {
   display: block;
   padding: 10px 0;
   color: var(--text-color);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -3529,6 +3529,89 @@ html[dir="rtl"] .navbar__sub-menu li.active a {
   color: var(--primary-color);
 }
 
+.knowledge-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, auto) auto;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  max-width: 900px;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(11, 61, 46, 0.1);
+  background: #fff;
+  box-shadow: 0 22px 46px rgba(11, 61, 46, 0.14);
+}
+
+.knowledge-search--hero {
+  max-width: 720px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.knowledge-search__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 62px;
+  padding: 0 1.2rem;
+}
+
+.knowledge-search__input-wrap i {
+  color: var(--primary-color);
+}
+
+.knowledge-search input,
+.knowledge-search select {
+  width: 100%;
+  min-height: 62px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.knowledge-search input::placeholder {
+  color: rgba(85, 85, 85, 0.68);
+}
+
+.knowledge-search select {
+  padding: 0 1rem;
+  border-left: 1px solid rgba(11, 61, 46, 0.1);
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
+.knowledge-search button {
+  min-height: 62px;
+  padding: 0 1.35rem;
+  border: 0;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  transition:
+    background 0.22s ease,
+    transform 0.22s ease;
+}
+
+.knowledge-search button:hover {
+  background: var(--secondary-color);
+}
+
+.knowledge-page-search-strip {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(11, 61, 46, 0.08);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(200, 169, 81, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(244, 248, 246, 0.98), #fff);
+}
+
 .compact-chip-scroll {
   display: flex;
   gap: 0.65rem;
@@ -3960,6 +4043,23 @@ html[dir="rtl"] .article-directory-sidebar-button {
     gap: 0.85rem;
   }
 
+  .knowledge-search {
+    grid-template-columns: 1fr;
+    border-radius: 20px;
+  }
+
+  .knowledge-search__input-wrap,
+  .knowledge-search input,
+  .knowledge-search select,
+  .knowledge-search button {
+    min-height: 52px;
+  }
+
+  .knowledge-search select {
+    border-top: 1px solid rgba(11, 61, 46, 0.08);
+    border-left: 0;
+  }
+
   .islamweb-like-feed {
     padding: 1rem;
     border-radius: 20px;
@@ -4029,6 +4129,10 @@ html[dir="rtl"] .article-directory-sidebar-button {
   .hero-quick-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.7rem;
+  }
+
+  .knowledge-page-search-strip {
+    padding: 0.85rem 0;
   }
 
   .hero-quick-card {

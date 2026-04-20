@@ -31,11 +31,6 @@ const HeaderOne = () => {
   const isEbookRoute =
     pathname === "/ebooks" || pathname.startsWith("/ebooks/");
   const isFatwaRoute = pathname === "/fatwa" || pathname.startsWith("/fatwa/");
-  const isCauseRoute =
-    pathname === "/" || pathname.startsWith("/cause-details/");
-  const isAccountRoute =
-    ["/login", "/register", "/dashboard"].includes(pathname) ||
-    pathname.startsWith("/admin");
   const showGuestQuickAccess = pathname === "/" && scroll && !loading && !user;
   const handleSearch = () => {
     setSearch(!search);
@@ -212,20 +207,11 @@ const HeaderOne = () => {
                       <ul className="navbar__list">
                         <li
                           className={`navbar__item nav-fade ${
-                            pathname === "/" ? "active" : ""
+                            pathname === "/blog-grid" ? "active" : ""
                           }`}
                         >
-                          <Link href="/">
-                            {settings.nav_home_label || "Home"}
-                          </Link>
-                        </li>
-                        <li
-                          className={`navbar__item nav-fade ${
-                            ["/about-us"].includes(pathname) ? "active" : ""
-                          }`}
-                        >
-                          <Link href="/about-us">
-                            {settings.nav_about_label || "About Us"}
+                          <Link href="/blog-grid?subject=Quran">
+                            {settings.nav_quran_label || "Quran"}
                           </Link>
                         </li>
                         <li
@@ -239,6 +225,15 @@ const HeaderOne = () => {
                         </li>
                         <li
                           className={`navbar__item nav-fade ${
+                            isFatwaRoute ? "active" : ""
+                          }`}
+                        >
+                          <Link href="/fatwa">
+                            {settings.nav_fatwas_label || "Fatwas"}
+                          </Link>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${
                             isEbookRoute ? "active" : ""
                           }`}
                         >
@@ -248,11 +243,31 @@ const HeaderOne = () => {
                         </li>
                         <li
                           className={`navbar__item nav-fade ${
-                            isFatwaRoute ? "active" : ""
+                            pathname === "/blog-grid?subject=Quran"
+                              ? "active"
+                              : ""
                           }`}
                         >
-                          <Link href="/fatwa">
-                            {settings.nav_fatwas_label || "Fatwas"}
+                          <Link href="/blog-grid?subject=Quran">
+                            {settings.nav_learn_quran_label || "Learn Quran"}
+                          </Link>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${
+                            pathname.startsWith("/courses") ? "active" : ""
+                          }`}
+                        >
+                          <Link href="/courses">
+                            {settings.nav_courses_label || "Courses"}
+                          </Link>
+                        </li>
+                        <li
+                          className={`navbar__item nav-fade ${
+                            pathname === "/search" ? "active" : ""
+                          }`}
+                        >
+                          <Link href="/search">
+                            {settings.nav_search_label || "Search"}
                           </Link>
                         </li>
                         {customNavLinks.map((item) => (
@@ -263,163 +278,7 @@ const HeaderOne = () => {
                             <Link href={item.href}>{item.label}</Link>
                           </li>
                         ))}
-                        <li
-                          className={`navbar__item navbar__item--has-children nav-fade ${
-                            isCauseRoute ? "active" : ""
-                          }`}
-                        >
-                          <Link
-                            href="#"
-                            aria-label="dropdown menu"
-                            className="navbar__dropdown-label dropdown-label-alter"
-                          >
-                            {settings.nav_causes_label || "Causes"}
-                          </Link>
-                          <ul className="navbar__sub-menu">
-                            <li className={pathname === "/" ? "active" : ""}>
-                              <Link href="/#campaigns">
-                                {settings.nav_causes_overview_label ||
-                                  "Our Causes"}
-                              </Link>
-                            </li>
-                            <li
-                              className={
-                                pathname.startsWith("/cause-details/")
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              <Link href="/#campaigns">
-                                {settings.nav_support_mission_label ||
-                                  "Support the Mission"}
-                              </Link>
-                            </li>
-                          </ul>
-                        </li>
-                        <li
-                          className={`navbar__item navbar__item--has-children nav-fade ${
-                            ["/faq", "/donation", "/about-us"].includes(
-                              pathname,
-                            ) || isAccountRoute
-                              ? "active"
-                              : ""
-                          }`}
-                        >
-                          <Link
-                            href="#"
-                            aria-label="dropdown menu"
-                            className="navbar__dropdown-label dropdown-label-alter"
-                          >
-                            {settings.nav_pages_label || "Pages"}
-                          </Link>
-                          <ul className="navbar__sub-menu">
-                            <li
-                              className={
-                                ["/faq"].includes(pathname) ? "active" : ""
-                              }
-                            >
-                              <Link href="/faq">
-                                {settings.nav_faq_label || "FAQ"}
-                              </Link>
-                            </li>
-                            <li
-                              className={
-                                ["/donation"].includes(pathname) ? "active" : ""
-                              }
-                            >
-                              <Link href="/donation">
-                                {settings.nav_donate_label || "Donate Us"}
-                              </Link>
-                            </li>
-                            <li
-                              className={
-                                ["/about-us"].includes(pathname) ? "active" : ""
-                              }
-                            >
-                              <Link href="/about-us#contact-us">
-                                {settings.nav_contact_label || "Contact Us"}
-                              </Link>
-                            </li>
-                            <li>
-                              <Link href="/request-fatwa">
-                                {settings.nav_request_fatwa_label ||
-                                  "Request Fatwa"}
-                              </Link>
-                            </li>
-                            {!loading && user ? (
-                              <>
-                                <li
-                                  className={
-                                    pathname === "/dashboard" ? "active" : ""
-                                  }
-                                >
-                                  <Link href="/dashboard">
-                                    {settings.nav_dashboard_label ||
-                                      "My Dashboard"}
-                                  </Link>
-                                </li>
-                                {user.role === "admin" && (
-                                  <li
-                                    className={
-                                      pathname.startsWith("/admin")
-                                        ? "active"
-                                        : ""
-                                    }
-                                  >
-                                    <Link href="/admin/dashboard">
-                                      {settings.nav_admin_label ||
-                                        "Admin Panel"}
-                                    </Link>
-                                  </li>
-                                )}
-                              </>
-                            ) : !loading ? (
-                              <>
-                                <li
-                                  className={
-                                    pathname === "/login" ? "active" : ""
-                                  }
-                                >
-                                  <Link href="/login">
-                                    {settings.nav_login_label || "Login"}
-                                  </Link>
-                                </li>
-                                <li
-                                  className={
-                                    pathname === "/register" ? "active" : ""
-                                  }
-                                >
-                                  <Link href="/register">
-                                    {settings.nav_register_label || "Register"}
-                                  </Link>
-                                </li>
-                              </>
-                            ) : null}
-                          </ul>
-                        </li>
-                        <li
-                          className={`navbar__item nav-fade ${
-                            ["/about-us"].includes(pathname) ? "active" : ""
-                          } `}
-                        >
-                          <Link href="/about-us#contact-us">
-                            {t("contactUs", "Contact Us")}
-                          </Link>
-                        </li>
                       </ul>
-                    </div>
-                    <div className="contact-btn">
-                      <div className="contact-icon">
-                        <i className="icon-support" />
-                      </div>
-                      <div className="contact-content">
-                        <p>{t("callUsNow", "Call Us Now")}</p>
-                        <a
-                          href={`tel:${(settings.contact_phone || "(+01)-793-7938").replace(/[^\d+]/g, "")}`}
-                        >
-                          {settings.contact_phone || "(+01)-793-7938"}
-                        </a>
-                      </div>
                     </div>
                   </div>
                   <div className="navbar__options">

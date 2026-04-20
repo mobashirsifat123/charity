@@ -15,6 +15,7 @@ import { CORE_ARTICLE_SUBJECTS } from "@/lib/article-subjects";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import {
@@ -386,6 +387,13 @@ function BlogGridContent() {
                   "Browse beneficial writing, scholar reflections, and practical guidance arranged in a rich editorial directory."}
               </p>
             </div>
+
+            <KnowledgeSearchBar
+              className="mb-4"
+              variant="hero"
+              defaultType="blog"
+              placeholder="Search articles, subjects, authors, and tags..."
+            />
 
             <div className="article-hero-subject-grid">
               {articleSubjectCards.map((subject) => (

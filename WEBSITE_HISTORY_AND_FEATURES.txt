@@ -537,3 +537,12 @@ Admin persistence and cross-device freshness fix (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Dorar-inspired knowledge navigation and search upgrade (April 20, 2026):
+- Reworked the public header away from generic template links such as Home, About Us, Causes, Pages, and Contact Us in the primary menu.
+- Added a cleaner knowledge-first navigation focused on Quran, Articles, Fatwas, E-Books, Learn Quran, Courses, and Search.
+- Added a reusable Dorar-style knowledge search bar with search-type selection and placed it prominently in the homepage hero, Articles page, Fatwa page, and E-Books page.
+- Expanded the homepage hero feature grid into compact knowledge cards for articles, fatwas, Quran topics, courses, e-books, and search.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

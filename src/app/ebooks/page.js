@@ -6,6 +6,7 @@ import Link from "next/link";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
 import { listEbookCategories, listEbooks } from "@/lib/ebook-data";
 
 const ITEMS_PER_PAGE = 10;
@@ -36,10 +37,13 @@ export default function EbooksPage() {
     });
   }, [category, ebooks, searchTerm]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredEbooks.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredEbooks.length / ITEMS_PER_PAGE),
+  );
   const displayedEbooks = filteredEbooks.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   const resetToFirstPage = () => setCurrentPage(1);
@@ -55,15 +59,28 @@ export default function EbooksPage() {
         ]}
       />
 
+      <section className="knowledge-page-search-strip">
+        <div className="container">
+          <KnowledgeSearchBar
+            variant="light"
+            placeholder="Search e-books, articles, fatwas, and Islamic topics..."
+          />
+        </div>
+      </section>
+
       <section className="py-5 bg-white">
         <div className="container">
           <div className="row g-4">
             <aside className="col-lg-4 col-xl-3 d-none d-lg-block">
-              <div className="islamweb-like-panel sticky-lg-top" style={{ top: "110px" }}>
+              <div
+                className="islamweb-like-panel sticky-lg-top"
+                style={{ top: "110px" }}
+              >
                 <div className="islamweb-like-block">
                   <h5 className="islamweb-like-block-title">Book Categories</h5>
                   <p className="text-muted small mb-3">
-                    There are {categories.length - 1} book categories in this library.
+                    There are {categories.length - 1} book categories in this
+                    library.
                   </p>
                   <ul className="islamweb-like-list islamweb-like-scroll">
                     {categories.map((item) => (
@@ -88,7 +105,10 @@ export default function EbooksPage() {
                   <ul className="islamweb-like-list">
                     {latestEbooks.map((ebook) => (
                       <li key={ebook.slug}>
-                        <Link href={`/ebooks/${ebook.slug}`} className="islamweb-like-mini-link">
+                        <Link
+                          href={`/ebooks/${ebook.slug}`}
+                          className="islamweb-like-mini-link"
+                        >
                           {ebook.title}
                         </Link>
                       </li>
@@ -104,11 +124,13 @@ export default function EbooksPage() {
                   <div>
                     <h2 className="mb-1">E-Books</h2>
                     <p className="text-muted mb-0">
-                      A growing reading shelf for dawah, worship, character, family, and Islamic learning.
+                      A growing reading shelf for dawah, worship, character,
+                      family, and Islamic learning.
                     </p>
                   </div>
                   <span className="text-muted small">
-                    {filteredEbooks.length} book{filteredEbooks.length === 1 ? "" : "s"}
+                    {filteredEbooks.length} book
+                    {filteredEbooks.length === 1 ? "" : "s"}
                   </span>
                 </div>
 
@@ -128,7 +150,9 @@ export default function EbooksPage() {
                       />
                     </div>
                     <div className="col-lg-4">
-                      <label className="compact-directory-label">Category</label>
+                      <label className="compact-directory-label">
+                        Category
+                      </label>
                       <select
                         className="form-select compact-directory-input"
                         value={category}
@@ -172,7 +196,10 @@ export default function EbooksPage() {
                       <article className="islamweb-like-item" key={ebook.slug}>
                         <div className="row g-3 align-items-start">
                           <div className="col-md-3 col-lg-2">
-                            <Link href={`/ebooks/${ebook.slug}`} className="text-decoration-none">
+                            <Link
+                              href={`/ebooks/${ebook.slug}`}
+                              className="text-decoration-none"
+                            >
                               <div
                                 className="rounded-4 p-3 d-flex flex-column justify-content-between hover-lift"
                                 style={{
@@ -183,12 +210,25 @@ export default function EbooksPage() {
                                   boxShadow: "0 18px 32px rgba(11,61,46,0.12)",
                                 }}
                               >
-                                <span className="badge align-self-start" style={{ background: "rgba(200,169,81,0.18)", color: "#f3e1ad" }}>
+                                <span
+                                  className="badge align-self-start"
+                                  style={{
+                                    background: "rgba(200,169,81,0.18)",
+                                    color: "#f3e1ad",
+                                  }}
+                                >
                                   {ebook.category}
                                 </span>
                                 <div>
-                                  <div className="small text-white-50 mb-2">{ebook.pages} pages</div>
-                                  <div className="fw-bold" style={{ lineHeight: 1.35 }}>{ebook.title}</div>
+                                  <div className="small text-white-50 mb-2">
+                                    {ebook.pages} pages
+                                  </div>
+                                  <div
+                                    className="fw-bold"
+                                    style={{ lineHeight: 1.35 }}
+                                  >
+                                    {ebook.title}
+                                  </div>
                                 </div>
                               </div>
                             </Link>
@@ -196,9 +236,13 @@ export default function EbooksPage() {
 
                           <div className="col-md-9 col-lg-10">
                             <h3 className="islamweb-like-item-title mb-2">
-                              <Link href={`/ebooks/${ebook.slug}`}>{ebook.title}</Link>
+                              <Link href={`/ebooks/${ebook.slug}`}>
+                                {ebook.title}
+                              </Link>
                             </h3>
-                            <p className="islamweb-like-item-excerpt mb-2">{ebook.summary}</p>
+                            <p className="islamweb-like-item-excerpt mb-2">
+                              {ebook.summary}
+                            </p>
                             <div className="islamweb-like-item-meta mb-3">
                               <span>{ebook.category}</span>
                               <span>•</span>
@@ -207,15 +251,21 @@ export default function EbooksPage() {
                               <span>{ebook.pages} pages</span>
                               <span>•</span>
                               <span>
-                                {new Date(ebook.publishedAt).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                })}
+                                {new Date(ebook.publishedAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                  },
+                                )}
                               </span>
                             </div>
                             <p className="text-muted mb-3">{ebook.highlight}</p>
-                            <Link href={`/ebooks/${ebook.slug}`} className="islamweb-like-more">
+                            <Link
+                              href={`/ebooks/${ebook.slug}`}
+                              className="islamweb-like-more"
+                            >
                               More
                             </Link>
                           </div>
@@ -228,11 +278,15 @@ export default function EbooksPage() {
                 {totalPages > 1 ? (
                   <nav className="mt-4" aria-label="Ebooks pagination">
                     <ul className="pagination mb-0">
-                      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                      >
                         <button
                           type="button"
                           className="page-link"
-                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          }
                         >
                           Previous
                         </button>
@@ -251,11 +305,17 @@ export default function EbooksPage() {
                           </button>
                         </li>
                       ))}
-                      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                      >
                         <button
                           type="button"
                           className="page-link"
-                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(prev + 1, totalPages),
+                            )
+                          }
                         >
                           Next
                         </button>

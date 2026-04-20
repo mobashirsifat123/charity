@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
@@ -42,24 +43,42 @@ const BannerOne = () => {
       title: settings.hero_card_1_title || "Articles",
       color: "var(--primary-color)",
       meta: settings.hero_card_1_meta || "Reflections & learning",
+      href: "/blog-grid",
     },
     {
       icon: "fa-scale-balanced",
       title: settings.hero_card_2_title || "Fatwas",
       color: "var(--accent-color)",
       meta: settings.hero_card_2_meta || "Trusted answers",
-    },
-    {
-      icon: "fa-mosque",
-      title: settings.hero_card_3_title || "Dawah",
-      color: "var(--secondary-color)",
-      meta: settings.hero_card_3_meta || "Community benefit",
+      href: "/fatwa",
     },
     {
       icon: "fa-book-quran",
-      title: settings.hero_card_4_title || "Learn Quran",
+      title: settings.hero_card_3_title || "Quran Topics",
+      color: "var(--secondary-color)",
+      meta: settings.hero_card_3_meta || "Learn and reflect",
+      href: "/blog-grid?subject=Quran",
+    },
+    {
+      icon: "fa-graduation-cap",
+      title: settings.hero_card_4_title || "Courses",
       color: "var(--accent-color)",
-      meta: settings.hero_card_4_meta || "Short guided lessons",
+      meta: settings.hero_card_4_meta || "Structured learning",
+      href: "/courses",
+    },
+    {
+      icon: "fa-book",
+      title: settings.hero_card_5_title || "E-Books",
+      color: "var(--primary-color)",
+      meta: settings.hero_card_5_meta || "Readable library",
+      href: "/ebooks",
+    },
+    {
+      icon: "fa-magnifying-glass",
+      title: settings.hero_card_6_title || "Search",
+      color: "var(--secondary-color)",
+      meta: settings.hero_card_6_meta || "Find answers fast",
+      href: "/search",
     },
   ];
 
@@ -177,6 +196,15 @@ const BannerOne = () => {
               </Link>
             </div>
 
+            <KnowledgeSearchBar
+              className="mt-4"
+              variant="hero"
+              placeholder={
+                settings.hero_search_placeholder ||
+                "Search articles, fatwas, Quran topics..."
+              }
+            />
+
             <div className="d-flex flex-wrap gap-3 mt-4">
               <Link
                 href={settings.hero_support_cta_link || "/quran"}
@@ -200,16 +228,7 @@ const BannerOne = () => {
               {cards.map((card) => (
                 <Link
                   key={card.title}
-                  href={
-                    card.title === (settings.hero_card_4_title || "Learn Quran")
-                      ? "/quran"
-                      : card.title === (settings.hero_card_2_title || "Fatwas")
-                        ? "/fatwa"
-                        : card.title ===
-                            (settings.hero_card_1_title || "Articles")
-                          ? "/blog-grid"
-                          : "/about-us"
-                  }
+                  href={card.href}
                   className="hero-quick-card text-decoration-none"
                 >
                   <span className="hero-quick-card__icon">
@@ -275,7 +294,7 @@ const BannerOne = () => {
 
               <div className="row g-3">
                 {cards.map((card) => (
-                  <div key={card.title} className="col-12 workflow-node">
+                  <div key={card.title} className="col-md-6 workflow-node">
                     <div
                       className="rounded-4 p-4 hover-lift"
                       style={{
@@ -309,9 +328,13 @@ const BannerOne = () => {
                               Active
                             </span>
                           </div>
-                          <small style={{ color: "rgba(255,255,255,0.74)" }}>
+                          <Link
+                            href={card.href}
+                            className="small text-decoration-none"
+                            style={{ color: "rgba(255,255,255,0.74)" }}
+                          >
                             {card.meta}
-                          </small>
+                          </Link>
                         </div>
                       </div>
                     </div>
