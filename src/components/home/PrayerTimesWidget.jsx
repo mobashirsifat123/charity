@@ -5,35 +5,36 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { normalizeDegrees, shortestAngleDelta } from "@/lib/qibla";
 import usePrayerTimes from "@/hooks/usePrayerTimes";
 
-const PRAYER_ORDER = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
-function parseClockToSeconds(value = '00:00') {
-  const [hours, minutes] = String(value).split(':').map(Number);
-  return ((hours || 0) * 3600) + ((minutes || 0) * 60);
+function parseClockToSeconds(value = "00:00") {
+  const [hours, minutes] = String(value).split(":").map(Number);
+  return (hours || 0) * 3600 + (minutes || 0) * 60;
 }
 
 function getCurrentTimeInZone(timeZone) {
-  const formatter = new Intl.DateTimeFormat('en-GB', {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
     timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   });
 
   const parts = formatter.formatToParts(new Date());
-  const getPart = (type) => Number(parts.find((part) => part.type === type)?.value || 0);
+  const getPart = (type) =>
+    Number(parts.find((part) => part.type === type)?.value || 0);
 
   return {
-    hours: getPart('hour'),
-    minutes: getPart('minute'),
-    seconds: getPart('second'),
+    hours: getPart("hour"),
+    minutes: getPart("minute"),
+    seconds: getPart("second"),
   };
 }
 
-function getNextPrayerState(timings = {}, timeZone = 'UTC') {
+function getNextPrayerState(timings = {}, timeZone = "UTC") {
   const now = getCurrentTimeInZone(timeZone);
-  const nowSeconds = (now.hours * 3600) + (now.minutes * 60) + now.seconds;
+  const nowSeconds = now.hours * 3600 + now.minutes * 60 + now.seconds;
 
   const entries = PRAYER_ORDER.map((name) => ({
     name,
@@ -56,7 +57,7 @@ function getNextPrayerState(timings = {}, timeZone = 'UTC') {
   const tomorrowPrayer = entries[0];
   return {
     ...tomorrowPrayer,
-    remainingSeconds: (24 * 3600 - nowSeconds) + tomorrowPrayer.seconds,
+    remainingSeconds: 24 * 3600 - nowSeconds + tomorrowPrayer.seconds,
   };
 }
 
@@ -83,13 +84,13 @@ function readHeadingFromEvent(event) {
   }
 
   if (
-    typeof event.webkitCompassHeading === 'number' &&
+    typeof event.webkitCompassHeading === "number" &&
     Number.isFinite(event.webkitCompassHeading)
   ) {
     return normalizeDegrees(event.webkitCompassHeading);
   }
 
-  if (typeof event.alpha === 'number' && Number.isFinite(event.alpha)) {
+  if (typeof event.alpha === "number" && Number.isFinite(event.alpha)) {
     return normalizeDegrees(360 - event.alpha);
   }
 
@@ -98,7 +99,7 @@ function readHeadingFromEvent(event) {
 
 function useDeviceHeading() {
   const [heading, setHeading] = useState(null);
-  const [permissionState, setPermissionState] = useState('checking');
+  const [permissionState, setPermissionState] = useState("checking");
   const targetHeadingRef = useRef(null);
   const animatedHeadingRef = useRef(null);
   const frameRef = useRef(null);
@@ -106,7 +107,7 @@ function useDeviceHeading() {
   const isListeningRef = useRef(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return undefined;
     }
 
@@ -114,14 +115,19 @@ function useDeviceHeading() {
       const targetHeading = targetHeadingRef.current;
       const currentHeading = animatedHeadingRef.current;
 
-      if (typeof targetHeading === 'number') {
+      if (typeof targetHeading === "number") {
         const nextHeading =
-          typeof currentHeading === 'number'
-            ? currentHeading + (shortestAngleDelta(normalizeDegrees(currentHeading), targetHeading) * 0.18)
+          typeof currentHeading === "number"
+            ? currentHeading +
+              shortestAngleDelta(
+                normalizeDegrees(currentHeading),
+                targetHeading,
+              ) *
+                0.18
             : targetHeading;
 
         const shouldUpdate =
-          typeof currentHeading !== 'number' ||
+          typeof currentHeading !== "number" ||
           Math.abs(nextHeading - currentHeading) > 0.05;
 
         animatedHeadingRef.current = nextHeading;
@@ -143,7 +149,7 @@ function useDeviceHeading() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return undefined;
     }
 
@@ -162,15 +168,18 @@ function useDeviceHeading() {
 
       const handleOrientation = (event) => {
         const nextHeading = readHeadingFromEvent(event);
-        if (typeof nextHeading !== 'number') {
+        if (typeof nextHeading !== "number") {
           return;
         }
 
         targetHeadingRef.current = nextHeading;
-        setPermissionState('granted');
+        setPermissionState("granted");
       };
 
-      for (const eventName of ['deviceorientationabsolute', 'deviceorientation']) {
+      for (const eventName of [
+        "deviceorientationabsolute",
+        "deviceorientation",
+      ]) {
         window.addEventListener(eventName, handleOrientation, true);
         listenersRef.current.push([eventName, handleOrientation]);
       }
@@ -178,63 +187,69 @@ function useDeviceHeading() {
       isListeningRef.current = true;
     };
 
-    if (typeof window.DeviceOrientationEvent === 'undefined') {
-      setPermissionState('unsupported');
+    if (typeof window.DeviceOrientationEvent === "undefined") {
+      setPermissionState("unsupported");
       return stopListening;
     }
 
-    if (typeof window.DeviceOrientationEvent.requestPermission === 'function') {
-      setPermissionState('prompt');
+    if (typeof window.DeviceOrientationEvent.requestPermission === "function") {
+      setPermissionState("prompt");
       return stopListening;
     }
 
-    setPermissionState('pending');
+    setPermissionState("pending");
     startListening();
 
     return stopListening;
   }, []);
 
   const requestPermission = async () => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
-    if (typeof window.DeviceOrientationEvent === 'undefined') {
-      setPermissionState('unsupported');
+    if (typeof window.DeviceOrientationEvent === "undefined") {
+      setPermissionState("unsupported");
       return;
     }
 
     try {
-      if (typeof window.DeviceOrientationEvent.requestPermission === 'function') {
-        setPermissionState('pending');
-        const permissionResult = await window.DeviceOrientationEvent.requestPermission();
+      if (
+        typeof window.DeviceOrientationEvent.requestPermission === "function"
+      ) {
+        setPermissionState("pending");
+        const permissionResult =
+          await window.DeviceOrientationEvent.requestPermission();
 
-        if (permissionResult !== 'granted') {
-          setPermissionState('denied');
+        if (permissionResult !== "granted") {
+          setPermissionState("denied");
           return;
         }
       }
 
       const handleOrientation = (event) => {
         const nextHeading = readHeadingFromEvent(event);
-        if (typeof nextHeading !== 'number') {
+        if (typeof nextHeading !== "number") {
           return;
         }
 
         targetHeadingRef.current = nextHeading;
-        setPermissionState('granted');
+        setPermissionState("granted");
       };
 
       if (!isListeningRef.current) {
-        for (const eventName of ['deviceorientationabsolute', 'deviceorientation']) {
+        for (const eventName of [
+          "deviceorientationabsolute",
+          "deviceorientation",
+        ]) {
           window.addEventListener(eventName, handleOrientation, true);
           listenersRef.current.push([eventName, handleOrientation]);
         }
         isListeningRef.current = true;
       }
     } catch (error) {
-      console.error('Unable to enable live compass heading:', error);
-      setPermissionState('denied');
+      console.error("Unable to enable live compass heading:", error);
+      setPermissionState("denied");
     }
   };
 
@@ -248,13 +263,18 @@ function useDeviceHeading() {
 function PrayerCompass({ qiblaDirection = 0 }) {
   const { heading, permissionState, requestPermission } = useDeviceHeading();
   const normalizedQiblaDirection = normalizeDegrees(qiblaDirection);
-  const currentHeading = typeof heading === 'number' ? normalizeDegrees(heading) : null;
+  const currentHeading =
+    typeof heading === "number" ? normalizeDegrees(heading) : null;
   const qiblaOffset =
-    typeof currentHeading === 'number'
+    typeof currentHeading === "number"
       ? shortestAngleDelta(currentHeading, normalizedQiblaDirection)
       : null;
-  const isAligned = typeof qiblaOffset === 'number' && Math.abs(qiblaOffset) <= 5;
-  const liveCompassActive = typeof currentHeading === 'number';
+  const isAligned =
+    typeof qiblaOffset === "number" && Math.abs(qiblaOffset) <= 5;
+  const liveCompassActive = typeof currentHeading === "number";
+  const qiblaNeedleRotation = liveCompassActive
+    ? qiblaOffset
+    : normalizedQiblaDirection;
 
   return (
     <div className="d-flex flex-column align-items-center justify-content-center">
@@ -271,28 +291,36 @@ function PrayerCompass({ qiblaDirection = 0 }) {
             style={{
               width: 0,
               height: 0,
-              borderLeft: '10px solid transparent',
-              borderRight: '10px solid transparent',
-              borderBottom: `18px solid ${isAligned ? '#145a32' : '#c8a951'}`,
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.12))',
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              borderBottom: `18px solid ${isAligned ? "#145a32" : "#c8a951"}`,
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.12))",
             }}
           />
         </div>
 
         <div
-          className="position-absolute top-50 start-50 translate-middle"
+          className="position-absolute top-50 start-50 translate-middle prayer-compass__face"
           style={{
-            width: '100%',
-            height: '100%',
-            transform: `translate(-50%, -50%) rotate(${typeof heading === 'number' ? -heading : 0}deg)`,
-            transformOrigin: 'center',
-            transition: 'transform 120ms linear',
+            width: "100%",
+            height: "100%",
+            transform: `translate(-50%, -50%) rotate(${typeof heading === "number" ? -heading : 0}deg)`,
+            transformOrigin: "center",
+            transition: "transform 120ms linear",
           }}
         >
-          <div className="position-absolute top-0 start-50 translate-middle-x mt-2 small fw-bold text-muted">N</div>
-          <div className="position-absolute bottom-0 start-50 translate-middle-x mb-2 small text-muted">S</div>
-          <div className="position-absolute top-50 start-0 translate-middle-y ms-2 small text-muted">W</div>
-          <div className="position-absolute top-50 end-0 translate-middle-y me-2 small text-muted">E</div>
+          <div className="position-absolute top-0 start-50 translate-middle-x mt-2 small fw-bold text-muted">
+            N
+          </div>
+          <div className="position-absolute bottom-0 start-50 translate-middle-x mb-2 small text-muted">
+            S
+          </div>
+          <div className="position-absolute top-50 start-0 translate-middle-y ms-2 small text-muted">
+            W
+          </div>
+          <div className="position-absolute top-50 end-0 translate-middle-y me-2 small text-muted">
+            E
+          </div>
 
           <svg
             viewBox="0 0 120 120"
@@ -300,11 +328,37 @@ function PrayerCompass({ qiblaDirection = 0 }) {
             style={{ width: 132, height: 132 }}
             aria-hidden="true"
           >
-            <circle cx="60" cy="60" r="56" fill="none" stroke="rgba(11,61,46,0.12)" strokeWidth="2" />
-            <circle cx="60" cy="60" r="43" fill="none" stroke="rgba(11,61,46,0.08)" strokeDasharray="4 6" />
-            <path d="M60 12 L74 70 L60 58 L46 70 Z" fill="#0b3d2e" transform={`rotate(${normalizedQiblaDirection} 60 60)`} />
+            <circle
+              cx="60"
+              cy="60"
+              r="56"
+              fill="none"
+              stroke="rgba(11,61,46,0.12)"
+              strokeWidth="2"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r="43"
+              fill="none"
+              stroke="rgba(11,61,46,0.08)"
+              strokeDasharray="4 6"
+            />
             <circle cx="60" cy="60" r="6" fill="#c8a951" />
           </svg>
+        </div>
+
+        <div
+          className="prayer-compass__qibla-needle"
+          style={{
+            transform: `translate(-50%, -50%) rotate(${qiblaNeedleRotation}deg)`,
+          }}
+          aria-hidden="true"
+        >
+          <div className="prayer-compass__needle-line"></div>
+          <div className="prayer-compass__needle-head">
+            <i className="fa-solid fa-kaaba"></i>
+          </div>
         </div>
       </div>
 
@@ -314,32 +368,37 @@ function PrayerCompass({ qiblaDirection = 0 }) {
       <small className="text-muted text-center">
         {liveCompassActive
           ? isAligned
-            ? 'Aligned with the Qibla.'
-            : `${Math.round(Math.abs(qiblaOffset || 0))}° ${qiblaOffset > 0 ? 'to your right' : 'to your left'}`
-          : 'Clockwise from North'}
+            ? "Aligned with the Qibla."
+            : `${Math.round(Math.abs(qiblaOffset || 0))}° ${qiblaOffset > 0 ? "to your right" : "to your left"}`
+          : "Clockwise from North"}
       </small>
 
-      {permissionState === 'prompt' ? (
-        <button type="button" className="btn btn-sm btn-outline-primary rounded-pill mt-3" onClick={requestPermission}>
+      {permissionState === "prompt" ? (
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-primary rounded-pill mt-3"
+          onClick={requestPermission}
+        >
           Enable live compass
         </button>
       ) : null}
 
-      {permissionState === 'pending' && !liveCompassActive ? (
+      {permissionState === "pending" && !liveCompassActive ? (
         <small className="text-muted text-center mt-3">
           Move your device gently so the compass can calibrate.
         </small>
       ) : null}
 
-      {permissionState === 'denied' ? (
+      {permissionState === "denied" ? (
         <small className="text-muted text-center mt-3">
           Compass access was denied, so this view stays in North-up mode.
         </small>
       ) : null}
 
-      {permissionState === 'unsupported' ? (
+      {permissionState === "unsupported" ? (
         <small className="text-muted text-center mt-3">
-          Live compass heading is not supported here. Use the degree value with North at the top.
+          Live compass heading is not supported here. Use the degree value with
+          North at the top.
         </small>
       ) : null}
     </div>
@@ -364,8 +423,12 @@ export default function PrayerTimesWidget({ initialData }) {
   }, [data]);
 
   const prayerRows = useMemo(
-    () => PRAYER_ORDER.map((name) => ({ name, time: data?.timings?.[name] || '--:--' })),
-    [data]
+    () =>
+      PRAYER_ORDER.map((name) => ({
+        name,
+        time: data?.timings?.[name] || "--:--",
+      })),
+    [data],
   );
 
   return (
@@ -382,28 +445,33 @@ export default function PrayerTimesWidget({ initialData }) {
                     </span>
                     <h2 className="fw-bold mb-2">Prayer Times</h2>
                     <p className="text-muted mb-0">
-                      {data?.locationName || 'Loading your location'}{data?.date ? ` • ${data.date}` : ''}
+                      {data?.locationName || "Loading your location"}
+                      {data?.date ? ` • ${data.date}` : ""}
                     </p>
                   </div>
 
                   <div className="text-lg-end">
                     <p className="text-muted small mb-1">Hijri date</p>
-                    <strong>{data?.hijriDate || 'Unavailable'}</strong>
+                    <strong>{data?.hijriDate || "Unavailable"}</strong>
                   </div>
                 </div>
 
                 <div className="system-panel--dark aurora-grid rounded-4 p-4 mb-4">
-                  <p className="text-white-50 text-uppercase small fw-semibold mb-2">Next upcoming prayer</p>
+                  <p className="text-white-50 text-uppercase small fw-semibold mb-2">
+                    Next upcoming prayer
+                  </p>
                   <h3 className="text-white fw-bold mb-2">
-                    {countdown?.name || 'Calculating...'}
+                    {countdown?.name || "Calculating..."}
                   </h3>
                   <p className="text-white mb-1 fs-5">
                     {countdown
                       ? `${countdown.name} is in ${formatRemainingTime(countdown.remainingSeconds)}`
-                      : 'Waiting for prayer data...'}
+                      : "Waiting for prayer data..."}
                   </p>
                   <small className="text-white-50">
-                    {countdown?.time ? `Scheduled at ${countdown.time}` : 'Please allow location access for local timings.'}
+                    {countdown?.time
+                      ? `Scheduled at ${countdown.time}`
+                      : "Please allow location access for local timings."}
                   </small>
                   <div className="d-flex flex-wrap gap-2 mt-4">
                     <span className="signal-chip">
@@ -432,13 +500,21 @@ export default function PrayerTimesWidget({ initialData }) {
                         <div
                           className="rounded-4 h-100 p-3 border"
                           style={{
-                            background: isNext ? 'rgba(200,169,81,0.12)' : '#fff',
-                            borderColor: isNext ? 'rgba(200,169,81,0.25)' : 'rgba(11,61,46,0.08)',
+                            background: isNext
+                              ? "rgba(200,169,81,0.12)"
+                              : "#fff",
+                            borderColor: isNext
+                              ? "rgba(200,169,81,0.25)"
+                              : "rgba(11,61,46,0.08)",
                           }}
                         >
                           <div className="d-flex justify-content-between align-items-center">
                             <span className="fw-semibold">{prayer.name}</span>
-                            {isNext ? <span className="badge bg-warning text-dark rounded-pill">Next</span> : null}
+                            {isNext ? (
+                              <span className="badge bg-warning text-dark rounded-pill">
+                                Next
+                              </span>
+                            ) : null}
                           </div>
                           <h5 className="fw-bold mt-3 mb-0">{prayer.time}</h5>
                         </div>
@@ -448,7 +524,9 @@ export default function PrayerTimesWidget({ initialData }) {
                 </div>
 
                 {loading ? (
-                  <p className="text-muted small mt-3 mb-0">Updating to your local prayer times...</p>
+                  <p className="text-muted small mt-3 mb-0">
+                    Updating to your local prayer times...
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -462,7 +540,9 @@ export default function PrayerTimesWidget({ initialData }) {
                 </span>
                 <h3 className="fw-bold mb-3">Find the direction of prayer</h3>
                 <p className="text-muted mb-4">
-                  Using the same location data, this compass points toward the Qibla. On supported phones it can follow your heading live, and it falls back to a North-up guide everywhere else.
+                  Using the same location data, this compass points toward the
+                  Qibla. On supported phones it can follow your heading live,
+                  and it falls back to a North-up guide everywhere else.
                 </p>
                 <div className="system-list mb-4">
                   <div className="system-list__item">
@@ -470,8 +550,12 @@ export default function PrayerTimesWidget({ initialData }) {
                       <i className="fa-solid fa-location-arrow" />
                     </span>
                     <div>
-                      <span className="system-list__title">One location, two utilities</span>
-                      <span className="system-list__meta">Prayer timings and Qibla guidance stay in sync.</span>
+                      <span className="system-list__title">
+                        One location, two utilities
+                      </span>
+                      <span className="system-list__meta">
+                        Prayer timings and Qibla guidance stay in sync.
+                      </span>
                     </div>
                   </div>
                 </div>

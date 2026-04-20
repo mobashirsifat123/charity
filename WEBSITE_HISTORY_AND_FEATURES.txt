@@ -464,3 +464,11 @@ Bengali-first language and homepage copy pass (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Qibla compass visual movement fix (April 20, 2026):
+- Separated the Qibla pointer from the rotating compass face so the green Qibla marker visibly rotates according to the calculated direction.
+- Kept live device-heading support where available, but made the fallback North-up mode show the Qibla angle with a clearly animated green needle.
+- Added a Kaaba marker, green needle line, and subtle pulse animation to make the direction easier to understand on mobile.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
