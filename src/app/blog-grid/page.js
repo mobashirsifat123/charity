@@ -36,6 +36,12 @@ import { parseJsonArraySetting } from "@/lib/siteSettings";
 const FEATURED_COUNT = 3;
 const SELECTED_SECTION_ITEM_COUNT = 5;
 const LATEST_FEED_COUNT = 10;
+const QUICK_FILTERS = [
+  { key: "all", label: "All Articles", icon: "fa-layer-group" },
+  { key: "featured", label: "Featured", icon: "fa-gem" },
+  { key: "short", label: "Short Reads", icon: "fa-mug-hot" },
+  { key: "deep", label: "Deep Reads", icon: "fa-book-open" },
+];
 
 function formatArticleDate(dateString, locale) {
   return new Date(dateString || Date.now()).toLocaleDateString(
@@ -92,6 +98,7 @@ function BlogGridContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
+  const [quickFilter, setQuickFilter] = useState("all");
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
   useEffect(() => {
@@ -185,10 +192,24 @@ function BlogGridContent() {
       const matchesSubject = matchesSelectedSubject(category, selectedSubject);
       const matchesAuthor =
         selectedAuthor === "all" || author === selectedAuthor;
+      const readTime = estimateReadTime(article.content || "");
+      const matchesQuickFilter =
+        quickFilter === "all" ||
+        (quickFilter === "featured" && article.featured) ||
+        (quickFilter === "short" && readTime <= 5) ||
+        (quickFilter === "deep" && readTime >= 8);
 
-      return matchesSearch && matchesSubject && matchesAuthor;
+      return (
+        matchesSearch && matchesSubject && matchesAuthor && matchesQuickFilter
+      );
     });
-  }, [articles, deferredSearchTerm, selectedSubject, selectedAuthor]);
+  }, [
+    articles,
+    deferredSearchTerm,
+    selectedSubject,
+    selectedAuthor,
+    quickFilter,
+  ]);
 
   const featuredArticles = useMemo(
     () =>
@@ -223,6 +244,29 @@ function BlogGridContent() {
   const editorialStackArticles = filteredArticles
     .filter((article) => article.id !== editorialLeadArticle?.id)
     .slice(0, 4);
+
+  const topicCloud = useMemo(() => {
+    const topicMap = new Map();
+
+    articles.forEach((article) => {
+      [
+        getContentCategory(article),
+        ...normalizeTags(article.tags),
+        ...normalizeTags(article.keywords),
+      ]
+        .map((value) => String(value || "").trim())
+        .filter(Boolean)
+        .forEach((topic) => {
+          const key = topic.toLowerCase();
+          const previous = topicMap.get(key) || { name: topic, count: 0 };
+          topicMap.set(key, { ...previous, count: previous.count + 1 });
+        });
+    });
+
+    return Array.from(topicMap.values())
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+      .slice(0, 14);
+  }, [articles]);
 
   const subjectOverview = useMemo(
     () =>
@@ -305,7 +349,8 @@ function BlogGridContent() {
   const activeFilterCount =
     (searchTerm.trim() ? 1 : 0) +
     (selectedSubject !== "all" ? 1 : 0) +
-    (selectedAuthor !== "all" ? 1 : 0);
+    (selectedAuthor !== "all" ? 1 : 0) +
+    (quickFilter !== "all" ? 1 : 0);
   const hasActiveFilters = activeFilterCount > 0;
   const resultsSummary =
     selectedSubject !== "all"
@@ -366,10 +411,60 @@ function BlogGridContent() {
                 </Link>
               ))}
             </div>
+
+            <div className="article-product-hero-panel">
+              <div className="article-product-hero-panel__copy">
+                <span className="article-product-hero-panel__eyebrow">
+                  {settings.article_directory_reader_path_title ||
+                    "Your Reading Path"}
+                </span>
+                <p className="mb-0">
+                  {settings.article_directory_reader_path_description ||
+                    "Begin with a core subject, continue with a featured article, then save the newest reminders for your next visit."}
+                </p>
+              </div>
+              <div className="article-product-hero-panel__steps">
+                {[
+                  settings.article_directory_reader_step_1 ||
+                    "Choose a subject",
+                  settings.article_directory_reader_step_2 ||
+                    "Read a scholar-guided article",
+                  settings.article_directory_reader_step_3 ||
+                    "Continue with related lessons",
+                ].map((step, index) => (
+                  <span key={step}>
+                    <strong>{index + 1}</strong>
+                    {step}
+                  </span>
+                ))}
+              </div>
+              <div className="article-product-hero-panel__actions">
+                <Link
+                  href={
+                    settings.article_directory_primary_cta_link ||
+                    "#article-reading-room"
+                  }
+                  className="article-product-hero-button article-product-hero-button--primary"
+                >
+                  {settings.article_directory_primary_cta_text ||
+                    "Start Reading"}
+                </Link>
+                <Link
+                  href={
+                    settings.article_directory_secondary_cta_link ||
+                    "#article-topics"
+                  }
+                  className="article-product-hero-button article-product-hero-button--ghost"
+                >
+                  {settings.article_directory_secondary_cta_text ||
+                    "Browse Topics"}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="container py-5">
+        <div className="container py-5" id="article-reading-room">
           <div className="article-directory-stats mb-4">
             <div className="article-directory-stat-card">
               <span className="article-directory-stat-card__value">
@@ -415,11 +510,68 @@ function BlogGridContent() {
                   setSearchTerm("");
                   setSelectedSubject("all");
                   setSelectedAuthor("all");
+                  setQuickFilter("all");
                 }}
               >
                 Reset filters
               </button>
             ) : null}
+          </div>
+
+          <div className="article-discovery-grid mb-4" id="article-topics">
+            <div className="article-discovery-card">
+              <div className="article-directory-section-header article-directory-section-header--compact">
+                <h2 className="article-directory-section-title mb-0">
+                  {settings.article_directory_quick_filters_title ||
+                    "Quick Filters"}
+                </h2>
+              </div>
+              <div className="article-quick-filter-grid">
+                {QUICK_FILTERS.map((filter) => (
+                  <button
+                    key={filter.key}
+                    type="button"
+                    className={`article-quick-filter ${quickFilter === filter.key ? "is-active" : ""}`}
+                    onClick={() => setQuickFilter(filter.key)}
+                  >
+                    <i className={`fa-solid ${filter.icon}`} />
+                    <span>{filter.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="article-discovery-card">
+              <div className="article-directory-section-header article-directory-section-header--compact">
+                <h2 className="article-directory-section-title mb-0">
+                  {settings.article_directory_topic_cloud_title ||
+                    "Popular Topics"}
+                </h2>
+              </div>
+              <div className="article-topic-cloud">
+                {topicCloud.length ? (
+                  topicCloud.map((topic) => (
+                    <button
+                      key={topic.name}
+                      type="button"
+                      className="article-topic-pill"
+                      onClick={() => {
+                        setSearchTerm(topic.name);
+                        setSelectedSubject("all");
+                      }}
+                    >
+                      <span>{topic.name}</span>
+                      <strong>{topic.count}</strong>
+                    </button>
+                  ))
+                ) : (
+                  <p className="article-directory-section-note mb-0">
+                    Add categories or tags from the admin article editor to
+                    build this topic cloud.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="row g-4">
@@ -474,8 +626,16 @@ function BlogGridContent() {
                     {t("loadingLatestArticles", "Loading latest articles...")}
                   </div>
                 ) : !editorialLeadArticle ? (
-                  <div className="p-4 text-muted">
-                    {t("noArticlesFound", "No articles found")}
+                  <div className="article-directory-empty-state">
+                    <i className="fa-solid fa-magnifying-glass" />
+                    <h3>
+                      {settings.article_directory_empty_title ||
+                        t("noArticlesFound", "No articles found")}
+                    </h3>
+                    <p>
+                      {settings.article_directory_empty_description ||
+                        "Try clearing filters or add more published articles from the admin panel."}
+                    </p>
                   </div>
                 ) : (
                   <div className="article-directory-hero-grid">
@@ -671,11 +831,19 @@ function BlogGridContent() {
                 </div>
 
                 {!selectedSections.length ? (
-                  <div className="p-4 text-muted">
-                    {t(
-                      "adjustSearchOrCategory",
-                      "Try adjusting your search or selecting another category.",
-                    )}
+                  <div className="article-directory-empty-state article-directory-empty-state--small">
+                    <i className="fa-solid fa-filter-circle-xmark" />
+                    <h3>
+                      {settings.article_directory_empty_title ||
+                        t("noArticlesFound", "No articles found")}
+                    </h3>
+                    <p>
+                      {settings.article_directory_empty_description ||
+                        t(
+                          "adjustSearchOrCategory",
+                          "Try adjusting your search or selecting another category.",
+                        )}
+                    </p>
                   </div>
                 ) : (
                   <div className="article-directory-selected">
@@ -748,8 +916,16 @@ function BlogGridContent() {
                     {t("loadingLatestArticles", "Loading latest articles...")}
                   </div>
                 ) : !latestArticles.length ? (
-                  <div className="p-4 text-muted">
-                    {t("noArticlesFound", "No articles found")}
+                  <div className="article-directory-empty-state article-directory-empty-state--small">
+                    <i className="fa-solid fa-newspaper" />
+                    <h3>
+                      {settings.article_directory_empty_title ||
+                        t("noArticlesFound", "No articles found")}
+                    </h3>
+                    <p>
+                      {settings.article_directory_empty_description ||
+                        "Try clearing filters or publish a new article from the admin panel."}
+                    </p>
                   </div>
                 ) : (
                   <div className="article-directory-latest-feed">

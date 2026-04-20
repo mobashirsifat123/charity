@@ -511,3 +511,12 @@ Article subject hero upgrade (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Article product hub upgrade (April 20, 2026):
+- Expanded the Articles page into a richer learning hub with a reader-path panel, hero CTAs, quick filters, popular topic chips, and clearer empty states.
+- The article list, images, categories, authors, tags, featured status, and body content remain dynamic from the admin article manager/Supabase.
+- Added Site Builder fields so admins can edit the article-page hero CTAs, reader-path copy, quick-filter heading, topic-cloud heading, and empty-state copy without changing code.
+- Kept the premium green-and-white visual system consistent across the new article modules, with mobile-first responsive styling.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

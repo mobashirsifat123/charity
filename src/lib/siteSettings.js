@@ -69,6 +69,21 @@ export const DEFAULT_SITE_SETTINGS = {
   article_directory_title: "Articles",
   article_directory_description:
     "Browse beneficial writing, scholar reflections, and practical guidance arranged in a rich editorial directory.",
+  article_directory_primary_cta_text: "Start Reading",
+  article_directory_primary_cta_link: "#article-reading-room",
+  article_directory_secondary_cta_text: "Browse Topics",
+  article_directory_secondary_cta_link: "#article-topics",
+  article_directory_reader_path_title: "Your Reading Path",
+  article_directory_reader_path_description:
+    "Begin with a core subject, continue with a featured article, then save the newest reminders for your next visit.",
+  article_directory_reader_step_1: "Choose a subject",
+  article_directory_reader_step_2: "Read a scholar-guided article",
+  article_directory_reader_step_3: "Continue with related lessons",
+  article_directory_quick_filters_title: "Quick Filters",
+  article_directory_topic_cloud_title: "Popular Topics",
+  article_directory_empty_title: "No articles match this view yet",
+  article_directory_empty_description:
+    "Try clearing filters or add more published articles from the admin panel.",
   article_directory_featured_title: "Featured Articles",
   article_directory_subsections_title: "Browse by Subject",
   article_directory_subjects_intro:
@@ -403,6 +418,50 @@ export const SITE_SETTINGS_SECTIONS = [
       textareaField(
         "article_directory_description",
         "Article Directory Description",
+      ),
+      textField(
+        "article_directory_primary_cta_text",
+        "Article Hero Primary CTA Text",
+      ),
+      textField(
+        "article_directory_primary_cta_link",
+        "Article Hero Primary CTA Link",
+      ),
+      textField(
+        "article_directory_secondary_cta_text",
+        "Article Hero Secondary CTA Text",
+      ),
+      textField(
+        "article_directory_secondary_cta_link",
+        "Article Hero Secondary CTA Link",
+      ),
+      textField(
+        "article_directory_reader_path_title",
+        "Reader Path Card Title",
+      ),
+      textareaField(
+        "article_directory_reader_path_description",
+        "Reader Path Card Description",
+        "",
+        3,
+      ),
+      textField("article_directory_reader_step_1", "Reader Path Step 1"),
+      textField("article_directory_reader_step_2", "Reader Path Step 2"),
+      textField("article_directory_reader_step_3", "Reader Path Step 3"),
+      textField(
+        "article_directory_quick_filters_title",
+        "Quick Filters Heading",
+      ),
+      textField(
+        "article_directory_topic_cloud_title",
+        "Popular Topics Heading",
+      ),
+      textField("article_directory_empty_title", "Article Empty State Title"),
+      textareaField(
+        "article_directory_empty_description",
+        "Article Empty State Description",
+        "",
+        3,
       ),
       textField(
         "article_directory_featured_title",
