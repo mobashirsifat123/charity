@@ -8,11 +8,6 @@ const AUTH_CLIENT_OPTIONS = {
   },
 };
 
-const CONFIGURED_ADMIN_EMAILS = [
-  "mobashirhossian08@gmail.com",
-  "abdmt671@gmail.com",
-];
-
 function normalizeEmail(value = "") {
   return String(value || "")
     .trim()
@@ -23,10 +18,6 @@ function normalizeRole(value = "") {
   return String(value || "donor")
     .trim()
     .toLowerCase();
-}
-
-function isConfiguredAdminEmail(email = "") {
-  return CONFIGURED_ADMIN_EMAILS.includes(normalizeEmail(email));
 }
 
 function deriveName(authUser) {
@@ -132,7 +123,6 @@ async function loadOrCreateProfile({
   const email = normalizeEmail(authUser.email);
   const fallbackName =
     String(desiredName || deriveName(authUser)).trim() || email;
-  const forcedAdmin = isConfiguredAdminEmail(email);
 
   let profile = null;
 
@@ -152,7 +142,7 @@ async function loadOrCreateProfile({
     const insertPayload = {
       email,
       name: fallbackName,
-      role: forcedAdmin ? "admin" : "donor",
+      role: "donor",
     };
 
     const { data: insertedProfile, error: insertError } = await adminClient
@@ -164,24 +154,13 @@ async function loadOrCreateProfile({
     if (!insertError && insertedProfile) {
       profile = insertedProfile;
     }
-  } else if (forcedAdmin && normalizeRole(profile.role) !== "admin") {
-    const { data: updatedProfile, error: updateError } = await adminClient
-      .from("users")
-      .update({ role: "admin" })
-      .eq("email", email)
-      .select("*")
-      .maybeSingle();
-
-    if (!updateError && updatedProfile) {
-      profile = updatedProfile;
-    }
   }
 
   return {
     ...(profile || {}),
     email,
     name: profile?.name || fallbackName,
-    role: forcedAdmin ? "admin" : normalizeRole(profile?.role),
+    role: normalizeRole(profile?.role),
     avatar_url: profile?.avatar_url || deriveAvatarUrl(authUser),
   };
 }
@@ -256,7 +235,7 @@ export async function PATCH(request) {
         .insert({
           email,
           name,
-          role: isConfiguredAdminEmail(email) ? "admin" : "donor",
+          role: "donor",
         });
 
       if (insertError) {

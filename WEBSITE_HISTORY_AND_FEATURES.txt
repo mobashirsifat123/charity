@@ -472,3 +472,9 @@ Qibla compass visual movement fix (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Admin role safety correction (April 20, 2026):
+- Removed hardcoded email-based admin promotion from the authenticated profile API.
+- New member profiles are now created as normal `donor` users only.
+- Admin visibility now depends only on the `public.users.role = 'admin'` value stored in Supabase.
+- This prevents normal logged-in members from seeing the Admin Panel link unless their database role is explicitly admin.
