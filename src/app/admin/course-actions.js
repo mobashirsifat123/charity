@@ -4,10 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 import { slugify } from "@/lib/content-utils";
+import { isApprovedAdminEmail, normalizeEmail } from "@/lib/adminEmails";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder_key";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
+const supabaseServiceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder_key";
 
 const clientOptions = {
   auth: {
@@ -17,7 +21,11 @@ const clientOptions = {
 };
 
 const authClient = createClient(supabaseUrl, supabaseAnonKey, clientOptions);
-const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey, clientOptions);
+const adminClient = createClient(
+  supabaseUrl,
+  supabaseServiceRoleKey,
+  clientOptions,
+);
 
 function resolveFileExtension(fileName = "", mimeType = "") {
   const explicitExtension = String(fileName).split(".").pop();
@@ -36,7 +44,10 @@ function resolveFileExtension(fileName = "", mimeType = "") {
   return typeMap[mimeType] || "jpg";
 }
 
-async function getAuthorizedCourseAdmin(input, allowedRoles = ["admin", "scholar"]) {
+async function getAuthorizedCourseAdmin(
+  input,
+  allowedRoles = ["admin", "scholar"],
+) {
   const accessToken =
     typeof input === "string"
       ? input.trim()
@@ -46,19 +57,65 @@ async function getAuthorizedCourseAdmin(input, allowedRoles = ["admin", "scholar
     throw new Error("Your admin session is missing. Please log in again.");
   }
 
-  const { data: authData, error: authError } = await authClient.auth.getUser(accessToken);
+  const { data: authData, error: authError } =
+    await authClient.auth.getUser(accessToken);
   if (authError || !authData?.user?.email) {
-    throw new Error("Your session could not be verified. Please refresh and log in again.");
+    throw new Error(
+      "Your session could not be verified. Please refresh and log in again.",
+    );
   }
+
+  const email = normalizeEmail(authData.user.email);
+  const isApprovedAdmin = isApprovedAdminEmail(email);
 
   const { data: profile, error: profileError } = await adminClient
     .from("users")
     .select("id, email, role, name")
-    .eq("email", authData.user.email)
+    .eq("email", email)
     .maybeSingle();
 
-  if (profileError || !profile) {
-    throw new Error(profileError?.message || "Unable to load your admin profile.");
+  if (profileError) {
+    throw new Error(
+      profileError.message || "Unable to load your admin profile.",
+    );
+  }
+
+  if (isApprovedAdmin && !profile) {
+    return {
+      accessToken,
+      authUser: authData.user,
+      profile: {
+        id: authData.user.id,
+        email,
+        name:
+          authData.user.user_metadata?.full_name ||
+          authData.user.user_metadata?.name ||
+          email,
+        role: "admin",
+      },
+    };
+  }
+
+  if (isApprovedAdmin && profile?.role !== "admin") {
+    const { data: updatedProfile } = await adminClient
+      .from("users")
+      .update({ role: "admin" })
+      .eq("email", email)
+      .select("id, email, role, name")
+      .maybeSingle();
+
+    return {
+      accessToken,
+      authUser: authData.user,
+      profile: updatedProfile || {
+        ...profile,
+        role: "admin",
+      },
+    };
+  }
+
+  if (!profile) {
+    throw new Error("Unable to load your admin profile.");
   }
 
   if (!allowedRoles.includes(profile.role)) {
@@ -72,7 +129,11 @@ async function getAuthorizedCourseAdmin(input, allowedRoles = ["admin", "scholar
   };
 }
 
-async function uploadCourseImage({ file, bucket = "public_assets", folder = "courses" }) {
+async function uploadCourseImage({
+  file,
+  bucket = "public_assets",
+  folder = "courses",
+}) {
   if (!file || typeof file.arrayBuffer !== "function" || !file.size) {
     return "";
   }
@@ -152,7 +213,10 @@ export async function createCourse(formData) {
     .single();
 
   if (error) {
-    return { success: false, error: error.message || "Unable to create course." };
+    return {
+      success: false,
+      error: error.message || "Unable to create course.",
+    };
   }
 
   revalidatePath("/admin/courses");
@@ -238,7 +302,10 @@ export async function updateModule(id, data) {
     .eq("id", id);
 
   if (error) {
-    return { success: false, error: error.message || "Unable to update module." };
+    return {
+      success: false,
+      error: error.message || "Unable to update module.",
+    };
   }
 
   if (courseId) {
@@ -260,7 +327,10 @@ export async function deleteModule(id, formData) {
     .eq("id", id);
 
   if (error) {
-    return { success: false, error: error.message || "Unable to delete module." };
+    return {
+      success: false,
+      error: error.message || "Unable to delete module.",
+    };
   }
 
   if (courseId) {

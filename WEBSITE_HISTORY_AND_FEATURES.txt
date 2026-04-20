@@ -520,3 +520,11 @@ Article product hub upgrade (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Admin Server Action authorization fix (April 20, 2026):
+- Fixed article, scholar, course, and module Server Actions so approved Google-admin accounts can save content even when they do not have a complete legacy `public.users` password row.
+- Reused the approved-admin email fallback for Server Actions, matching the admin API behavior already used by the dashboard/resource routes.
+- This prevents OAuth admins from entering the admin panel but then failing when creating article-related or LMS content.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

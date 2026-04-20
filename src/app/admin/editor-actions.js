@@ -10,10 +10,14 @@ import {
   saveContentRecord,
   slugify,
 } from "@/lib/content-utils";
+import { isApprovedAdminEmail, normalizeEmail } from "@/lib/adminEmails";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder_key";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
+const supabaseServiceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder_key";
 
 const clientOptions = {
   auth: {
@@ -23,7 +27,11 @@ const clientOptions = {
 };
 
 const authClient = createClient(supabaseUrl, supabaseAnonKey, clientOptions);
-const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey, clientOptions);
+const adminClient = createClient(
+  supabaseUrl,
+  supabaseServiceRoleKey,
+  clientOptions,
+);
 
 function resolveFileExtension(fileName = "", mimeType = "") {
   const explicitExtension = String(fileName).split(".").pop();
@@ -42,26 +50,73 @@ function resolveFileExtension(fileName = "", mimeType = "") {
   return typeMap[mimeType] || "jpg";
 }
 
-async function getAuthorizedAdminProfile(formData, allowedRoles = ["admin", "scholar"]) {
+async function getAuthorizedAdminProfile(
+  formData,
+  allowedRoles = ["admin", "scholar"],
+) {
   const accessToken = String(formData.get("accessToken") || "").trim();
 
   if (!accessToken) {
     throw new Error("Your admin session is missing. Please log in again.");
   }
 
-  const { data: authData, error: authError } = await authClient.auth.getUser(accessToken);
+  const { data: authData, error: authError } =
+    await authClient.auth.getUser(accessToken);
   if (authError || !authData?.user?.email) {
-    throw new Error("Your session could not be verified. Please refresh and log in again.");
+    throw new Error(
+      "Your session could not be verified. Please refresh and log in again.",
+    );
   }
+
+  const email = normalizeEmail(authData.user.email);
+  const isApprovedAdmin = isApprovedAdminEmail(email);
 
   const { data: profile, error: profileError } = await adminClient
     .from("users")
     .select("id, email, role, name")
-    .eq("email", authData.user.email)
+    .eq("email", email)
     .maybeSingle();
 
-  if (profileError || !profile) {
-    throw new Error(profileError?.message || "Unable to load your admin profile.");
+  if (profileError) {
+    throw new Error(
+      profileError.message || "Unable to load your admin profile.",
+    );
+  }
+
+  if (isApprovedAdmin && !profile) {
+    return {
+      authUser: authData.user,
+      profile: {
+        id: authData.user.id,
+        email,
+        name:
+          authData.user.user_metadata?.full_name ||
+          authData.user.user_metadata?.name ||
+          email,
+        role: "admin",
+      },
+    };
+  }
+
+  if (isApprovedAdmin && profile?.role !== "admin") {
+    const { data: updatedProfile } = await adminClient
+      .from("users")
+      .update({ role: "admin" })
+      .eq("email", email)
+      .select("id, email, role, name")
+      .maybeSingle();
+
+    return {
+      authUser: authData.user,
+      profile: updatedProfile || {
+        ...profile,
+        role: "admin",
+      },
+    };
+  }
+
+  if (!profile) {
+    throw new Error("Unable to load your admin profile.");
   }
 
   if (!allowedRoles.includes(profile.role)) {
@@ -172,7 +227,11 @@ export async function createScholarProfile(formData) {
     credentials: credentials || null,
   };
 
-  let insertResult = await adminClient.from("scholar_profiles").insert(basePayload).select().single();
+  let insertResult = await adminClient
+    .from("scholar_profiles")
+    .insert(basePayload)
+    .select()
+    .single();
 
   if (insertResult.error) {
     const message = String(insertResult.error.message || "").toLowerCase();
@@ -192,7 +251,10 @@ export async function createScholarProfile(formData) {
   if (insertResult.error) {
     const message = String(insertResult.error.message || "");
 
-    if (message.toLowerCase().includes("duplicate") || message.toLowerCase().includes("unique")) {
+    if (
+      message.toLowerCase().includes("duplicate") ||
+      message.toLowerCase().includes("unique")
+    ) {
       return {
         success: false,
         error:
@@ -200,7 +262,10 @@ export async function createScholarProfile(formData) {
       };
     }
 
-    return { success: false, error: message || "Unable to create the scholar profile." };
+    return {
+      success: false,
+      error: message || "Unable to create the scholar profile.",
+    };
   }
 
   revalidatePath("/admin/scholars");
@@ -268,7 +333,8 @@ export async function createArticle(formData) {
     tags,
     featured,
     slug: slugify(title),
-    author_name: scholarProfile?.name || profile.name || profile.email || "IRWA Team",
+    author_name:
+      scholarProfile?.name || profile.name || profile.email || "IRWA Team",
     author_role: scholarProfile?.credentials || "Scholar",
     author_bio: scholarProfile?.bio || "",
     seo_title: title,
