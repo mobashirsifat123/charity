@@ -1,6 +1,12 @@
 "use client";
 
-import { Suspense, useDeferredValue, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -229,6 +235,20 @@ function BlogGridContent() {
     [articles],
   );
 
+  const articleSubjectCards = useMemo(
+    () =>
+      subjectOverview.map((subject, index) => ({
+        ...subject,
+        filterName: subject.name,
+        name: settings[`article_subject_${index + 1}_title`] || subject.name,
+        description:
+          settings[`article_subject_${index + 1}_description`] ||
+          subject.description,
+        icon: settings[`article_subject_${index + 1}_icon`] || subject.icon,
+      })),
+    [settings, subjectOverview],
+  );
+
   const selectedCategoryNames = useMemo(() => {
     const requested = parseJsonArraySetting(
       settings.article_directory_selected_categories_json,
@@ -306,21 +326,50 @@ function BlogGridContent() {
         ]}
       />
 
-      <section className="article-directory-page py-5 bg-white">
-        <div className="container">
-          <div className="article-directory-header mb-4">
-            <span className="section-header-rail mb-3">
-              {settings.article_directory_badge || "Knowledge Library"}
-            </span>
-            <h1 className="article-directory-title mb-3">
-              {settings.article_directory_title || t("articles", "Articles")}
-            </h1>
-            <p className="article-directory-description mb-0">
-              {settings.article_directory_description ||
-                "Browse beneficial writing, scholar reflections, and practical guidance arranged in a rich editorial directory."}
-            </p>
-          </div>
+      <section className="article-directory-page bg-white">
+        <div className="article-directory-hero-band">
+          <div className="container">
+            <div className="article-directory-header mb-4">
+              <span className="section-header-rail section-header-rail--light mb-3">
+                {settings.article_directory_badge || "Knowledge Library"}
+              </span>
+              <h1 className="article-directory-title article-directory-title--hero mb-3">
+                {settings.article_directory_title || t("articles", "Articles")}
+              </h1>
+              <p className="article-directory-description article-directory-description--hero mb-0">
+                {settings.article_directory_description ||
+                  "Browse beneficial writing, scholar reflections, and practical guidance arranged in a rich editorial directory."}
+              </p>
+            </div>
 
+            <div className="article-hero-subject-grid">
+              {articleSubjectCards.map((subject) => (
+                <Link
+                  key={subject.filterName}
+                  href={subject.href}
+                  className={`article-hero-subject-card ${matchesSubjectName(selectedSubject, subject) ? "is-active" : ""}`}
+                >
+                  <span className="article-hero-subject-card__icon">
+                    <i className={`fa-solid ${subject.icon}`} />
+                  </span>
+                  <span className="article-hero-subject-card__body">
+                    <span className="article-hero-subject-card__title">
+                      {subject.name}
+                    </span>
+                    <span className="article-hero-subject-card__description">
+                      {subject.description}
+                    </span>
+                  </span>
+                  <span className="article-hero-subject-card__count">
+                    {subject.count}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="container py-5">
           <div className="article-directory-stats mb-4">
             <div className="article-directory-stat-card">
               <span className="article-directory-stat-card__value">
@@ -347,18 +396,6 @@ function BlogGridContent() {
                 {settings.article_directory_stats_featured_label || "Featured"}
               </span>
             </div>
-          </div>
-
-          <div className="article-subject-top-links mb-4">
-            {CORE_ARTICLE_SUBJECTS.map((subject) => (
-              <Link
-                key={subject.name}
-                href={subject.href}
-                className={`article-subject-top-link ${matchesSubjectName(selectedSubject, subject) ? "is-active" : ""}`}
-              >
-                {subject.name}
-              </Link>
-            ))}
           </div>
 
           <div className="article-directory-control-row mb-4">
@@ -533,45 +570,6 @@ function BlogGridContent() {
                     </div>
                   </div>
                 )}
-              </div>
-
-              <div className="article-directory-surface mt-4">
-                <div className="article-directory-section-header">
-                  <h2 className="article-directory-section-title mb-0">
-                    {settings.article_directory_subsections_title ||
-                      "Browse by Subject"}
-                  </h2>
-                  <p className="article-directory-section-note mb-0">
-                    {settings.article_directory_subjects_intro ||
-                      "Use the core subjects below to jump into focused reading tracks across the library."}
-                  </p>
-                </div>
-                <div className="article-directory-subject-overview">
-                  {subjectOverview.map((subject) => (
-                    <Link
-                      key={subject.name}
-                      href={subject.href}
-                      className="article-directory-subject-card"
-                    >
-                      <span className="article-directory-subject-card__icon">
-                        <i className={`fa-solid ${subject.icon}`} />
-                      </span>
-                      <div className="article-directory-subject-card__body">
-                        <div className="article-directory-subject-card__head">
-                          <h3 className="article-directory-subject-card__title">
-                            {subject.name}
-                          </h3>
-                          <span className="article-directory-subject-card__count">
-                            {subject.count}
-                          </span>
-                        </div>
-                        <p className="article-directory-subject-card__description">
-                          {subject.description}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
               </div>
 
               {visibleSubjectShelves.length ? (

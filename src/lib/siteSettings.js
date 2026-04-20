@@ -87,6 +87,20 @@ export const DEFAULT_SITE_SETTINGS = {
   article_directory_sidebar_subjects_title: "By Subject",
   article_directory_sidebar_authors_title: "By Author",
   article_directory_sidebar_latest_title: "New Articles",
+  article_subject_1_title: "Aqidah",
+  article_subject_1_description: "Belief, creed, and the foundations of faith.",
+  article_subject_1_icon: "fa-star-and-crescent",
+  article_subject_2_title: "Fiqh",
+  article_subject_2_description: "Worship, rulings, and practical Islamic law.",
+  article_subject_2_icon: "fa-scale-balanced",
+  article_subject_3_title: "History",
+  article_subject_3_description:
+    "Islamic events, civilizations, and lessons from the past.",
+  article_subject_3_icon: "fa-landmark",
+  article_subject_4_title: "Seerah",
+  article_subject_4_description:
+    "The Prophetic biography and lessons from his life.",
+  article_subject_4_icon: "fa-book-open-reader",
   impact_badge: "Make A Difference",
   impact_title: "Every Act of Kindness Creates a Ripple Effect",
   impact_description:
@@ -452,6 +466,23 @@ export const SITE_SETTINGS_SECTIONS = [
         "article_directory_sidebar_latest_title",
         "Sidebar Latest Articles Heading",
       ),
+      ...repeat(4, (index) => [
+        textField(
+          `article_subject_${index}_title`,
+          `Article Subject ${index} Title`,
+        ),
+        textareaField(
+          `article_subject_${index}_description`,
+          `Article Subject ${index} Description`,
+          "",
+          2,
+        ),
+        textField(
+          `article_subject_${index}_icon`,
+          `Article Subject ${index} Icon`,
+          "Font Awesome icon class, for example fa-star-and-crescent or fa-scale-balanced.",
+        ),
+      ]),
     ],
   },
   {

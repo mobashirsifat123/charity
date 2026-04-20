@@ -502,3 +502,12 @@ Admin content save `password_hash` fix (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Article subject hero upgrade (April 20, 2026):
+- Moved the four core article subjects into the top green article-page hero area.
+- Each subject now appears as a logo/icon card linking directly to its filtered Articles view.
+- Removed the duplicate lower white “Browse by Subject” card block so the subject entry point is concentrated at the top.
+- Added Site Builder fields for editing all four article subject titles, descriptions, and Font Awesome icon classes from the admin panel.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
