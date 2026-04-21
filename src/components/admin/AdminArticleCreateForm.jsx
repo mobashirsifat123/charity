@@ -80,9 +80,7 @@ export default function AdminArticleCreateForm({
 
         setMessage({
           type: "success",
-          text: result.optionalFieldsSaved
-            ? "Article created successfully."
-            : "Article created successfully. Some advanced fields will begin saving after the full content schema is applied.",
+          text: "Article created successfully. All editable article fields were saved permanently.",
         });
 
         window.setTimeout(() => router.push("/admin/blogs"), 1000);
@@ -213,6 +211,18 @@ export default function AdminArticleCreateForm({
                 Feature this article on the homepage and article directory
               </label>
             </div>
+          </div>
+
+          <div className="col-12">
+            <label className="form-label fw-semibold">
+              Article Directory Summary
+            </label>
+            <textarea
+              name="summary"
+              className="form-control bg-light border-0"
+              rows="3"
+              placeholder="A short card preview for the public article page. Leave blank to generate it from the article body."
+            ></textarea>
           </div>
 
           <div className="col-lg-7">

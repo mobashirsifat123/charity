@@ -287,6 +287,7 @@ export async function createArticle(formData) {
   const scholarId = String(formData.get("scholarId") || "").trim();
   const status = normalizeStatus(String(formData.get("status") || "draft"));
   const tags = normalizeTags(String(formData.get("tags") || ""));
+  const summary = String(formData.get("summary") || "").trim();
   const featured = String(formData.get("featured") || "") === "on";
   const coverImage = formData.get("coverImage");
 
@@ -340,7 +341,7 @@ export async function createArticle(formData) {
     seo_title: title,
     seo_description: getExcerpt(content, 165),
     social_image: coverImageUrl || "",
-    summary: getExcerpt(content, 220),
+    summary: summary || getExcerpt(content, 220),
   };
 
   const saveResult = await saveContentRecord({

@@ -555,3 +555,9 @@ Dorar Hadith API-inspired homepage utilities (April 21, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Admin Article/Fatwa persistence upgrade (April 21, 2026):
+- Made Article and Fatwa admin saves strict so advanced fields no longer appear successful if Supabase is missing the required database columns.
+- Added permanent admin-editable fields for article/fatwa directory summaries and category slugs used by the upgraded public Article and Fatwa sections.
+- Fixed quick publish/draft status updates from the Article and Fatwa admin list pages.
+- Expanded the Supabase content upgrade SQL to include summaries, primary category slugs, category slug arrays, indexes, and default article subject records.

@@ -21,6 +21,7 @@ export default function BlogEditorForm({ blogId = null }) {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [formData, setFormData] = useState({
     title: "",
+    summary: "",
     content: "",
     status: "draft",
     image_url: "",
@@ -51,6 +52,7 @@ export default function BlogEditorForm({ blogId = null }) {
       if (data) {
         setFormData({
           title: data.title || "",
+          summary: data.summary || "",
           content: data.content || "",
           status: normalizeStatus(data.status),
           image_url: data.image_url || "",
@@ -98,9 +100,14 @@ export default function BlogEditorForm({ blogId = null }) {
       };
       const optionalPayload = {
         category: formData.category || null,
+        primary_category_slug: formData.category
+          ? slugify(formData.category)
+          : null,
+        category_slugs: formData.category ? [slugify(formData.category)] : [],
         tags: normalizeTags(formData.tags),
         featured: !!formData.featured,
         slug: resolvedSlug || null,
+        summary: formData.summary || "",
         author_name:
           formData.author_name || user?.name || user?.email || "IRWA Team",
         author_role: formData.author_role || "Contributor",
@@ -110,23 +117,23 @@ export default function BlogEditorForm({ blogId = null }) {
         social_image: formData.social_image || formData.image_url || "",
       };
 
-      const result = isEdit
-        ? await adminFetchJson(`/api/admin/resources/blogs/${blogId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ basePayload, optionalPayload }),
-          })
-        : await adminFetchJson("/api/admin/resources/blogs", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ basePayload, optionalPayload }),
-          });
+      if (isEdit) {
+        await adminFetchJson(`/api/admin/resources/blogs/${blogId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ basePayload, optionalPayload }),
+        });
+      } else {
+        await adminFetchJson("/api/admin/resources/blogs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ basePayload, optionalPayload }),
+        });
+      }
 
       setMessage({
         type: "success",
-        text: result.data?.optionalFieldsSaved
-          ? `Article ${isEdit ? "updated" : "created"} successfully.`
-          : `Article ${isEdit ? "updated" : "created"} successfully. Advanced fields will start saving after you run the content-platform SQL upgrade.`,
+        text: `Article ${isEdit ? "updated" : "created"} successfully. All editable article fields were saved permanently.`,
       });
 
       if (!isEdit) {
@@ -259,6 +266,21 @@ export default function BlogEditorForm({ blogId = null }) {
                   >
                     Featured on homepage and article directory
                   </label>
+                </div>
+              </div>
+              <div className="col-12">
+                <label className="form-label fw-bold">Directory Summary</label>
+                <textarea
+                  className="form-control bg-light border-0"
+                  name="summary"
+                  rows="3"
+                  value={formData.summary}
+                  onChange={handleChange}
+                  placeholder="Short text shown on article cards and search results."
+                ></textarea>
+                <div className="form-text">
+                  This controls the visible article preview on the public
+                  article page.
                 </div>
               </div>
               <div className="col-md-6">

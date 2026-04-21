@@ -177,29 +177,51 @@ export function isMissingColumnError(error) {
   );
 }
 
+export function getContentSchemaErrorMessage(table) {
+  const label = table === "fatwas" ? "Fatwa" : "Article";
+  return `${label} advanced fields are not available in Supabase yet. Run src/lib/sql/content-platform-upgrade.sql in the Supabase SQL editor, then save again so every admin field persists permanently.`;
+}
+
 export async function saveContentRecord({
   supabase,
   table,
   recordId = null,
   basePayload,
   optionalPayload = {},
+  allowOptionalFallback = false,
 }) {
   const fullPayload = { ...basePayload, ...optionalPayload };
 
   const execute = async (payload) => {
     if (recordId) {
-      return supabase.from(table).update(payload).eq("id", recordId);
+      return supabase
+        .from(table)
+        .update(payload)
+        .eq("id", recordId)
+        .select("*")
+        .maybeSingle();
     }
-    return supabase.from(table).insert([payload]);
+
+    return supabase.from(table).insert([payload]).select("*").maybeSingle();
   };
 
   const fullResult = await execute(fullPayload);
   if (!fullResult.error) {
-    return { optionalFieldsSaved: true };
+    if (!fullResult.data) {
+      throw new Error(
+        `No ${table} record was saved. Please refresh and try again.`,
+      );
+    }
+
+    return { data: fullResult.data, optionalFieldsSaved: true };
   }
 
   if (!isMissingColumnError(fullResult.error)) {
     throw fullResult.error;
+  }
+
+  if (!allowOptionalFallback) {
+    throw new Error(getContentSchemaErrorMessage(table));
   }
 
   const fallbackResult = await execute(basePayload);
@@ -207,7 +229,13 @@ export async function saveContentRecord({
     throw fallbackResult.error;
   }
 
-  return { optionalFieldsSaved: false };
+  if (!fallbackResult.data) {
+    throw new Error(
+      `No ${table} record was saved. Please refresh and try again.`,
+    );
+  }
+
+  return { data: fallbackResult.data, optionalFieldsSaved: false };
 }
 
 export async function incrementViewCount({ supabase, table, record }) {

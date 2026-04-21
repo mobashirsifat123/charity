@@ -1,56 +1,42 @@
-import { saveContentRecord } from '@/lib/content-utils';
+import { saveContentRecord } from "@/lib/content-utils";
 
 export const ADMIN_RESOURCE_CONFIG = {
   campaigns: {
-    table: 'campaigns',
-    orders: [
-      { column: 'created_at', ascending: false },
-    ],
+    table: "campaigns",
+    orders: [{ column: "created_at", ascending: false }],
   },
   team: {
-    table: 'team_members',
+    table: "team_members",
     orders: [
-      { column: 'sort_order', ascending: true },
-      { column: 'created_at', ascending: false },
+      { column: "sort_order", ascending: true },
+      { column: "created_at", ascending: false },
     ],
   },
   blogs: {
-    table: 'blogs',
-    orders: [
-      { column: 'created_at', ascending: false },
-    ],
+    table: "blogs",
+    orders: [{ column: "created_at", ascending: false }],
     usesAdvancedContentSave: true,
   },
   fatwas: {
-    table: 'fatwas',
-    orders: [
-      { column: 'created_at', ascending: false },
-    ],
+    table: "fatwas",
+    orders: [{ column: "created_at", ascending: false }],
     usesAdvancedContentSave: true,
   },
-  'fatwa-requests': {
-    table: 'fatwa_requests',
-    orders: [
-      { column: 'created_at', ascending: false },
-    ],
+  "fatwa-requests": {
+    table: "fatwa_requests",
+    orders: [{ column: "created_at", ascending: false }],
   },
   newsletter: {
-    table: 'newsletter_subscriptions',
-    orders: [
-      { column: 'created_at', ascending: false },
-    ],
+    table: "newsletter_subscriptions",
+    orders: [{ column: "created_at", ascending: false }],
   },
   scholars: {
-    table: 'scholar_profiles',
-    orders: [
-      { column: 'name', ascending: true },
-    ],
+    table: "scholar_profiles",
+    orders: [{ column: "name", ascending: true }],
   },
-  'article-categories': {
-    table: 'article_categories',
-    orders: [
-      { column: 'name', ascending: true },
-    ],
+  "article-categories": {
+    table: "article_categories",
+    orders: [{ column: "name", ascending: true }],
   },
 };
 
@@ -64,7 +50,7 @@ export async function listAdminResource({ supabase, resource }) {
     throw new Error(`Unsupported admin resource: ${resource}`);
   }
 
-  let query = supabase.from(config.table).select('*');
+  let query = supabase.from(config.table).select("*");
 
   for (const order of config.orders || []) {
     query = query.order(order.column, { ascending: order.ascending });
@@ -84,8 +70,8 @@ export async function getAdminResource({ supabase, resource, id }) {
 
   const { data, error } = await supabase
     .from(config.table)
-    .select('*')
-    .eq('id', id)
+    .select("*")
+    .eq("id", id)
     .single();
 
   if (error) throw error;
@@ -102,7 +88,7 @@ export async function createAdminResource({ supabase, resource, body }) {
     const { basePayload, optionalPayload = {} } = body || {};
 
     if (!basePayload) {
-      throw new Error('Missing basePayload for content resource.');
+      throw new Error("Missing basePayload for content resource.");
     }
 
     const result = await saveContentRecord({
@@ -119,7 +105,7 @@ export async function createAdminResource({ supabase, resource, body }) {
 
   const payload = body?.payload;
   if (!payload) {
-    throw new Error('Missing payload for resource creation.');
+    throw new Error("Missing payload for resource creation.");
   }
 
   const { data, error } = await supabase
@@ -141,8 +127,20 @@ export async function updateAdminResource({ supabase, resource, id, body }) {
   if (config.usesAdvancedContentSave) {
     const { basePayload, optionalPayload = {} } = body || {};
 
+    if (!basePayload && body?.payload) {
+      const { data, error } = await supabase
+        .from(config.table)
+        .update(body.payload)
+        .eq("id", id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
     if (!basePayload) {
-      throw new Error('Missing basePayload for content resource update.');
+      throw new Error("Missing basePayload for content resource update.");
     }
 
     const result = await saveContentRecord({
@@ -160,13 +158,13 @@ export async function updateAdminResource({ supabase, resource, id, body }) {
 
   const payload = body?.payload;
   if (!payload) {
-    throw new Error('Missing payload for resource update.');
+    throw new Error("Missing payload for resource update.");
   }
 
   const { data, error } = await supabase
     .from(config.table)
     .update(payload)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -180,28 +178,26 @@ export async function deleteAdminResource({ supabase, resource, id }) {
     throw new Error(`Unsupported admin resource: ${resource}`);
   }
 
-  const { error } = await supabase
-    .from(config.table)
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from(config.table).delete().eq("id", id);
 
   if (error) throw error;
 }
 
-export async function bulkDeleteAdminResource({ supabase, resource, ids = [] }) {
+export async function bulkDeleteAdminResource({
+  supabase,
+  resource,
+  ids = [],
+}) {
   const config = getAdminResourceConfig(resource);
   if (!config) {
     throw new Error(`Unsupported admin resource: ${resource}`);
   }
 
   if (!ids.length) {
-    throw new Error('No ids provided for bulk delete.');
+    throw new Error("No ids provided for bulk delete.");
   }
 
-  const { error } = await supabase
-    .from(config.table)
-    .delete()
-    .in('id', ids);
+  const { error } = await supabase.from(config.table).delete().in("id", ids);
 
   if (error) throw error;
 }
