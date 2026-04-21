@@ -11,6 +11,14 @@ import {
   tagsToInputValue,
   normalizeTags,
 } from "@/lib/content-utils";
+import { CORE_ARTICLE_SUBJECTS } from "@/lib/article-subjects";
+
+const ARTICLE_SECTION_OPTIONS = CORE_ARTICLE_SUBJECTS.map((subject) => ({
+  name: subject.name,
+  slug: slugify(subject.name),
+  description: subject.description,
+  icon: subject.icon,
+}));
 
 export default function BlogEditorForm({ blogId = null }) {
   const router = useRouter();
@@ -26,6 +34,7 @@ export default function BlogEditorForm({ blogId = null }) {
     status: "draft",
     image_url: "",
     category: "",
+    category_slugs: [],
     tags: "",
     featured: false,
     slug: "",
@@ -57,6 +66,9 @@ export default function BlogEditorForm({ blogId = null }) {
           status: normalizeStatus(data.status),
           image_url: data.image_url || "",
           category: data.category || "",
+          category_slugs: Array.isArray(data.category_slugs)
+            ? data.category_slugs
+            : [],
           tags: tagsToInputValue(data.tags),
           featured: !!data.featured,
           slug: data.slug || "",
@@ -84,6 +96,20 @@ export default function BlogEditorForm({ blogId = null }) {
     }));
   };
 
+  const handleSectionToggle = (slug) => {
+    setFormData((prev) => {
+      const current = Array.isArray(prev.category_slugs)
+        ? prev.category_slugs
+        : [];
+      return {
+        ...prev,
+        category_slugs: current.includes(slug)
+          ? current.filter((item) => item !== slug)
+          : [...current, slug],
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -103,7 +129,16 @@ export default function BlogEditorForm({ blogId = null }) {
         primary_category_slug: formData.category
           ? slugify(formData.category)
           : null,
-        category_slugs: formData.category ? [slugify(formData.category)] : [],
+        category_slugs: Array.from(
+          new Set(
+            [
+              formData.category ? slugify(formData.category) : "",
+              ...(Array.isArray(formData.category_slugs)
+                ? formData.category_slugs
+                : []),
+            ].filter(Boolean),
+          ),
+        ),
         tags: normalizeTags(formData.tags),
         featured: !!formData.featured,
         slug: resolvedSlug || null,
@@ -266,6 +301,40 @@ export default function BlogEditorForm({ blogId = null }) {
                   >
                     Featured on homepage and article directory
                   </label>
+                </div>
+              </div>
+              <div className="col-12">
+                <label className="form-label fw-bold">
+                  Article Subsections
+                </label>
+                <div className="row g-3">
+                  {ARTICLE_SECTION_OPTIONS.map((section) => {
+                    const isSelected = formData.category_slugs.includes(
+                      section.slug,
+                    );
+
+                    return (
+                      <div className="col-md-6 col-xl-3" key={section.slug}>
+                        <button
+                          type="button"
+                          className={`admin-article-section-picker ${isSelected ? "is-selected" : ""}`}
+                          onClick={() => handleSectionToggle(section.slug)}
+                        >
+                          <span className="admin-article-section-picker__icon">
+                            <i className={`fa-solid ${section.icon}`} />
+                          </span>
+                          <span className="admin-article-section-picker__text">
+                            <strong>{section.name}</strong>
+                            <small>{section.description}</small>
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="form-text">
+                  Choose where this article appears in the public Article page
+                  subsections.
                 </div>
               </div>
               <div className="col-12">

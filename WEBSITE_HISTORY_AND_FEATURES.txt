@@ -566,3 +566,9 @@ Header and search UX cleanup (April 21, 2026):
 - Replaced the slim top-bar text links with compact icon-only quick actions for Articles, Fatwas, Search, and social channels.
 - Moved the homepage hero search bar higher so it is visible before the main CTA buttons.
 - Removed duplicate secondary search inputs from the Article, Fatwa, and E-Book directory bodies while keeping the prominent top search bars functional for filtering.
+
+Article admin CMS stability and subsection control (April 21, 2026):
+- Replaced the fragile rich text editor with a stable admin-safe HTML editor so `/admin/blogs/new` no longer crashes before article entry.
+- Added Article subsection selection to new/edit article forms so admins can place articles into public sections such as Aqidah, Fiqh, History, and Seerah.
+- Expanded the Article Categories admin to manage subsection name, slug, description, icon class, sort order, and public visibility.
+- Updated the public Article page to respect article `category_slugs` and dynamic category records instead of relying only on hard-coded subjects.

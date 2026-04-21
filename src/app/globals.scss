@@ -3555,6 +3555,89 @@ html[dir="rtl"] .navbar__sub-menu li.active a {
   transform: translateY(-1px);
 }
 
+.admin-safe-editor__bar {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(11, 61, 46, 0.1);
+  background: rgba(244, 248, 246, 0.92);
+}
+
+.admin-safe-editor__textarea {
+  display: block;
+  width: 100%;
+  min-height: 360px;
+  padding: 1.1rem;
+  border: 0;
+  outline: 0;
+  resize: vertical;
+  color: var(--text-color);
+  background: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  line-height: 1.7;
+}
+
+.admin-safe-editor__help {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid rgba(11, 61, 46, 0.08);
+  background: rgba(244, 248, 246, 0.7);
+  color: var(--secondary-text-color);
+  font-size: 0.82rem;
+}
+
+.admin-article-section-picker {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(11, 61, 46, 0.12);
+  background: #fff;
+  color: var(--text-color);
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(11, 61, 46, 0.07);
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
+}
+
+.admin-article-section-picker:hover,
+.admin-article-section-picker.is-selected {
+  border-color: rgba(11, 61, 46, 0.42);
+  box-shadow: 0 18px 40px rgba(11, 61, 46, 0.13);
+  transform: translateY(-2px);
+}
+
+.admin-article-section-picker.is-selected {
+  background: linear-gradient(135deg, rgba(244, 248, 246, 0.98), #fff);
+}
+
+.admin-article-section-picker__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--primary-color);
+  background: rgba(11, 61, 46, 0.08);
+}
+
+.admin-article-section-picker__text {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.admin-article-section-picker__text small {
+  color: var(--secondary-text-color);
+  line-height: 1.45;
+}
+
 .hero-main-search {
   margin-top: -0.2rem;
 }

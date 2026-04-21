@@ -5,16 +5,29 @@ import { useRouter } from "next/navigation";
 
 import { createArticle } from "@/app/admin/editor-actions";
 import { supabase } from "@/lib/supabaseClient";
+import { CORE_ARTICLE_SUBJECTS } from "@/lib/article-subjects";
 import ArticleRichTextEditor from "@/components/admin/ArticleRichTextEditor";
 
 export default function AdminArticleCreateForm({
   categories = [],
   scholars = [],
 }) {
+  const categoryOptions = categories.length
+    ? categories
+    : CORE_ARTICLE_SUBJECTS.map((subject, index) => ({
+        id: subject.name,
+        name: subject.name,
+        slug: subject.name.toLowerCase(),
+        description: subject.description,
+        icon_class: `fa-solid ${subject.icon}`,
+        sort_order: index + 1,
+        is_active: true,
+      }));
   const router = useRouter();
   const [accessToken, setAccessToken] = useState("");
   const [content, setContent] = useState("");
   const [selectedCategorySlug, setSelectedCategorySlug] = useState("");
+  const [selectedSectionSlugs, setSelectedSectionSlugs] = useState([]);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [coverPreview, setCoverPreview] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -41,10 +54,19 @@ export default function AdminArticleCreateForm({
 
   const selectedCategory = useMemo(
     () =>
-      categories.find((category) => category.slug === selectedCategorySlug) ||
-      null,
-    [categories, selectedCategorySlug],
+      categoryOptions.find(
+        (category) => category.slug === selectedCategorySlug,
+      ) || null,
+    [categoryOptions, selectedCategorySlug],
   );
+
+  const handleSectionToggle = (slug) => {
+    setSelectedSectionSlugs((prev) =>
+      prev.includes(slug)
+        ? prev.filter((item) => item !== slug)
+        : [...prev, slug],
+    );
+  };
 
   const handleCoverChange = (event) => {
     const file = event.target.files?.[0];
@@ -63,6 +85,16 @@ export default function AdminArticleCreateForm({
     formData.set("content", content);
     formData.set("categorySlug", selectedCategory?.slug || "");
     formData.set("categoryName", selectedCategory?.name || "");
+    formData.set(
+      "categorySlugs",
+      JSON.stringify(
+        Array.from(
+          new Set(
+            [selectedCategory?.slug, ...selectedSectionSlugs].filter(Boolean),
+          ),
+        ),
+      ),
+    );
 
     setMessage({ type: "", text: "" });
 
@@ -158,12 +190,51 @@ export default function AdminArticleCreateForm({
               onChange={(event) => setSelectedCategorySlug(event.target.value)}
             >
               <option value="">Select category</option>
-              {categories.map((category) => (
+              {categoryOptions.map((category) => (
                 <option key={category.id} value={category.slug}>
                   {category.name}
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="col-12">
+            <label className="form-label fw-semibold">
+              Article Subsections
+            </label>
+            <div className="row g-3">
+              {categoryOptions.map((category) => {
+                const isChecked = selectedSectionSlugs.includes(category.slug);
+                const iconClass =
+                  category.icon_class ||
+                  `fa-solid ${category.icon || "fa-book-open"}`;
+
+                return (
+                  <div className="col-md-6 col-xl-3" key={category.slug}>
+                    <button
+                      type="button"
+                      className={`admin-article-section-picker ${isChecked ? "is-selected" : ""}`}
+                      onClick={() => handleSectionToggle(category.slug)}
+                    >
+                      <span className="admin-article-section-picker__icon">
+                        <i className={iconClass} />
+                      </span>
+                      <span className="admin-article-section-picker__text">
+                        <strong>{category.name}</strong>
+                        <small>
+                          {category.description ||
+                            "Show this article in this public subsection."}
+                        </small>
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="form-text">
+              These match the public Article page subsections like Aqidah, Fiqh,
+              History, and Seerah.
+            </div>
           </div>
 
           <div className="col-md-4">

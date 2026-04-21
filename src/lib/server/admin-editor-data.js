@@ -8,15 +8,23 @@ const supabase = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
+  },
 );
 
 export async function getAdminArticleFormData() {
-  const [categoriesResult, scholarsResult] = await Promise.all([
-    supabase
+  let categoriesResult = await supabase
+    .from("article_categories")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (categoriesResult.error) {
+    categoriesResult = await supabase
       .from("article_categories")
       .select("id, name, slug")
-      .order("name", { ascending: true }),
+      .order("name", { ascending: true });
+  }
+
+  const [scholarsResult] = await Promise.all([
     supabase
       .from("scholar_profiles")
       .select("id, name, bio, avatar_url, credentials")
@@ -24,7 +32,7 @@ export async function getAdminArticleFormData() {
   ]);
 
   return {
-    categories: categoriesResult.error ? [] : (categoriesResult.data || []),
-    scholars: scholarsResult.error ? [] : (scholarsResult.data || []),
+    categories: categoriesResult.error ? [] : categoriesResult.data || [],
+    scholars: scholarsResult.error ? [] : scholarsResult.data || [],
   };
 }

@@ -284,6 +284,7 @@ export async function createArticle(formData) {
   const content = String(formData.get("content") || "").trim();
   const categoryName = String(formData.get("categoryName") || "").trim();
   const categorySlug = String(formData.get("categorySlug") || "").trim();
+  const categorySlugsInput = String(formData.get("categorySlugs") || "").trim();
   const scholarId = String(formData.get("scholarId") || "").trim();
   const status = normalizeStatus(String(formData.get("status") || "draft"));
   const tags = normalizeTags(String(formData.get("tags") || ""));
@@ -319,6 +320,23 @@ export async function createArticle(formData) {
     scholarProfile = data || null;
   }
 
+  let categorySlugs = categorySlug ? [categorySlug] : [];
+  if (categorySlugsInput) {
+    try {
+      const parsed = JSON.parse(categorySlugsInput);
+      if (Array.isArray(parsed)) {
+        categorySlugs = parsed.map((item) => slugify(item)).filter(Boolean);
+      }
+    } catch {
+      categorySlugs = categorySlugsInput
+        .split(",")
+        .map((item) => slugify(item))
+        .filter(Boolean);
+    }
+  }
+
+  categorySlugs = Array.from(new Set(categorySlugs));
+
   const basePayload = {
     title,
     content,
@@ -330,7 +348,7 @@ export async function createArticle(formData) {
     author_id: profile.id || null,
     category: categoryName || null,
     primary_category_slug: categorySlug || null,
-    category_slugs: categorySlug ? [categorySlug] : [],
+    category_slugs: categorySlugs,
     tags,
     featured,
     slug: slugify(title),

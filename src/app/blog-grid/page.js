@@ -89,6 +89,28 @@ function matchesSelectedSubject(category = "", selectedSubject = "") {
   return matchesSubjectName(category, selectedCoreSubject);
 }
 
+function slugifySubject(value = "") {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function articleMatchesSubject(article, subjectName = "") {
+  if (subjectName === "all") return true;
+
+  const subjectSlug = slugifySubject(subjectName);
+  const articleSlugs = normalizeTags(article?.category_slugs).map(
+    slugifySubject,
+  );
+
+  return (
+    articleSlugs.includes(subjectSlug) ||
+    matchesSelectedSubject(getContentCategory(article), subjectName)
+  );
+}
+
 function BlogGridContent() {
   const { locale, t } = useLanguage();
   const { settings } = useSiteSettings();
@@ -190,7 +212,7 @@ function BlogGridContent() {
         .toLowerCase();
 
       const matchesSearch = !lowerSearch || haystack.includes(lowerSearch);
-      const matchesSubject = matchesSelectedSubject(category, selectedSubject);
+      const matchesSubject = articleMatchesSubject(article, selectedSubject);
       const matchesAuthor =
         selectedAuthor === "all" || author === selectedAuthor;
       const readTime = estimateReadTime(article.content || "");
@@ -269,16 +291,38 @@ function BlogGridContent() {
       .slice(0, 14);
   }, [articles]);
 
-  const subjectOverview = useMemo(
-    () =>
-      CORE_ARTICLE_SUBJECTS.map((subject) => ({
+  const subjectOverview = useMemo(() => {
+    const dynamicSubjects = categoryRecords
+      .filter((category) => category.is_active !== false)
+      .map((category) => ({
+        name: category.name,
+        icon: String(category.icon_class || "fa-solid fa-book-open").replace(
+          "fa-solid ",
+          "",
+        ),
+        description: category.description || "",
+        href: `/blog-grid?subject=${encodeURIComponent(category.name)}`,
+        aliases: [category.slug, category.name],
+        sort_order: Number(category.sort_order || 0),
+      }));
+
+    const subjects = dynamicSubjects.length
+      ? dynamicSubjects
+      : CORE_ARTICLE_SUBJECTS;
+
+    return subjects
+      .sort(
+        (a, b) =>
+          Number(a.sort_order || 0) - Number(b.sort_order || 0) ||
+          String(a.name || "").localeCompare(String(b.name || "")),
+      )
+      .map((subject) => ({
         ...subject,
         count: articles.filter((article) =>
-          matchesSubjectName(getContentCategory(article), subject),
+          articleMatchesSubject(article, subject.name),
         ).length,
-      })),
-    [articles],
-  );
+      }));
+  }, [articles, categoryRecords]);
 
   const articleSubjectCards = useMemo(
     () =>
@@ -313,9 +357,7 @@ function BlogGridContent() {
         .map((categoryName) => ({
           title: categoryName,
           items: filteredArticles
-            .filter((article) =>
-              matchesSelectedSubject(getContentCategory(article), categoryName),
-            )
+            .filter((article) => articleMatchesSubject(article, categoryName))
             .slice(0, SELECTED_SECTION_ITEM_COUNT),
         }))
         .filter((section) => section.items.length),
@@ -325,8 +367,8 @@ function BlogGridContent() {
   const visibleSubjectShelves = useMemo(() => {
     const subjectPool =
       selectedSubject === "all"
-        ? CORE_ARTICLE_SUBJECTS
-        : CORE_ARTICLE_SUBJECTS.filter((subject) =>
+        ? subjectOverview
+        : subjectOverview.filter((subject) =>
             matchesSubjectName(selectedSubject, subject),
           );
 
@@ -334,13 +376,11 @@ function BlogGridContent() {
       .map((subject) => ({
         ...subject,
         items: filteredArticles
-          .filter((article) =>
-            matchesSubjectName(getContentCategory(article), subject),
-          )
+          .filter((article) => articleMatchesSubject(article, subject.name))
           .slice(0, 3),
       }))
       .filter((section) => section.items.length);
-  }, [filteredArticles, selectedSubject]);
+  }, [filteredArticles, selectedSubject, subjectOverview]);
 
   const totalArticleCount = articles.length;
   const featuredArticleCount = articles.filter(
