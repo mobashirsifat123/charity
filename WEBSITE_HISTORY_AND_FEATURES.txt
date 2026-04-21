@@ -546,3 +546,12 @@ Dorar-inspired knowledge navigation and search upgrade (April 20, 2026):
 - Re-verified with:
   - `npm run lint`
   - `npm run build`
+
+Dorar Hadith API-inspired homepage utilities (April 21, 2026):
+- Added a Next.js `/api/hadith/search` proxy for Dorar-compatible Hadith API deployments using `DORAR_HADITH_API_BASE_URL`.
+- Added safe fallback hadith content so the homepage remains useful even before the external Dorar proxy is hosted/configured.
+- Added a homepage Hadith Explorer with quick topic icons, small encyclopedia-style feature cards, and a hadith preview showing narrator, scholar, book, grade, and categories.
+- Added Site Builder fields for the Hadith Explorer badge, title, and description.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`

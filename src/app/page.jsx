@@ -6,8 +6,13 @@ import LiveDonationToast from "@/components/charity/LiveDonationToast";
 import FatwaHighlights from "@/components/FatwaHighlights";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import HadithExplorer from "@/components/HadithExplorer";
 import PrayerTimesWidget from "@/components/home/PrayerTimesWidget";
-import { fetchPublishedBlogs, fetchPublishedFatwas, fetchPublishedCampaigns } from "@/lib/content-data";
+import {
+  fetchPublishedBlogs,
+  fetchPublishedFatwas,
+  fetchPublishedCampaigns,
+} from "@/lib/content-data";
 import QuranLearningShowcase from "@/components/QuranLearningShowcase";
 import TopBarOne from "@/components/TopBarOne";
 import { getFallbackPrayerTimes } from "@/lib/server/prayer-times";
@@ -46,11 +51,12 @@ const Page = async () => {
   }
 
   return (
-    <section className='page-wrapper'>
+    <section className="page-wrapper">
       <LiveDonationToast />
       <TopBarOne />
       <HeaderOne />
       <BannerOne />
+      <HadithExplorer />
       <PrayerTimesWidget initialData={fallbackPrayerTimes} />
       <FatwaHighlights initialFatwas={initialFatwas} />
       <BlogOne initialBlogs={initialBlogs} />

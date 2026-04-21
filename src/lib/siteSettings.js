@@ -121,6 +121,10 @@ export const DEFAULT_SITE_SETTINGS = {
   article_subject_4_description:
     "The Prophetic biography and lessons from his life.",
   article_subject_4_icon: "fa-book-open-reader",
+  hadith_explorer_badge: "Hadith Utility",
+  hadith_explorer_title: "Search Hadith and Explore Knowledge Faster",
+  hadith_explorer_description:
+    "A Dorar-inspired research panel for quick hadith lookup, authenticity notes, sources, and related learning paths.",
   impact_badge: "Make A Difference",
   impact_title: "Every Act of Kindness Creates a Ripple Effect",
   impact_description:
@@ -367,6 +371,20 @@ export const SITE_SETTINGS_SECTIONS = [
         textField(`hero_card_${index}_title`, `Hero Card ${index} Title`),
         textField(`hero_card_${index}_meta`, `Hero Card ${index} Description`),
       ]),
+    ],
+  },
+  {
+    id: "hadith-explorer",
+    title: "Hadith Explorer",
+    fields: [
+      textField("hadith_explorer_badge", "Hadith Explorer Badge"),
+      textField("hadith_explorer_title", "Hadith Explorer Title"),
+      textareaField(
+        "hadith_explorer_description",
+        "Hadith Explorer Description",
+        "",
+        3,
+      ),
     ],
   },
   {
