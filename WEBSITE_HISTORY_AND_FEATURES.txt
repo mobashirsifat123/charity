@@ -572,3 +572,7 @@ Article admin CMS stability and subsection control (April 21, 2026):
 - Added Article subsection selection to new/edit article forms so admins can place articles into public sections such as Aqidah, Fiqh, History, and Seerah.
 - Expanded the Article Categories admin to manage subsection name, slug, description, icon class, sort order, and public visibility.
 - Updated the public Article page to respect article `category_slugs` and dynamic category records instead of relying only on hard-coded subjects.
+
+Runtime crash cleanup (April 21, 2026):
+- Removed the incompatible `react-quill` dependency and global Quill stylesheet so production pages no longer load code that calls deprecated `findDOMNode`.
+- Updated Sentry configuration to initialize only when a real DSN is provided, removing the invalid dummy DSN browser warning.

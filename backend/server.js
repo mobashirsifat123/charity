@@ -6,7 +6,7 @@ const Sentry = require('@sentry/node');
 const { nodeProfilingIntegration } = require('@sentry/profiling-node');
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN || 'https://dummy-dsn@sentry.io/12345',
+  dsn: process.env.SENTRY_DSN || undefined,
   integrations: [
     nodeProfilingIntegration(),
   ],

@@ -8,7 +8,7 @@ if (fs.existsSync(file)) {
   if (!content.includes("require('@sentry/node')")) {
     content = content.replace(
       "const cors = require('cors');",
-      "const cors = require('cors');\nconst Sentry = require('@sentry/node');\nconst { nodeProfilingIntegration } = require('@sentry/profiling-node');\n\nSentry.init({\n  dsn: process.env.SENTRY_DSN || 'https://dummy-dsn@sentry.io/12345',\n  integrations: [\n    nodeProfilingIntegration(),\n  ],\n  tracesSampleRate: 1.0,\n  profilesSampleRate: 1.0,\n});"
+      "const cors = require('cors');\nconst Sentry = require('@sentry/node');\nconst { nodeProfilingIntegration } = require('@sentry/profiling-node');\n\nSentry.init({\n  dsn: process.env.SENTRY_DSN || undefined,\n  integrations: [\n    nodeProfilingIntegration(),\n  ],\n  tracesSampleRate: 1.0,\n  profilesSampleRate: 1.0,\n});"
     );
   }
 

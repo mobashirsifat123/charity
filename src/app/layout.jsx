@@ -2,7 +2,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "aos/dist/aos.css";
-import "react-quill/dist/quill.snow.css";
 import "./globals.scss";
 
 import RouteScrollToTop from "@/helper/RouteScrollToTop";
@@ -96,11 +95,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
-      data-scroll-behavior="smooth"
-      className="irwa-fonts"
-    >
+    <html lang="en" data-scroll-behavior="smooth" className="irwa-fonts">
       <head>
         {/* Font Awesome 6 CDN - replaces missing /assets/fonts/css/all.min.css */}
         <link
@@ -112,24 +107,27 @@ export default function RootLayout({ children }) {
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
         />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body
-        suppressHydrationWarning={true}
-        className="irwa-fonts"
-      >
+      <body suppressHydrationWarning={true} className="irwa-fonts">
         <RouteScrollToTop />
         <ColorPalate />
 
-        <Toaster position="bottom-right" toastOptions={{ duration: 4000, style: { background: "#333", color: "#fff", } }} />
-        <ClientProviders>
-          {children}
-        </ClientProviders>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            duration: 4000,
+            style: { background: "#333", color: "#fff" },
+          }}
+        />
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   );
