@@ -63,6 +63,12 @@ export default function EbooksPage() {
         <div className="container">
           <KnowledgeSearchBar
             variant="light"
+            value={searchTerm}
+            onChange={(nextValue) => {
+              setSearchTerm(nextValue);
+              resetToFirstPage();
+            }}
+            onSearch={() => resetToFirstPage()}
             placeholder="Search e-books, articles, fatwas, and Islamic topics..."
           />
         </div>
@@ -136,20 +142,7 @@ export default function EbooksPage() {
 
                 <div className="compact-directory-toolbar mb-4">
                   <div className="row g-2 align-items-end">
-                    <div className="col-lg-7">
-                      <label className="compact-directory-label">Search</label>
-                      <input
-                        type="text"
-                        className="form-control compact-directory-input"
-                        placeholder="Search ebooks, authors, or subjects..."
-                        value={searchTerm}
-                        onChange={(event) => {
-                          setSearchTerm(event.target.value);
-                          resetToFirstPage();
-                        }}
-                      />
-                    </div>
-                    <div className="col-lg-4">
+                    <div className="col-lg-10">
                       <label className="compact-directory-label">
                         Category
                       </label>
@@ -168,7 +161,7 @@ export default function EbooksPage() {
                         ))}
                       </select>
                     </div>
-                    <div className="col-lg-1">
+                    <div className="col-lg-2">
                       <button
                         type="button"
                         className="btn btn-light compact-directory-reset w-100"

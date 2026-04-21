@@ -5,6 +5,23 @@ import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const TopBarOne = () => {
   const { settings } = useSiteSettings();
+  const quickLinks = [
+    {
+      href: "/blog-grid",
+      icon: "fa-book-open-reader",
+      label: settings.top_bar_articles_label || "Articles & Research",
+    },
+    {
+      href: "/fatwa",
+      icon: "fa-scale-balanced",
+      label: settings.top_bar_fatwa_label || "Trusted Fatwas",
+    },
+    {
+      href: "/search",
+      icon: "fa-magnifying-glass",
+      label: settings.top_bar_search_label || "Knowledge Search",
+    },
+  ];
   const socialLinks = [
     {
       href: settings.social_facebook || "https://www.facebook.com/",
@@ -44,26 +61,17 @@ const TopBarOne = () => {
           </div>
           <div className="col-md-6 text-end">
             <div className="d-flex align-items-center justify-content-end gap-3">
-              <Link
-                href="/blog-grid"
-                className="text-white text-decoration-none opacity-75 hover-opacity-100 transition-opacity"
-              >
-                {settings.top_bar_articles_label || "Articles & Research"}
-              </Link>
-              <span className="opacity-25">|</span>
-              <Link
-                href="/fatwa"
-                className="text-white text-decoration-none opacity-75 hover-opacity-100 transition-opacity"
-              >
-                {settings.top_bar_fatwa_label || "Trusted Fatwas"}
-              </Link>
-              <span className="opacity-25">|</span>
-              <Link
-                href="/search"
-                className="text-white text-decoration-none opacity-75 hover-opacity-100 transition-opacity"
-              >
-                {settings.top_bar_search_label || "Knowledge Search"}
-              </Link>
+              {quickLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="top-bar-icon-link"
+                  aria-label={item.label}
+                  title={item.label}
+                >
+                  <i className={`fa-solid ${item.icon}`} />
+                </Link>
+              ))}
               <div className="d-flex gap-2 ms-4 border-start border-light border-opacity-25 ps-4">
                 {socialLinks.map((item) => (
                   <Link
@@ -71,8 +79,9 @@ const TopBarOne = () => {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-white opacity-75 hover-opacity-100"
+                    className="top-bar-icon-link"
                     aria-label={item.label}
+                    title={item.label}
                   >
                     <i className={`fa-brands ${item.icon}`} />
                   </Link>

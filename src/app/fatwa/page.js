@@ -138,6 +138,12 @@ export default function FatwaList() {
           <KnowledgeSearchBar
             variant="light"
             defaultType="fatwa"
+            value={searchTerm}
+            onChange={(nextValue) => {
+              setSearchTerm(nextValue);
+              resetToFirstPage();
+            }}
+            onSearch={() => resetToFirstPage()}
             placeholder={t(
               "searchFatwasPlaceholder",
               "Search fatwas, questions, scholars, and topics...",
@@ -241,25 +247,7 @@ export default function FatwaList() {
 
                 <div className="compact-directory-toolbar mb-4">
                   <div className="row g-2 align-items-end">
-                    <div className="col-lg-5">
-                      <label className="compact-directory-label">
-                        {t("search", "Search")}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control compact-directory-input"
-                        placeholder={t(
-                          "searchFatwasPlaceholder",
-                          "Search by topic, question, tag, or scholar...",
-                        )}
-                        value={searchTerm}
-                        onChange={(event) => {
-                          setSearchTerm(event.target.value);
-                          resetToFirstPage();
-                        }}
-                      />
-                    </div>
-                    <div className="col-md-6 col-lg-3">
+                    <div className="col-md-6 col-lg-5">
                       <label className="compact-directory-label">Topic</label>
                       <select
                         className="form-select compact-directory-input"
@@ -278,7 +266,7 @@ export default function FatwaList() {
                         ))}
                       </select>
                     </div>
-                    <div className="col-md-6 col-lg-3">
+                    <div className="col-md-6 col-lg-5">
                       <label className="compact-directory-label">Scholar</label>
                       <select
                         className="form-select compact-directory-input"
@@ -295,7 +283,7 @@ export default function FatwaList() {
                         ))}
                       </select>
                     </div>
-                    <div className="col-lg-1">
+                    <div className="col-lg-2">
                       <button
                         type="button"
                         className="btn btn-light compact-directory-reset w-100"

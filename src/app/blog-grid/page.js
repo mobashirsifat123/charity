@@ -392,6 +392,12 @@ function BlogGridContent() {
               className="mb-4"
               variant="hero"
               defaultType="blog"
+              value={searchTerm}
+              onChange={(nextValue) => {
+                setSearchTerm(nextValue);
+                setCurrentPage(1);
+              }}
+              onSearch={() => setCurrentPage(1)}
               placeholder="Search articles, subjects, authors, and tags..."
             />
 
@@ -1008,23 +1014,6 @@ function BlogGridContent() {
                 className="article-directory-sidebar article-directory-surface sticky-lg-top"
                 style={{ top: "110px" }}
               >
-                <div className="article-directory-sidebar-block">
-                  <h3 className="article-directory-sidebar-title">
-                    {settings.article_directory_sidebar_search_title ||
-                      t("search", "Search")}
-                  </h3>
-                  <input
-                    type="text"
-                    className="form-control article-directory-search"
-                    placeholder={t(
-                      "searchArticlesPlaceholder",
-                      "Search articles, tags, or topics...",
-                    )}
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                  />
-                </div>
-
                 <div className="article-directory-sidebar-block">
                   <h3 className="article-directory-sidebar-title">
                     {settings.article_directory_sidebar_subjects_title ||

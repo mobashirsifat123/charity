@@ -3529,6 +3529,36 @@ html[dir="rtl"] .navbar__sub-menu li.active a {
   color: var(--primary-color);
 }
 
+.top-bar-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  opacity: 0.9;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+.top-bar-icon-link:hover {
+  color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.18);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.hero-main-search {
+  margin-top: -0.2rem;
+}
+
 .knowledge-search {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(150px, auto) auto;

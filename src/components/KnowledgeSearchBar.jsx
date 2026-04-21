@@ -14,17 +14,36 @@ export default function KnowledgeSearchBar({
   variant = "light",
   placeholder = "Search articles, fatwas, Quran topics...",
   defaultType = "all",
+  value,
+  onChange,
+  onSearch,
 }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(value || "");
   const [type, setType] = useState(defaultType);
+  const activeQuery = value ?? query;
+
+  const updateQuery = (nextQuery) => {
+    if (onChange) {
+      onChange(nextQuery);
+      return;
+    }
+
+    setQuery(nextQuery);
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const params = new URLSearchParams();
+    const trimmedQuery = activeQuery.trim();
 
-    if (query.trim()) {
-      params.set("q", query.trim());
+    if (onSearch) {
+      onSearch({ query: trimmedQuery, type });
+      return;
+    }
+
+    if (trimmedQuery) {
+      params.set("q", trimmedQuery);
     }
 
     if (type !== "all") {
@@ -44,8 +63,8 @@ export default function KnowledgeSearchBar({
         <i className="fa-solid fa-magnifying-glass" aria-hidden="true" />
         <input
           type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          value={activeQuery}
+          onChange={(event) => updateQuery(event.target.value)}
           placeholder={placeholder}
           aria-label={placeholder}
         />

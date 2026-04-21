@@ -174,12 +174,22 @@ const BannerOne = () => {
                 "Knowledge That Guides, Causes That Matter"}
             </h1>
             <p
-              className="text-white mb-5"
+              className="text-white mb-4"
               style={{ fontSize: "1.1rem", maxWidth: 520, opacity: 0.82 }}
             >
               {settings.hero_description ||
                 "Build a stronger Muslim community through beneficial articles, trusted fatwas, and causes that turn faith into action."}
             </p>
+
+            <KnowledgeSearchBar
+              className="mb-4 hero-main-search"
+              variant="hero"
+              placeholder={
+                settings.hero_search_placeholder ||
+                "Search articles, fatwas, Quran topics..."
+              }
+            />
+
             <div className="d-flex flex-wrap gap-3 hero-cta-group">
               <Link
                 href={settings.hero_primary_cta_link || "/fatwa"}
@@ -195,15 +205,6 @@ const BannerOne = () => {
                 {settings.hero_secondary_cta_text || "Read Articles"}
               </Link>
             </div>
-
-            <KnowledgeSearchBar
-              className="mt-4"
-              variant="hero"
-              placeholder={
-                settings.hero_search_placeholder ||
-                "Search articles, fatwas, Quran topics..."
-              }
-            />
 
             <div className="d-flex flex-wrap gap-3 mt-4">
               <Link

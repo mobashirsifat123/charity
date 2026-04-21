@@ -561,3 +561,8 @@ Admin Article/Fatwa persistence upgrade (April 21, 2026):
 - Added permanent admin-editable fields for article/fatwa directory summaries and category slugs used by the upgraded public Article and Fatwa sections.
 - Fixed quick publish/draft status updates from the Article and Fatwa admin list pages.
 - Expanded the Supabase content upgrade SQL to include summaries, primary category slugs, category slug arrays, indexes, and default article subject records.
+
+Header and search UX cleanup (April 21, 2026):
+- Replaced the slim top-bar text links with compact icon-only quick actions for Articles, Fatwas, Search, and social channels.
+- Moved the homepage hero search bar higher so it is visible before the main CTA buttons.
+- Removed duplicate secondary search inputs from the Article, Fatwa, and E-Book directory bodies while keeping the prominent top search bars functional for filtering.
