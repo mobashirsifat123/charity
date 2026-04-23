@@ -580,3 +580,8 @@ Runtime crash cleanup (April 21, 2026):
 Bengali translation fallback fix (April 23, 2026):
 - Hardened `/api/translate` so upstream translation failures no longer return a 500 error on the homepage.
 - The Bengali auto-translator now limits each request batch and safely falls back to original text when translation is temporarily unavailable.
+
+Article category and geolocation warning cleanup (April 23, 2026):
+- Added a public `/api/article-categories` fallback endpoint so missing Supabase `article_categories` tables no longer create browser-visible 404 errors on the Article page.
+- The Article page now falls back to built-in Aqidah, Fiqh, History, and Seerah category cards until the Supabase content schema is applied.
+- Prayer time geolocation now remembers blocked/denied permission locally and stops repeatedly prompting the browser after permission is blocked.

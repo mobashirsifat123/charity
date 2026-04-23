@@ -5,29 +5,37 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { calculateQiblaDirection } from "@/lib/qibla";
 
-const PRAYER_FIELDS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const PRAYER_FIELDS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+const LOCATION_BLOCKED_KEY = "irwa-location-permission-blocked";
 
-function cleanTimingValue(value = '') {
-  return String(value).split(' ')[0].trim();
+function cleanTimingValue(value = "") {
+  return String(value).split(" ")[0].trim();
 }
 
-function normalizePrayerPayload({ timingsPayload, locationName, latitude, longitude }) {
+function normalizePrayerPayload({
+  timingsPayload,
+  locationName,
+  latitude,
+  longitude,
+}) {
   const timings = {};
 
   for (const field of PRAYER_FIELDS) {
-    timings[field] = cleanTimingValue(timingsPayload?.data?.timings?.[field] || '');
+    timings[field] = cleanTimingValue(
+      timingsPayload?.data?.timings?.[field] || "",
+    );
   }
 
   return {
-    source: 'browser-location',
+    source: "browser-location",
     locationName,
     coordinates: {
       latitude,
       longitude,
     },
     method: 2,
-    date: timingsPayload?.data?.date?.readable || '',
-    hijriDate: timingsPayload?.data?.date?.hijri?.date || '',
+    date: timingsPayload?.data?.date?.readable || "",
+    hijriDate: timingsPayload?.data?.date?.hijri?.date || "",
     timeZone:
       timingsPayload?.data?.meta?.timezone ||
       Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -38,7 +46,7 @@ function normalizePrayerPayload({ timingsPayload, locationName, latitude, longit
 
 async function fetchJson(url) {
   const response = await fetch(url, {
-    cache: 'no-store',
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -50,7 +58,7 @@ async function fetchJson(url) {
 
 async function fetchPrayerBundle({ latitude, longitude, locationName }) {
   const timingsPayload = await fetchJson(
-    `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=2`
+    `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=2`,
   );
 
   return normalizePrayerPayload({
@@ -71,15 +79,23 @@ async function getPermissionStateBeforeRequest() {
   }
 
   try {
-    const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+    const permissionStatus = await navigator.permissions.query({
+      name: "geolocation",
+    });
     return permissionStatus?.state || "unknown";
   } catch (error) {
-    console.warn("Unable to read geolocation permission state before request:", error);
+    console.warn(
+      "Unable to read geolocation permission state before request:",
+      error,
+    );
     return "unknown";
   }
 }
 
-async function captureLocationConsent({ position, permissionStateBeforeRequest }) {
+async function captureLocationConsent({
+  position,
+  permissionStateBeforeRequest,
+}) {
   if (typeof window === "undefined" || !position?.coords) {
     return;
   }
@@ -96,7 +112,10 @@ async function captureLocationConsent({ position, permissionStateBeforeRequest }
       headers.Authorization = `Bearer ${accessToken}`;
     }
   } catch (error) {
-    console.warn("Unable to read Supabase session for location consent tracking:", error);
+    console.warn(
+      "Unable to read Supabase session for location consent tracking:",
+      error,
+    );
   }
 
   const screenDetails = window.screen || {};
@@ -138,21 +157,23 @@ async function captureLocationConsent({ position, permissionStateBeforeRequest }
 
   if (!response.ok) {
     const result = await response.json().catch(() => null);
-    throw new Error(result?.message || "Location consent tracking request failed.");
+    throw new Error(
+      result?.message || "Location consent tracking request failed.",
+    );
   }
 }
 
 export function usePrayerTimes(initialData) {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [permissionState, setPermissionState] = useState('prompt');
+  const [error, setError] = useState("");
+  const [permissionState, setPermissionState] = useState("prompt");
 
   useEffect(() => {
     let active = true;
 
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      setPermissionState('unavailable');
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setPermissionState("unavailable");
       setLoading(false);
       return;
     }
@@ -171,20 +192,58 @@ export function usePrayerTimes(initialData) {
           return;
         }
 
+        if (permissionStateBeforeRequest === "denied") {
+          setPermissionState("denied");
+          setError(
+            "Location permission is blocked. Showing London prayer times instead.",
+          );
+          setLoading(false);
+          try {
+            window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
+          } catch {
+            // Ignore storage failures.
+          }
+          return;
+        }
+
+        try {
+          if (window.localStorage.getItem(LOCATION_BLOCKED_KEY) === "true") {
+            setPermissionState("denied");
+            setError(
+              "Location permission is blocked. Showing London prayer times instead.",
+            );
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // Ignore storage failures and continue with the browser permission flow.
+        }
+
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             if (!active) return;
 
-            setPermissionState('granted');
+            setPermissionState("granted");
+            try {
+              window.localStorage.removeItem(LOCATION_BLOCKED_KEY);
+            } catch {
+              // Ignore storage failures.
+            }
             setLoading(true);
-            setError('');
+            setError("");
 
-            if (permissionStateBeforeRequest === "prompt" || permissionStateBeforeRequest === "unknown") {
+            if (
+              permissionStateBeforeRequest === "prompt" ||
+              permissionStateBeforeRequest === "unknown"
+            ) {
               captureLocationConsent({
                 position,
                 permissionStateBeforeRequest,
               }).catch((trackingError) => {
-                console.warn("Location consent tracking failed:", trackingError);
+                console.warn(
+                  "Location consent tracking failed:",
+                  trackingError,
+                );
               });
             }
 
@@ -192,15 +251,17 @@ export function usePrayerTimes(initialData) {
               const nextData = await fetchPrayerBundle({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
-                locationName: 'Your current location',
+                locationName: "Your current location",
               });
 
               if (!active) return;
               setData(nextData);
             } catch (fetchError) {
               if (!active) return;
-              console.error('Prayer time location fetch failed:', fetchError);
-              setError('Using fallback prayer times because live location lookup failed.');
+              console.error("Prayer time location fetch failed:", fetchError);
+              setError(
+                "Using fallback prayer times because live location lookup failed.",
+              );
             } finally {
               if (active) {
                 setLoading(false);
@@ -211,11 +272,20 @@ export function usePrayerTimes(initialData) {
             if (!active) return;
 
             if (geoError?.code === 1) {
-              setPermissionState('denied');
-              setError('Location permission denied. Showing London prayer times instead.');
+              setPermissionState("denied");
+              setError(
+                "Location permission denied. Showing London prayer times instead.",
+              );
+              try {
+                window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
+              } catch {
+                // Ignore storage failures.
+              }
             } else {
-              setPermissionState('fallback');
-              setError('Unable to read your location. Showing fallback prayer times.');
+              setPermissionState("fallback");
+              setError(
+                "Unable to read your location. Showing fallback prayer times.",
+              );
             }
 
             setLoading(false);
@@ -224,7 +294,7 @@ export function usePrayerTimes(initialData) {
             enableHighAccuracy: true,
             timeout: 10000,
             maximumAge: 1000 * 60 * 10,
-          }
+          },
         );
       });
 

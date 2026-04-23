@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
+import { CORE_ARTICLE_SUBJECTS } from "@/lib/article-subjects";
 import {
   extractIdentifierId,
   getContentCategory,
@@ -7,7 +8,20 @@ import {
   sortFeaturedFirst,
 } from "@/lib/content-utils";
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export const FALLBACK_ARTICLE_CATEGORIES = CORE_ARTICLE_SUBJECTS.map(
+  (subject, index) => ({
+    id: subject.name,
+    name: subject.name,
+    slug: subject.name.toLowerCase(),
+    description: subject.description,
+    icon_class: `fa-solid ${subject.icon}`,
+    sort_order: (index + 1) * 10,
+    is_active: true,
+  }),
+);
 
 function isUuid(value = "") {
   return UUID_PATTERN.test(String(value).trim());
@@ -26,13 +40,22 @@ export async function fetchPublishedBlogs(limit = null) {
 }
 
 export async function fetchArticleCategories() {
-  const { data, error } = await supabase
-    .from("article_categories")
-    .select("*")
-    .order("name", { ascending: true });
+  try {
+    const response = await fetch("/api/article-categories", {
+      cache: "no-store",
+    });
 
-  if (error) throw error;
-  return data || [];
+    if (response.ok) {
+      const payload = await response.json();
+      if (Array.isArray(payload?.data)) {
+        return payload.data;
+      }
+    }
+  } catch {
+    // The public article page should still render before the DB upgrade runs.
+  }
+
+  return FALLBACK_ARTICLE_CATEGORIES;
 }
 
 export async function fetchPublishedFatwas(limit = null) {
@@ -53,7 +76,11 @@ export async function fetchBlogByIdentifier(identifier) {
 
   if (!isUuid(rawId)) return null;
 
-  const { data, error } = await supabase.from("blogs").select("*").eq("id", rawId).maybeSingle();
+  const { data, error } = await supabase
+    .from("blogs")
+    .select("*")
+    .eq("id", rawId)
+    .maybeSingle();
   if (error) {
     throw error;
   }
@@ -66,7 +93,11 @@ export async function fetchFatwaByIdentifier(identifier) {
 
   if (!isUuid(rawId)) return null;
 
-  const { data, error } = await supabase.from("fatwas").select("*").eq("id", rawId).maybeSingle();
+  const { data, error } = await supabase
+    .from("fatwas")
+    .select("*")
+    .eq("id", rawId)
+    .maybeSingle();
   if (error) {
     throw error;
   }
@@ -88,29 +119,51 @@ export function getRelatedContent(items = [], currentRecord, type, limit = 3) {
     .slice(0, limit);
 }
 
-export function getUnifiedSearchResults({ blogs = [], fatwas = [], query = "", type = "all", category = "all" }) {
+export function getUnifiedSearchResults({
+  blogs = [],
+  fatwas = [],
+  query = "",
+  type = "all",
+  category = "all",
+}) {
   const normalizedQuery = query.trim().toLowerCase();
   const normalizedCategory = category.toLowerCase();
 
   const blogResults = (blogs || []).filter((item) => {
-    const queryMatch = !normalizedQuery || matchesUnifiedSearch(item, "blog", normalizedQuery);
-    const categoryMatch = normalizedCategory === "all" || getContentCategory(item).toLowerCase() === normalizedCategory;
+    const queryMatch =
+      !normalizedQuery || matchesUnifiedSearch(item, "blog", normalizedQuery);
+    const categoryMatch =
+      normalizedCategory === "all" ||
+      getContentCategory(item).toLowerCase() === normalizedCategory;
     return queryMatch && categoryMatch;
   });
 
   const fatwaResults = (fatwas || []).filter((item) => {
-    const queryMatch = !normalizedQuery || matchesUnifiedSearch(item, "fatwa", normalizedQuery);
-    const categoryMatch = normalizedCategory === "all" || getContentCategory(item).toLowerCase() === normalizedCategory;
+    const queryMatch =
+      !normalizedQuery || matchesUnifiedSearch(item, "fatwa", normalizedQuery);
+    const categoryMatch =
+      normalizedCategory === "all" ||
+      getContentCategory(item).toLowerCase() === normalizedCategory;
     return queryMatch && categoryMatch;
   });
 
-  const articleCards = blogResults.map((item) => ({ ...item, contentType: "blog", displayTitle: getContentTitle(item, "blog") }));
-  const fatwaCards = fatwaResults.map((item) => ({ ...item, contentType: "fatwa", displayTitle: getContentTitle(item, "fatwa") }));
+  const articleCards = blogResults.map((item) => ({
+    ...item,
+    contentType: "blog",
+    displayTitle: getContentTitle(item, "blog"),
+  }));
+  const fatwaCards = fatwaResults.map((item) => ({
+    ...item,
+    contentType: "fatwa",
+    displayTitle: getContentTitle(item, "fatwa"),
+  }));
 
   if (type === "blog") return articleCards;
   if (type === "fatwa") return fatwaCards;
 
-  return [...articleCards, ...fatwaCards].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  return [...articleCards, ...fatwaCards].sort(
+    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
+  );
 }
 
 export async function fetchPublishedCampaigns(limit = 6) {
