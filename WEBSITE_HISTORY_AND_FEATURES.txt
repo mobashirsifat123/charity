@@ -576,3 +576,7 @@ Article admin CMS stability and subsection control (April 21, 2026):
 Runtime crash cleanup (April 21, 2026):
 - Removed the incompatible `react-quill` dependency and global Quill stylesheet so production pages no longer load code that calls deprecated `findDOMNode`.
 - Updated Sentry configuration to initialize only when a real DSN is provided, removing the invalid dummy DSN browser warning.
+
+Bengali translation fallback fix (April 23, 2026):
+- Hardened `/api/translate` so upstream translation failures no longer return a 500 error on the homepage.
+- The Bengali auto-translator now limits each request batch and safely falls back to original text when translation is temporarily unavailable.

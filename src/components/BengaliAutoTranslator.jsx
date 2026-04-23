@@ -162,7 +162,7 @@ export default function BengaliAutoTranslator() {
         ...new Set(
           texts.map((value) => String(value || "").trim()).filter(Boolean),
         ),
-      ];
+      ].slice(0, 120);
       if (!uniqueTexts.length) return;
 
       const response = await fetch("/api/translate", {
@@ -180,7 +180,13 @@ export default function BengaliAutoTranslator() {
         return;
       }
 
-      const payload = await response.json();
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch {
+        return;
+      }
+
       const translations = payload?.translations || {};
 
       textNodes.forEach((node) => {
