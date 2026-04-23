@@ -110,9 +110,17 @@ export default function AdminArticleCreateForm({
           return;
         }
 
+        const warningText =
+          Array.isArray(result?.warnings) && result.warnings.length
+            ? ` ${result.warnings.join(" ")}`
+            : "";
+        const schemaText = result?.optionalFieldsSaved
+          ? ""
+          : " Advanced article fields were skipped because Supabase still needs the content platform SQL upgrade.";
+
         setMessage({
           type: "success",
-          text: "Article created successfully. All editable article fields were saved permanently.",
+          text: `Article created successfully.${schemaText}${warningText}`,
         });
 
         window.setTimeout(() => router.push("/admin/blogs"), 1000);

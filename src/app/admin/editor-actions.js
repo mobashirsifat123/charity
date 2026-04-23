@@ -300,13 +300,23 @@ export async function createArticle(formData) {
     return { success: false, error: "Article content is required." };
   }
 
+  const warnings = [];
   let coverImageUrl = "";
   if (coverImage && coverImage.size) {
-    coverImageUrl = await uploadAdminFile({
-      file: coverImage,
-      bucket: "public_assets",
-      folder: "articles",
-    });
+    try {
+      coverImageUrl = await uploadAdminFile({
+        file: coverImage,
+        bucket: "public_assets",
+        folder: "articles",
+      });
+    } catch (error) {
+      warnings.push(
+        error?.message
+          ? `Cover image was not uploaded: ${error.message}`
+          : "Cover image was not uploaded because storage is not ready.",
+      );
+      coverImageUrl = "";
+    }
   }
 
   let scholarProfile = null;
@@ -367,6 +377,7 @@ export async function createArticle(formData) {
     table: "blogs",
     basePayload,
     optionalPayload,
+    allowOptionalFallback: true,
   });
 
   if (!saveResult) {
@@ -382,5 +393,6 @@ export async function createArticle(formData) {
   return {
     success: true,
     optionalFieldsSaved: saveResult.optionalFieldsSaved,
+    warnings,
   };
 }

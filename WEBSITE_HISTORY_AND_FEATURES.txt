@@ -218,6 +218,11 @@ Deployment hardening pass (April 9, 2026):
 - Confirmed the Next.js app builds successfully in production mode and that key routes respond correctly in a running server environment.
 - Confirmed the legacy backend boots successfully and now clearly reports `503` when database configuration is missing instead of failing silently.
 - Added server-side environment guards so critical routes fail more clearly when live configuration is incomplete:
+
+Admin article upload resilience update (April 23, 2026):
+- Fixed the admin article create flow so an article can still be saved even if the Supabase storage bucket for cover images is missing or temporarily misconfigured.
+- Added clearer admin feedback so image-upload problems are shown as warnings instead of blocking the full article submission.
+- Relaxed the article save path to fall back to the base blog schema when advanced article columns are not yet available in Supabase, preventing another dead-end failure during creation.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification
