@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabaseClient";
 import { calculateQiblaDirection } from "@/lib/qibla";
@@ -165,7 +165,7 @@ async function captureLocationConsent({
 
 export function usePrayerTimes(initialData) {
   const [data, setData] = useState(initialData);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [permissionState, setPermissionState] = useState("prompt");
 
@@ -174,30 +174,18 @@ export function usePrayerTimes(initialData) {
 
     if (typeof window === "undefined" || !navigator.geolocation) {
       setPermissionState("unavailable");
-      setLoading(false);
       return;
     }
 
-    let permissionStateBeforeRequest = "unknown";
-
     getPermissionStateBeforeRequest()
       .then((state) => {
-        permissionStateBeforeRequest = state;
-      })
-      .catch(() => {
-        permissionStateBeforeRequest = "unknown";
-      })
-      .finally(() => {
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
-        if (permissionStateBeforeRequest === "denied") {
+        if (state === "denied") {
           setPermissionState("denied");
           setError(
-            "Location permission is blocked. Showing London prayer times instead.",
+            "Location permission is blocked. Showing fallback prayer times.",
           );
-          setLoading(false);
           try {
             window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
           } catch {
@@ -210,104 +198,122 @@ export function usePrayerTimes(initialData) {
           if (window.localStorage.getItem(LOCATION_BLOCKED_KEY) === "true") {
             setPermissionState("denied");
             setError(
-              "Location permission is blocked. Showing London prayer times instead.",
+              "Location permission is blocked. Showing fallback prayer times.",
             );
-            setLoading(false);
             return;
           }
         } catch {
-          // Ignore storage failures and continue with the browser permission flow.
+          // Ignore storage failures.
         }
 
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            if (!active) return;
-
-            setPermissionState("granted");
-            try {
-              window.localStorage.removeItem(LOCATION_BLOCKED_KEY);
-            } catch {
-              // Ignore storage failures.
-            }
-            setLoading(true);
-            setError("");
-
-            if (
-              permissionStateBeforeRequest === "prompt" ||
-              permissionStateBeforeRequest === "unknown"
-            ) {
-              captureLocationConsent({
-                position,
-                permissionStateBeforeRequest,
-              }).catch((trackingError) => {
-                console.warn(
-                  "Location consent tracking failed:",
-                  trackingError,
-                );
-              });
-            }
-
-            try {
-              const nextData = await fetchPrayerBundle({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                locationName: "Your current location",
-              });
-
-              if (!active) return;
-              setData(nextData);
-            } catch (fetchError) {
-              if (!active) return;
-              console.error("Prayer time location fetch failed:", fetchError);
-              setError(
-                "Using fallback prayer times because live location lookup failed.",
-              );
-            } finally {
-              if (active) {
-                setLoading(false);
-              }
-            }
-          },
-          (geoError) => {
-            if (!active) return;
-
-            if (geoError?.code === 1) {
-              setPermissionState("denied");
-              setError(
-                "Location permission denied. Showing London prayer times instead.",
-              );
-              try {
-                window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
-              } catch {
-                // Ignore storage failures.
-              }
-            } else {
-              setPermissionState("fallback");
-              setError(
-                "Unable to read your location. Showing fallback prayer times.",
-              );
-            }
-
-            setLoading(false);
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 1000 * 60 * 10,
-          },
-        );
+        setPermissionState(state === "granted" ? "available" : "prompt");
+      })
+      .catch(() => {
+        if (active) setPermissionState("prompt");
       });
 
     return () => {
       active = false;
     };
-  }, [initialData]);
+  }, []);
+
+  const requestLocalPrayerTimes = useCallback(async () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setPermissionState("unavailable");
+      setError("Location is not available in this browser.");
+      return;
+    }
+
+    const permissionStateBeforeRequest =
+      await getPermissionStateBeforeRequest();
+
+    if (permissionStateBeforeRequest === "denied") {
+      setPermissionState("denied");
+      setError(
+        "Location permission is blocked. Showing fallback prayer times.",
+      );
+      try {
+        window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
+      } catch {
+        // Ignore storage failures.
+      }
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        setPermissionState("granted");
+        try {
+          window.localStorage.removeItem(LOCATION_BLOCKED_KEY);
+        } catch {
+          // Ignore storage failures.
+        }
+
+        if (
+          permissionStateBeforeRequest === "prompt" ||
+          permissionStateBeforeRequest === "unknown"
+        ) {
+          captureLocationConsent({
+            position,
+            permissionStateBeforeRequest,
+          }).catch((trackingError) => {
+            console.warn("Location consent tracking failed:", trackingError);
+          });
+        }
+
+        try {
+          const nextData = await fetchPrayerBundle({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            locationName: "Your current location",
+          });
+          setData(nextData);
+        } catch (fetchError) {
+          console.error("Prayer time location fetch failed:", fetchError);
+          setError(
+            "Using fallback prayer times because live location lookup failed.",
+          );
+        } finally {
+          setLoading(false);
+        }
+      },
+      (geoError) => {
+        if (geoError?.code === 1) {
+          setPermissionState("denied");
+          setError(
+            "Location permission denied. Showing fallback prayer times.",
+          );
+          try {
+            window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
+          } catch {
+            // Ignore storage failures.
+          }
+        } else {
+          setPermissionState("fallback");
+          setError(
+            "Unable to read your location. Showing fallback prayer times.",
+          );
+        }
+
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 1000 * 60 * 10,
+      },
+    );
+  }, []);
 
   return {
     data,
     loading,
     error,
     permissionState,
+    requestLocalPrayerTimes,
   };
 }
 

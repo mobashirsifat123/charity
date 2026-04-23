@@ -406,7 +406,8 @@ function PrayerCompass({ qiblaDirection = 0 }) {
 }
 
 export default function PrayerTimesWidget({ initialData }) {
-  const { data, loading, error } = usePrayerTimes(initialData);
+  const { data, loading, error, permissionState, requestLocalPrayerTimes } =
+    usePrayerTimes(initialData);
   const [countdown, setCountdown] = useState(null);
 
   useEffect(() => {
@@ -453,6 +454,21 @@ export default function PrayerTimesWidget({ initialData }) {
                   <div className="text-lg-end">
                     <p className="text-muted small mb-1">Hijri date</p>
                     <strong>{data?.hijriDate || "Unavailable"}</strong>
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary rounded-pill"
+                        onClick={requestLocalPrayerTimes}
+                        disabled={
+                          loading ||
+                          permissionState === "denied" ||
+                          permissionState === "unavailable"
+                        }
+                      >
+                        <i className="fa-solid fa-location-crosshairs me-2" />
+                        {loading ? "Updating..." : "Use my location"}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -471,12 +487,14 @@ export default function PrayerTimesWidget({ initialData }) {
                   <small className="text-white-50">
                     {countdown?.time
                       ? `Scheduled at ${countdown.time}`
-                      : "Please allow location access for local timings."}
+                      : "Fallback prayer time data is being prepared."}
                   </small>
                   <div className="d-flex flex-wrap gap-2 mt-4">
                     <span className="signal-chip">
                       <span className="signal-chip__dot signal-chip__dot--green" />
-                      Local timing
+                      {data?.source === "browser-location"
+                        ? "Local timing"
+                        : "Fallback timing"}
                     </span>
                     <span className="signal-chip">
                       <span className="signal-chip__dot" />
@@ -525,7 +543,13 @@ export default function PrayerTimesWidget({ initialData }) {
 
                 {loading ? (
                   <p className="text-muted small mt-3 mb-0">
-                    Updating to your local prayer times...
+                    Updating prayer times...
+                  </p>
+                ) : permissionState === "prompt" ||
+                  permissionState === "available" ? (
+                  <p className="text-muted small mt-3 mb-0">
+                    Location is optional. Click “Use my location” for local
+                    prayer times.
                   </p>
                 ) : null}
               </div>
