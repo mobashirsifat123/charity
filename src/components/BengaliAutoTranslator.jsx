@@ -36,12 +36,15 @@ export default function BengaliAutoTranslator() {
   const observerRef = useRef(null);
   const activeJobRef = useRef(0);
   const jobSequenceRef = useRef(0);
+  const translationCacheRef = useRef(new Map());
+  const isApplyingTranslationsRef = useRef(false);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
 
     const textNodeCache = textNodeCacheRef.current;
     const attributeCache = attributeCacheRef.current;
+    const translationCache = translationCacheRef.current;
 
     const rememberAttribute = (element, attributeName, value) => {
       const existing = attributeCache.get(element) || {};
@@ -137,6 +140,14 @@ export default function BengaliAutoTranslator() {
           return;
         }
 
+        const instantTranslation = translationCache.get(currentText);
+        if (instantTranslation && instantTranslation !== currentText) {
+          isApplyingTranslationsRef.current = true;
+          node.textContent = instantTranslation;
+          isApplyingTranslationsRef.current = false;
+          return;
+        }
+
         const cachedOriginal = textNodeCache.get(node);
         const original =
           cachedOriginal && cachedOriginal === currentText
@@ -152,6 +163,14 @@ export default function BengaliAutoTranslator() {
 
       attributeNodes.forEach(({ element, attributeName, value }) => {
         if (hasBengaliText(value)) return;
+        const instantTranslation = translationCache.get(value);
+        if (instantTranslation && instantTranslation !== value) {
+          isApplyingTranslationsRef.current = true;
+          element.setAttribute(attributeName, instantTranslation);
+          isApplyingTranslationsRef.current = false;
+          return;
+        }
+
         rememberAttribute(
           element,
           attributeName,
@@ -191,17 +210,31 @@ export default function BengaliAutoTranslator() {
 
       const translations = payload?.translations || {};
 
+      Object.entries(translations).forEach(([original, translated]) => {
+        if (translated && translated !== original) {
+          translationCache.set(original, translated);
+        }
+      });
+
+      isApplyingTranslationsRef.current = true;
       textNodes.forEach((node) => {
         const original = textNodeCache.get(node);
         if (!node?.isConnected || !original) return;
-        node.textContent = translations[original] || original;
+        const translated = translations[original] || original;
+        if (node.textContent !== translated) {
+          node.textContent = translated;
+        }
       });
 
       attributeNodes.forEach(({ element, attributeName, value }) => {
         if (!element?.isConnected) return;
         if (hasBengaliText(element.getAttribute(attributeName))) return;
-        element.setAttribute(attributeName, translations[value] || value);
+        const translated = translations[value] || value;
+        if (element.getAttribute(attributeName) !== translated) {
+          element.setAttribute(attributeName, translated);
+        }
       });
+      isApplyingTranslationsRef.current = false;
     };
 
     const stopObserver = () => {
@@ -229,10 +262,14 @@ export default function BengaliAutoTranslator() {
         translateNodes(document.body).catch((error) => {
           console.error("Unable to translate updated Bengali content:", error);
         });
-      }, 180);
+      }, 40);
     };
 
     const observer = new MutationObserver((mutations) => {
+      if (isApplyingTranslationsRef.current) {
+        return;
+      }
+
       let shouldRun = false;
       mutations.forEach((mutation) => {
         if (mutation.type === "characterData") {
