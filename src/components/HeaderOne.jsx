@@ -475,14 +475,6 @@ const HeaderOne = () => {
                           )}
                         </>
                       )}
-
-                      <Link
-                        href="/donation"
-                        className="btn--primary d-none d-xl-inline-block"
-                      >
-                        {t("donateNow", "Donate Now")}{" "}
-                        <i className="fa-solid fa-arrow-right" />
-                      </Link>
                     </div>
                     <button
                       onClick={handleMobileMenu}
@@ -604,10 +596,6 @@ const HeaderOne = () => {
                 </Link>
               </div>
             ) : null}
-            <Link href="/donation" className="btn--primary ">
-              {t("donateNow", "Donate Now")}{" "}
-              <i className="fa-solid fa-arrow-right" />
-            </Link>
           </div>
           <div className="mobile-menu__social social nav-fade">
             <Link
