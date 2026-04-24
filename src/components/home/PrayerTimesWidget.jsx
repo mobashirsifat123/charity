@@ -289,8 +289,8 @@ function PrayerCompass({ qiblaDirection = 0 }) {
         >
           <Lottie
             animationData={qiblaCompassAnimation}
-            loop
-            autoplay
+            loop={false}
+            autoplay={false}
             className="prayer-compass-lottie__animation"
           />
         </div>

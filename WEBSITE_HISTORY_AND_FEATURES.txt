@@ -248,6 +248,7 @@ Qibla compass animation update (April 24, 2026):
 - Replaced the old hand-built SVG Qibla compass with the supplied animated Lottie compass artwork.
 - Kept the existing Qibla direction math and device-heading support so the new animation rotates toward the Qibla when location/heading data is available.
 - Added the Lottie player dependency and stored the compass animation as a local app asset.
+- Disabled endless Lottie playback so the compass stays stable when the phone is stable and only rotates from real Qibla/heading data.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification
