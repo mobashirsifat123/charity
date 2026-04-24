@@ -33,11 +33,9 @@ export default function BengaliAutoTranslator() {
   const pathname = usePathname();
   const textNodeCacheRef = useRef(new Map());
   const attributeCacheRef = useRef(new Map());
-  const observerRef = useRef(null);
   const activeJobRef = useRef(0);
   const jobSequenceRef = useRef(0);
   const translationCacheRef = useRef(new Map());
-  const isApplyingTranslationsRef = useRef(false);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -142,9 +140,10 @@ export default function BengaliAutoTranslator() {
 
         const instantTranslation = translationCache.get(currentText);
         if (instantTranslation && instantTranslation !== currentText) {
-          isApplyingTranslationsRef.current = true;
+          if (!textNodeCache.has(node)) {
+            textNodeCache.set(node, currentText);
+          }
           node.textContent = instantTranslation;
-          isApplyingTranslationsRef.current = false;
           return;
         }
 
@@ -165,9 +164,12 @@ export default function BengaliAutoTranslator() {
         if (hasBengaliText(value)) return;
         const instantTranslation = translationCache.get(value);
         if (instantTranslation && instantTranslation !== value) {
-          isApplyingTranslationsRef.current = true;
+          rememberAttribute(
+            element,
+            attributeName,
+            element.getAttribute(attributeName),
+          );
           element.setAttribute(attributeName, instantTranslation);
-          isApplyingTranslationsRef.current = false;
           return;
         }
 
@@ -183,32 +185,35 @@ export default function BengaliAutoTranslator() {
         ...new Set(
           texts.map((value) => String(value || "").trim()).filter(Boolean),
         ),
-      ].slice(0, 120);
+      ].slice(0, 420);
       if (!uniqueTexts.length) return;
 
-      const response = await fetch("/api/translate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          target: "bn",
-          texts: uniqueTexts,
-        }),
-      });
+      const translations = {};
+      for (let index = 0; index < uniqueTexts.length; index += 70) {
+        if (activeJobRef.current !== jobId) return;
 
-      if (!response.ok || activeJobRef.current !== jobId) {
-        return;
+        const response = await fetch("/api/translate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            target: "bn",
+            texts: uniqueTexts.slice(index, index + 70),
+          }),
+        });
+
+        if (!response.ok || activeJobRef.current !== jobId) {
+          return;
+        }
+
+        try {
+          const payload = await response.json();
+          Object.assign(translations, payload?.translations || {});
+        } catch {
+          return;
+        }
       }
-
-      let payload = null;
-      try {
-        payload = await response.json();
-      } catch {
-        return;
-      }
-
-      const translations = payload?.translations || {};
 
       Object.entries(translations).forEach(([original, translated]) => {
         if (translated && translated !== original) {
@@ -216,7 +221,6 @@ export default function BengaliAutoTranslator() {
         }
       });
 
-      isApplyingTranslationsRef.current = true;
       textNodes.forEach((node) => {
         const original = textNodeCache.get(node);
         if (!node?.isConnected || !original) return;
@@ -234,74 +238,25 @@ export default function BengaliAutoTranslator() {
           element.setAttribute(attributeName, translated);
         }
       });
-      isApplyingTranslationsRef.current = false;
-    };
-
-    const stopObserver = () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
     };
 
     if (!isLanguageReady || locale !== "bn") {
-      activeJobRef.current = 0;
-      stopObserver();
+      activeJobRef.current = jobSequenceRef.current + 1;
       restoreOriginals();
       return undefined;
     }
 
-    translateNodes(document.body).catch((error) => {
-      console.error("Unable to auto-translate page into Bengali:", error);
-    });
-
-    let translateTimer = null;
-    const scheduleTranslate = () => {
-      window.clearTimeout(translateTimer);
-      translateTimer = window.setTimeout(() => {
+    const timers = [250, 1200, 2800].map((delay) =>
+      window.setTimeout(() => {
         translateNodes(document.body).catch((error) => {
-          console.error("Unable to translate updated Bengali content:", error);
+          console.error("Unable to auto-translate page into Bengali:", error);
         });
-      }, 40);
-    };
-
-    const observer = new MutationObserver((mutations) => {
-      if (isApplyingTranslationsRef.current) {
-        return;
-      }
-
-      let shouldRun = false;
-      mutations.forEach((mutation) => {
-        if (mutation.type === "characterData") {
-          shouldRun = true;
-        }
-
-        mutation.addedNodes.forEach((node) => {
-          if (
-            node.nodeType === Node.ELEMENT_NODE ||
-            node.nodeType === Node.TEXT_NODE
-          ) {
-            shouldRun = true;
-          }
-        });
-      });
-
-      if (shouldRun) {
-        scheduleTranslate();
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
-
-    observerRef.current = observer;
+      }, delay),
+    );
 
     return () => {
-      window.clearTimeout(translateTimer);
-      stopObserver();
+      timers.forEach((timer) => window.clearTimeout(timer));
+      activeJobRef.current = jobSequenceRef.current + 1;
     };
   }, [isLanguageReady, locale, pathname]);
 
