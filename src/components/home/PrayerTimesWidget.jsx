@@ -8,6 +8,9 @@ import { normalizeDegrees, shortestAngleDelta } from "@/lib/qibla";
 import usePrayerTimes from "@/hooks/usePrayerTimes";
 
 const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+const HEADING_INPUT_DEADBAND_DEGREES = 2.5;
+const HEADING_RENDER_DEADBAND_DEGREES = 0.25;
+const HEADING_SMOOTHING_FACTOR = 0.08;
 
 function parseClockToSeconds(value = "00:00") {
   const [hours, minutes] = String(value).split(":").map(Number);
@@ -108,6 +111,20 @@ function useDeviceHeading() {
   const listenersRef = useRef([]);
   const isListeningRef = useRef(false);
 
+  const setStableTargetHeading = (nextHeading) => {
+    const currentTarget = targetHeadingRef.current;
+
+    if (
+      typeof currentTarget === "number" &&
+      Math.abs(shortestAngleDelta(currentTarget, nextHeading)) <
+        HEADING_INPUT_DEADBAND_DEGREES
+    ) {
+      return;
+    }
+
+    targetHeadingRef.current = nextHeading;
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
@@ -118,21 +135,23 @@ function useDeviceHeading() {
       const currentHeading = animatedHeadingRef.current;
 
       if (typeof targetHeading === "number") {
-        const nextHeading =
+        const headingDelta =
           typeof currentHeading === "number"
-            ? currentHeading +
-              shortestAngleDelta(
+            ? shortestAngleDelta(
                 normalizeDegrees(currentHeading),
                 targetHeading,
-              ) *
-                0.18
+              )
+            : 0;
+        const nextHeading =
+          typeof currentHeading === "number"
+            ? currentHeading + headingDelta * HEADING_SMOOTHING_FACTOR
             : targetHeading;
 
         const shouldUpdate =
           typeof currentHeading !== "number" ||
-          Math.abs(nextHeading - currentHeading) > 0.05;
+          Math.abs(headingDelta) > HEADING_RENDER_DEADBAND_DEGREES;
 
-        animatedHeadingRef.current = nextHeading;
+        animatedHeadingRef.current = shouldUpdate ? nextHeading : targetHeading;
         if (shouldUpdate) {
           setHeading(nextHeading);
         }
@@ -174,7 +193,7 @@ function useDeviceHeading() {
           return;
         }
 
-        targetHeadingRef.current = nextHeading;
+        setStableTargetHeading(nextHeading);
         setPermissionState("granted");
       };
 
@@ -235,7 +254,7 @@ function useDeviceHeading() {
           return;
         }
 
-        targetHeadingRef.current = nextHeading;
+        setStableTargetHeading(nextHeading);
         setPermissionState("granted");
       };
 
