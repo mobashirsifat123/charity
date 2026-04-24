@@ -255,6 +255,11 @@ Location consent logging update (April 24, 2026):
 - Updated the prayer times and Qibla location flow so every successful user-approved location lookup is sent to the Supabase `location_consents` log.
 - Authenticated members are linked to the saved location log through their Supabase auth user and profile/email when available.
 - The saved GPS coordinates continue to power local prayer times and Qibla direction after the user explicitly allows location access.
+
+Mobile UX optimization pass (April 24, 2026):
+- Removed the floating login/register quick-access bar that stayed on screen while scrolling on mobile.
+- Tightened the mobile header, homepage hero, language switcher, search bar, CTA buttons, quick cards, article subject cards, and major content panels for better phone readability.
+- Reduced mobile visual clutter so the first screen shows the core learning/search actions more clearly.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification

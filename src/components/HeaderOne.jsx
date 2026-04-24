@@ -31,7 +31,6 @@ const HeaderOne = () => {
   const isEbookRoute =
     pathname === "/ebooks" || pathname.startsWith("/ebooks/");
   const isFatwaRoute = pathname === "/fatwa" || pathname.startsWith("/fatwa/");
-  const showGuestQuickAccess = pathname === "/" && scroll && !loading && !user;
   const handleSearch = () => {
     setSearch(!search);
   };
@@ -640,25 +639,6 @@ const HeaderOne = () => {
         }`}
         onClick={() => setMobileMenu(false)}
       ></div>
-
-      {showGuestQuickAccess ? (
-        <div className="guest-quick-access d-flex align-items-center gap-2">
-          <Link
-            href="/login"
-            className="guest-quick-access__button guest-quick-access__button--ghost"
-          >
-            <i className="fa-solid fa-right-to-bracket"></i>
-            <span>{t("login", "Login")}</span>
-          </Link>
-          <Link
-            href="/register"
-            className="guest-quick-access__button guest-quick-access__button--primary"
-          >
-            <i className="fa-solid fa-user-plus"></i>
-            <span>{t("register", "Register")}</span>
-          </Link>
-        </div>
-      ) : null}
     </>
   );
 };
