@@ -239,6 +239,10 @@ Admin dashboard schema fallback update (April 24, 2026):
 Header donation shortcut cleanup (April 24, 2026):
 - Removed the always-visible Donate Now shortcut from the desktop header and mobile menu.
 - Kept donation access inside the proper campaign/support sections lower on the page so giving remains available without disturbing the main interface.
+
+Bengali language stability hardening (April 24, 2026):
+- Removed the live Bengali DOM auto-translator because it was rewriting rendered text after React updates and causing visible language flicker/vibration.
+- Kept the stable language preference system and built-in Bengali UI translations so choosing Bengali no longer makes the page continually switch between Bengali and English.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification
