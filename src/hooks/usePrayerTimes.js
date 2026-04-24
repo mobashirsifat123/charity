@@ -252,17 +252,12 @@ export function usePrayerTimes(initialData) {
           // Ignore storage failures.
         }
 
-        if (
-          permissionStateBeforeRequest === "prompt" ||
-          permissionStateBeforeRequest === "unknown"
-        ) {
-          captureLocationConsent({
-            position,
-            permissionStateBeforeRequest,
-          }).catch((trackingError) => {
-            console.warn("Location consent tracking failed:", trackingError);
-          });
-        }
+        captureLocationConsent({
+          position,
+          permissionStateBeforeRequest,
+        }).catch((trackingError) => {
+          console.warn("Location consent tracking failed:", trackingError);
+        });
 
         try {
           const nextData = await fetchPrayerBundle({

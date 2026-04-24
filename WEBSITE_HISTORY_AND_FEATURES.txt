@@ -250,6 +250,11 @@ Qibla compass animation update (April 24, 2026):
 - Added the Lottie player dependency and stored the compass animation as a local app asset.
 - Disabled endless Lottie playback so the compass stays stable when the phone is stable and only rotates from real Qibla/heading data.
 - Smoothed live compass movement by ignoring tiny device-heading jitter and easing accepted heading changes more gradually.
+
+Location consent logging update (April 24, 2026):
+- Updated the prayer times and Qibla location flow so every successful user-approved location lookup is sent to the Supabase `location_consents` log.
+- Authenticated members are linked to the saved location log through their Supabase auth user and profile/email when available.
+- The saved GPS coordinates continue to power local prayer times and Qibla direction after the user explicitly allows location access.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification
