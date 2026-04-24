@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Lottie from "lottie-react";
 
+import qiblaCompassAnimation from "@/assets/lottie/qibla-compass.json";
 import { normalizeDegrees, shortestAngleDelta } from "@/lib/qibla";
 import usePrayerTimes from "@/hooks/usePrayerTimes";
 
@@ -278,87 +280,19 @@ function PrayerCompass({ qiblaDirection = 0 }) {
 
   return (
     <div className="d-flex flex-column align-items-center justify-content-center">
-      <div
-        className="position-relative rounded-circle border border-2 border-primary-subtle bg-white shadow-sm prayer-compass"
-        style={{ width: 180, height: 180 }}
-      >
+      <div className="prayer-compass-lottie" aria-hidden="true">
         <div
-          className="position-absolute top-0 start-50 translate-middle-x"
-          style={{ marginTop: 6 }}
-          aria-hidden="true"
+          className="prayer-compass-lottie__rotator"
+          style={{
+            transform: `rotate(${qiblaNeedleRotation}deg)`,
+          }}
         >
-          <div
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "10px solid transparent",
-              borderRight: "10px solid transparent",
-              borderBottom: `18px solid ${isAligned ? "#145a32" : "#c8a951"}`,
-              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.12))",
-            }}
+          <Lottie
+            animationData={qiblaCompassAnimation}
+            loop
+            autoplay
+            className="prayer-compass-lottie__animation"
           />
-        </div>
-
-        <div
-          className="position-absolute top-50 start-50 translate-middle prayer-compass__face"
-          style={{
-            width: "100%",
-            height: "100%",
-            transform: `translate(-50%, -50%) rotate(${typeof heading === "number" ? -heading : 0}deg)`,
-            transformOrigin: "center",
-            transition: "transform 120ms linear",
-          }}
-        >
-          <div className="position-absolute top-0 start-50 translate-middle-x mt-2 small fw-bold text-muted">
-            N
-          </div>
-          <div className="position-absolute bottom-0 start-50 translate-middle-x mb-2 small text-muted">
-            S
-          </div>
-          <div className="position-absolute top-50 start-0 translate-middle-y ms-2 small text-muted">
-            W
-          </div>
-          <div className="position-absolute top-50 end-0 translate-middle-y me-2 small text-muted">
-            E
-          </div>
-
-          <svg
-            viewBox="0 0 120 120"
-            className="position-absolute top-50 start-50 translate-middle"
-            style={{ width: 132, height: 132 }}
-            aria-hidden="true"
-          >
-            <circle
-              cx="60"
-              cy="60"
-              r="56"
-              fill="none"
-              stroke="rgba(11,61,46,0.12)"
-              strokeWidth="2"
-            />
-            <circle
-              cx="60"
-              cy="60"
-              r="43"
-              fill="none"
-              stroke="rgba(11,61,46,0.08)"
-              strokeDasharray="4 6"
-            />
-            <circle cx="60" cy="60" r="6" fill="#c8a951" />
-          </svg>
-        </div>
-
-        <div
-          className="prayer-compass__qibla-needle"
-          style={{
-            transform: `translate(-50%, -50%) rotate(${qiblaNeedleRotation}deg)`,
-          }}
-          aria-hidden="true"
-        >
-          <div className="prayer-compass__needle-line"></div>
-          <div className="prayer-compass__needle-head">
-            <i className="fa-solid fa-kaaba"></i>
-          </div>
         </div>
       </div>
 

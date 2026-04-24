@@ -243,6 +243,11 @@ Header donation shortcut cleanup (April 24, 2026):
 Bengali language stability hardening (April 24, 2026):
 - Removed the live Bengali DOM auto-translator because it was rewriting rendered text after React updates and causing visible language flicker/vibration.
 - Kept the stable language preference system and built-in Bengali UI translations so choosing Bengali no longer makes the page continually switch between Bengali and English.
+
+Qibla compass animation update (April 24, 2026):
+- Replaced the old hand-built SVG Qibla compass with the supplied animated Lottie compass artwork.
+- Kept the existing Qibla direction math and device-heading support so the new animation rotates toward the Qibla when location/heading data is available.
+- Added the Lottie player dependency and stored the compass animation as a local app asset.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification
