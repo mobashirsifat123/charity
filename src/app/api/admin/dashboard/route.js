@@ -1,5 +1,43 @@
-import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/server/adminAuth';
+import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/server/adminAuth";
+
+async function loadRecentDonations(supabase) {
+  const preferredResult = await supabase
+    .from("donations")
+    .select(
+      "id, amount, donor_name, donor_email, campaign_id, created_at, payment_status",
+    )
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (!preferredResult.error) {
+    return preferredResult;
+  }
+
+  const message = String(preferredResult.error.message || "").toLowerCase();
+  const missingDonorName =
+    message.includes("donor_name") ||
+    message.includes("schema cache") ||
+    message.includes("could not find");
+
+  if (!missingDonorName) {
+    return preferredResult;
+  }
+
+  const fallbackResult = await supabase
+    .from("donations")
+    .select("id, amount, donor_email, campaign_id, created_at, payment_status")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  return {
+    ...fallbackResult,
+    data: (fallbackResult.data || []).map((donation) => ({
+      donor_name: "",
+      ...donation,
+    })),
+  };
+}
 
 export async function GET(request) {
   try {
@@ -17,17 +55,21 @@ export async function GET(request) {
       fatwaRequestsResult,
       newsletterResult,
     ] = await Promise.all([
-      supabase.from('campaigns').select('id, raised_amount'),
+      supabase.from("campaigns").select("id, raised_amount"),
+      loadRecentDonations(supabase),
+      supabase.from("blogs").select("id", { count: "exact", head: true }),
+      supabase.from("fatwas").select("id", { count: "exact", head: true }),
       supabase
-        .from('donations')
-        .select('id, amount, donor_name, campaign_id, created_at, payment_status')
-        .order('created_at', { ascending: false })
-        .limit(5),
-      supabase.from('blogs').select('id', { count: 'exact', head: true }),
-      supabase.from('fatwas').select('id', { count: 'exact', head: true }),
-      supabase.from('team_members').select('id', { count: 'exact', head: true }),
-      supabase.from('fatwa_requests').select('id', { count: 'exact', head: true }).eq('status', 'new'),
-      supabase.from('newsletter_subscriptions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        .from("team_members")
+        .select("id", { count: "exact", head: true }),
+      supabase
+        .from("fatwa_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "new"),
+      supabase
+        .from("newsletter_subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active"),
     ]);
 
     if (campaignsResult.error) throw campaignsResult.error;
@@ -39,7 +81,10 @@ export async function GET(request) {
     if (newsletterResult.error) throw newsletterResult.error;
 
     const campaigns = campaignsResult.data || [];
-    const totalRaised = campaigns.reduce((acc, curr) => acc + (Number(curr.raised_amount) || 0), 0);
+    const totalRaised = campaigns.reduce(
+      (acc, curr) => acc + (Number(curr.raised_amount) || 0),
+      0,
+    );
 
     return NextResponse.json({
       success: true,
@@ -55,6 +100,9 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 },
+    );
   }
 }
