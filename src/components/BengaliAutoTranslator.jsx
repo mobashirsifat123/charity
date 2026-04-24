@@ -29,12 +29,13 @@ function hasBengaliText(text) {
 }
 
 export default function BengaliAutoTranslator() {
-  const { locale } = useLanguage();
+  const { isLanguageReady, locale } = useLanguage();
   const pathname = usePathname();
   const textNodeCacheRef = useRef(new Map());
   const attributeCacheRef = useRef(new Map());
   const observerRef = useRef(null);
   const activeJobRef = useRef(0);
+  const jobSequenceRef = useRef(0);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -123,7 +124,8 @@ export default function BengaliAutoTranslator() {
     };
 
     const translateNodes = async (root = document.body) => {
-      const jobId = Date.now();
+      const jobId = jobSequenceRef.current + 1;
+      jobSequenceRef.current = jobId;
       activeJobRef.current = jobId;
 
       const { textNodes, attributeNodes } = collectNodes(root);
@@ -209,7 +211,7 @@ export default function BengaliAutoTranslator() {
       }
     };
 
-    if (locale !== "bn") {
+    if (!isLanguageReady || locale !== "bn") {
       activeJobRef.current = 0;
       stopObserver();
       restoreOriginals();
@@ -264,7 +266,7 @@ export default function BengaliAutoTranslator() {
       window.clearTimeout(translateTimer);
       stopObserver();
     };
-  }, [locale, pathname]);
+  }, [isLanguageReady, locale, pathname]);
 
   return null;
 }

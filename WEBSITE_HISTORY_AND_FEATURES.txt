@@ -223,6 +223,11 @@ Admin article upload resilience update (April 23, 2026):
 - Fixed the admin article create flow so an article can still be saved even if the Supabase storage bucket for cover images is missing or temporarily misconfigured.
 - Added clearer admin feedback so image-upload problems are shown as warnings instead of blocking the full article submission.
 - Relaxed the article save path to fall back to the base blog schema when advanced article columns are not yet available in Supabase, preventing another dead-end failure during creation.
+
+Language stability update (April 24, 2026):
+- Made the selected language stable for the browser session by storing the manual choice in session storage and reusing it across page navigation.
+- Removed browser language auto-detection from the active language flow so the site does not unexpectedly switch languages after the user chooses English, Arabic, or Bengali.
+- Delayed Bengali auto-translation until the stored language choice has loaded, preventing mixed Bengali and English text caused by early translation during page startup.
   - newsletter subscriptions
   - Stripe checkout session creation
   - Stripe donation verification
