@@ -5,9 +5,144 @@ import Lottie from "lottie-react";
 
 import qiblaCompassAnimation from "@/assets/lottie/qibla-compass.json";
 import { normalizeDegrees, shortestAngleDelta } from "@/lib/qibla";
+import { useLanguage } from "@/context/LanguageContext";
 import usePrayerTimes from "@/hooks/usePrayerTimes";
 
 const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+const PRAYER_COPY = {
+  en: {
+    prayers: {
+      Fajr: "Fajr",
+      Dhuhr: "Dhuhr",
+      Asr: "Asr",
+      Maghrib: "Maghrib",
+      Isha: "Isha",
+    },
+    dailyWorship: "Daily Worship",
+    prayerTimes: "Prayer Times",
+    loadingLocation: "Loading your location",
+    hijriDate: "Hijri date",
+    updating: "Updating...",
+    useLocation: "Use my location",
+    nextPrayer: "Next upcoming prayer",
+    calculating: "Calculating...",
+    isIn: "is in",
+    waiting: "Waiting for prayer data...",
+    scheduledAt: "Scheduled at",
+    fallbackPreparing: "Fallback prayer time data is being prepared.",
+    localTiming: "Local timing",
+    fallbackTiming: "Fallback timing",
+    liveCountdown: "Live countdown",
+    next: "Next",
+    updatingTimes: "Updating prayer times...",
+    locationOptional:
+      "Location is optional. Click “Use my location” for local prayer times.",
+    qibla: "Qibla",
+    qiblaTitle: "Find the direction of prayer",
+    qiblaDescription:
+      "Using the same location data, this compass points toward the Qibla. On supported phones it can follow your heading live, and it falls back to a North-up guide everywhere else.",
+    utilityTitle: "One location, two utilities",
+    utilityMeta: "Prayer timings and Qibla guidance stay in sync.",
+    qiblaDirection: "Qibla direction",
+    aligned: "Aligned with the Qibla.",
+    toRight: "to your right",
+    toLeft: "to your left",
+    north: "Clockwise from North",
+    enableCompass: "Enable live compass",
+    calibrate: "Move your device gently so the compass can calibrate.",
+    denied: "Compass access was denied, so this view stays in North-up mode.",
+    unsupported:
+      "Live compass heading is not supported here. Use the degree value with North at the top.",
+  },
+  bn: {
+    prayers: {
+      Fajr: "ফজর",
+      Dhuhr: "যোহর",
+      Asr: "আসর",
+      Maghrib: "মাগরিব",
+      Isha: "এশা",
+    },
+    dailyWorship: "দৈনিক ইবাদত",
+    prayerTimes: "নামাজের সময়",
+    loadingLocation: "আপনার অবস্থান লোড হচ্ছে",
+    hijriDate: "হিজরি তারিখ",
+    updating: "আপডেট হচ্ছে...",
+    useLocation: "আমার অবস্থান ব্যবহার করুন",
+    nextPrayer: "পরবর্তী নামাজ",
+    calculating: "হিসাব করা হচ্ছে...",
+    isIn: "বাকি",
+    waiting: "নামাজের তথ্যের জন্য অপেক্ষা করা হচ্ছে...",
+    scheduledAt: "সময়",
+    fallbackPreparing: "বিকল্প নামাজের সময় প্রস্তুত করা হচ্ছে।",
+    localTiming: "স্থানীয় সময়",
+    fallbackTiming: "বিকল্প সময়",
+    liveCountdown: "লাইভ কাউন্টডাউন",
+    next: "পরবর্তী",
+    updatingTimes: "নামাজের সময় আপডেট হচ্ছে...",
+    locationOptional:
+      "অবস্থান দেওয়া ঐচ্ছিক। স্থানীয় নামাজের সময় দেখতে “আমার অবস্থান ব্যবহার করুন” চাপুন।",
+    qibla: "কিবলা",
+    qiblaTitle: "নামাজের দিক খুঁজুন",
+    qiblaDescription:
+      "একই অবস্থানের তথ্য ব্যবহার করে এই কম্পাস কিবলার দিকে দেখায়। সমর্থিত ফোনে এটি আপনার দিক অনুসরণ করতে পারে, অন্যথায় উত্তরকে ওপর ধরে নির্দেশনা দেয়।",
+    utilityTitle: "এক অবস্থান, দুই সুবিধা",
+    utilityMeta: "নামাজের সময় ও কিবলা নির্দেশনা একসাথে থাকে।",
+    qiblaDirection: "কিবলার দিক",
+    aligned: "আপনি কিবলার দিকে আছেন।",
+    toRight: "ডান দিকে",
+    toLeft: "বাম দিকে",
+    north: "উত্তর থেকে ঘড়ির কাঁটার দিকে",
+    enableCompass: "লাইভ কম্পাস চালু করুন",
+    calibrate: "কম্পাস ক্যালিব্রেট করতে ডিভাইসটি আস্তে নাড়ুন।",
+    denied: "কম্পাস অনুমতি বন্ধ আছে, তাই এটি উত্তর-ভিত্তিক নির্দেশনা দেখাচ্ছে।",
+    unsupported:
+      "এখানে লাইভ কম্পাস সমর্থিত নয়। ওপরের দিককে উত্তর ধরে ডিগ্রি মান ব্যবহার করুন।",
+  },
+  ar: {
+    prayers: {
+      Fajr: "الفجر",
+      Dhuhr: "الظهر",
+      Asr: "العصر",
+      Maghrib: "المغرب",
+      Isha: "العشاء",
+    },
+    dailyWorship: "العبادة اليومية",
+    prayerTimes: "مواقيت الصلاة",
+    loadingLocation: "جار تحميل موقعك",
+    hijriDate: "التاريخ الهجري",
+    updating: "جار التحديث...",
+    useLocation: "استخدم موقعي",
+    nextPrayer: "الصلاة القادمة",
+    calculating: "جار الحساب...",
+    isIn: "بعد",
+    waiting: "بانتظار بيانات الصلاة...",
+    scheduledAt: "الموعد",
+    fallbackPreparing: "جار تجهيز مواقيت الصلاة الاحتياطية.",
+    localTiming: "توقيت محلي",
+    fallbackTiming: "توقيت احتياطي",
+    liveCountdown: "عد تنازلي مباشر",
+    next: "القادمة",
+    updatingTimes: "جار تحديث مواقيت الصلاة...",
+    locationOptional:
+      "الموقع اختياري. اضغط “استخدم موقعي” لعرض المواقيت المحلية.",
+    qibla: "القبلة",
+    qiblaTitle: "اعرف اتجاه الصلاة",
+    qiblaDescription:
+      "باستخدام نفس بيانات الموقع، تشير هذه البوصلة نحو القبلة. في الهواتف المدعومة يمكنها متابعة اتجاهك مباشرة، وإلا تعرض دليلا من اتجاه الشمال.",
+    utilityTitle: "موقع واحد، فائدتان",
+    utilityMeta: "تبقى مواقيت الصلاة واتجاه القبلة متزامنين.",
+    qiblaDirection: "اتجاه القبلة",
+    aligned: "أنت متجه نحو القبلة.",
+    toRight: "إلى يمينك",
+    toLeft: "إلى يسارك",
+    north: "باتجاه عقارب الساعة من الشمال",
+    enableCompass: "تفعيل البوصلة المباشرة",
+    calibrate: "حرّك جهازك برفق حتى تتم معايرة البوصلة.",
+    denied: "تم رفض إذن البوصلة، لذلك يبقى العرض معتمدا على الشمال.",
+    unsupported:
+      "اتجاه البوصلة المباشر غير مدعوم هنا. استخدم قيمة الدرجة مع وضع الشمال في الأعلى.",
+  },
+};
 const HEADING_INPUT_DEADBAND_DEGREES = 2.5;
 const HEADING_RENDER_DEADBAND_DEGREES = 0.25;
 const HEADING_SMOOTHING_FACTOR = 0.08;
@@ -66,21 +201,27 @@ function getNextPrayerState(timings = {}, timeZone = "UTC") {
   };
 }
 
-function formatRemainingTime(totalSeconds) {
+function formatRemainingTime(totalSeconds, locale = "en") {
   const safeSeconds = Math.max(totalSeconds, 0);
   const hours = Math.floor(safeSeconds / 3600);
   const minutes = Math.floor((safeSeconds % 3600) / 60);
   const seconds = safeSeconds % 60;
+  const units =
+    locale === "bn"
+      ? { hour: "ঘণ্টা", minute: "মিনিট", second: "সেকেন্ড" }
+      : locale === "ar"
+        ? { hour: "س", minute: "د", second: "ث" }
+        : { hour: "h", minute: "m", second: "s" };
 
   if (hours > 0) {
-    return `${hours}h ${minutes}m ${seconds}s`;
+    return `${hours}${units.hour} ${minutes}${units.minute} ${seconds}${units.second}`;
   }
 
   if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
+    return `${minutes}${units.minute} ${seconds}${units.second}`;
   }
 
-  return `${seconds}s`;
+  return `${seconds}${units.second}`;
 }
 
 function readHeadingFromEvent(event) {
@@ -281,7 +422,7 @@ function useDeviceHeading() {
   };
 }
 
-function PrayerCompass({ qiblaDirection = 0 }) {
+function PrayerCompass({ qiblaDirection = 0, copy }) {
   const { heading, permissionState, requestPermission } = useDeviceHeading();
   const normalizedQiblaDirection = normalizeDegrees(qiblaDirection);
   const currentHeading =
@@ -316,14 +457,14 @@ function PrayerCompass({ qiblaDirection = 0 }) {
       </div>
 
       <p className="mt-3 mb-1 fw-semibold text-center">
-        Qibla direction: {Math.round(normalizedQiblaDirection)}°
+        {copy.qiblaDirection}: {Math.round(normalizedQiblaDirection)}°
       </p>
       <small className="text-muted text-center">
         {liveCompassActive
           ? isAligned
-            ? "Aligned with the Qibla."
-            : `${Math.round(Math.abs(qiblaOffset || 0))}° ${qiblaOffset > 0 ? "to your right" : "to your left"}`
-          : "Clockwise from North"}
+            ? copy.aligned
+            : `${Math.round(Math.abs(qiblaOffset || 0))}° ${qiblaOffset > 0 ? copy.toRight : copy.toLeft}`
+          : copy.north}
       </small>
 
       {permissionState === "prompt" ? (
@@ -332,26 +473,21 @@ function PrayerCompass({ qiblaDirection = 0 }) {
           className="btn btn-sm btn-outline-primary rounded-pill mt-3"
           onClick={requestPermission}
         >
-          Enable live compass
+          {copy.enableCompass}
         </button>
       ) : null}
 
       {permissionState === "pending" && !liveCompassActive ? (
-        <small className="text-muted text-center mt-3">
-          Move your device gently so the compass can calibrate.
-        </small>
+        <small className="text-muted text-center mt-3">{copy.calibrate}</small>
       ) : null}
 
       {permissionState === "denied" ? (
-        <small className="text-muted text-center mt-3">
-          Compass access was denied, so this view stays in North-up mode.
-        </small>
+        <small className="text-muted text-center mt-3">{copy.denied}</small>
       ) : null}
 
       {permissionState === "unsupported" ? (
         <small className="text-muted text-center mt-3">
-          Live compass heading is not supported here. Use the degree value with
-          North at the top.
+          {copy.unsupported}
         </small>
       ) : null}
     </div>
@@ -359,9 +495,11 @@ function PrayerCompass({ qiblaDirection = 0 }) {
 }
 
 export default function PrayerTimesWidget({ initialData }) {
+  const { locale } = useLanguage();
   const { data, loading, error, permissionState, requestLocalPrayerTimes } =
     usePrayerTimes(initialData);
   const [countdown, setCountdown] = useState(null);
+  const copy = PRAYER_COPY[locale] || PRAYER_COPY.en;
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -395,18 +533,18 @@ export default function PrayerTimesWidget({ initialData }) {
                 <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
                   <div>
                     <span className="section-header-rail mb-3">
-                      Daily Worship
+                      {copy.dailyWorship}
                     </span>
-                    <h2 className="fw-bold mb-2">Prayer Times</h2>
+                    <h2 className="fw-bold mb-2">{copy.prayerTimes}</h2>
                     <p className="text-muted mb-0">
-                      {data?.locationName || "Loading your location"}
+                      {data?.locationName || copy.loadingLocation}
                       {data?.date ? ` • ${data.date}` : ""}
                     </p>
                   </div>
 
                   <div className="text-lg-end">
-                    <p className="text-muted small mb-1">Hijri date</p>
-                    <strong>{data?.hijriDate || "Unavailable"}</strong>
+                    <p className="text-muted small mb-1">{copy.hijriDate}</p>
+                    <strong>{data?.hijriDate || "..."}</strong>
                     <div className="mt-3">
                       <button
                         type="button"
@@ -419,7 +557,7 @@ export default function PrayerTimesWidget({ initialData }) {
                         }
                       >
                         <i className="fa-solid fa-location-crosshairs me-2" />
-                        {loading ? "Updating..." : "Use my location"}
+                        {loading ? copy.updating : copy.useLocation}
                       </button>
                     </div>
                   </div>
@@ -427,31 +565,31 @@ export default function PrayerTimesWidget({ initialData }) {
 
                 <div className="system-panel--dark aurora-grid rounded-4 p-4 mb-4">
                   <p className="text-white-50 text-uppercase small fw-semibold mb-2">
-                    Next upcoming prayer
+                    {copy.nextPrayer}
                   </p>
                   <h3 className="text-white fw-bold mb-2">
-                    {countdown?.name || "Calculating..."}
+                    {copy.prayers[countdown?.name] || copy.calculating}
                   </h3>
                   <p className="text-white mb-1 fs-5">
                     {countdown
-                      ? `${countdown.name} is in ${formatRemainingTime(countdown.remainingSeconds)}`
-                      : "Waiting for prayer data..."}
+                      ? `${copy.prayers[countdown.name] || countdown.name} ${copy.isIn} ${formatRemainingTime(countdown.remainingSeconds, locale)}`
+                      : copy.waiting}
                   </p>
                   <small className="text-white-50">
                     {countdown?.time
-                      ? `Scheduled at ${countdown.time}`
-                      : "Fallback prayer time data is being prepared."}
+                      ? `${copy.scheduledAt} ${countdown.time}`
+                      : copy.fallbackPreparing}
                   </small>
                   <div className="d-flex flex-wrap gap-2 mt-4">
                     <span className="signal-chip">
                       <span className="signal-chip__dot signal-chip__dot--green" />
                       {data?.source === "browser-location"
-                        ? "Local timing"
-                        : "Fallback timing"}
+                        ? copy.localTiming
+                        : copy.fallbackTiming}
                     </span>
                     <span className="signal-chip">
                       <span className="signal-chip__dot" />
-                      Live countdown
+                      {copy.liveCountdown}
                     </span>
                   </div>
                 </div>
@@ -480,10 +618,12 @@ export default function PrayerTimesWidget({ initialData }) {
                           }}
                         >
                           <div className="d-flex justify-content-between align-items-center">
-                            <span className="fw-semibold">{prayer.name}</span>
+                            <span className="fw-semibold">
+                              {copy.prayers[prayer.name] || prayer.name}
+                            </span>
                             {isNext ? (
                               <span className="badge bg-warning text-dark rounded-pill">
-                                Next
+                                {copy.next}
                               </span>
                             ) : null}
                           </div>
@@ -496,13 +636,12 @@ export default function PrayerTimesWidget({ initialData }) {
 
                 {loading ? (
                   <p className="text-muted small mt-3 mb-0">
-                    Updating prayer times...
+                    {copy.updatingTimes}
                   </p>
                 ) : permissionState === "prompt" ||
                   permissionState === "available" ? (
                   <p className="text-muted small mt-3 mb-0">
-                    Location is optional. Click “Use my location” for local
-                    prayer times.
+                    {copy.locationOptional}
                   </p>
                 ) : null}
               </div>
@@ -513,14 +652,10 @@ export default function PrayerTimesWidget({ initialData }) {
             <div className="card border-0 shadow-sm rounded-4 h-100 system-panel glass-surface--light">
               <div className="card-body p-4 p-lg-5 d-flex flex-column justify-content-center">
                 <span className="section-header-rail mb-3 align-self-start">
-                  Qibla
+                  {copy.qibla}
                 </span>
-                <h3 className="fw-bold mb-3">Find the direction of prayer</h3>
-                <p className="text-muted mb-4">
-                  Using the same location data, this compass points toward the
-                  Qibla. On supported phones it can follow your heading live,
-                  and it falls back to a North-up guide everywhere else.
-                </p>
+                <h3 className="fw-bold mb-3">{copy.qiblaTitle}</h3>
+                <p className="text-muted mb-4">{copy.qiblaDescription}</p>
                 <div className="system-list mb-4">
                   <div className="system-list__item">
                     <span className="system-list__icon">
@@ -528,15 +663,18 @@ export default function PrayerTimesWidget({ initialData }) {
                     </span>
                     <div>
                       <span className="system-list__title">
-                        One location, two utilities
+                        {copy.utilityTitle}
                       </span>
                       <span className="system-list__meta">
-                        Prayer timings and Qibla guidance stay in sync.
+                        {copy.utilityMeta}
                       </span>
                     </div>
                   </div>
                 </div>
-                <PrayerCompass qiblaDirection={data?.qiblaDirection || 0} />
+                <PrayerCompass
+                  qiblaDirection={data?.qiblaDirection || 0}
+                  copy={copy}
+                />
               </div>
             </div>
           </div>

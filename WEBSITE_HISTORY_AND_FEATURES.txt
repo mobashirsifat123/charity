@@ -632,3 +632,8 @@ Homepage geolocation opt-in fix (April 23, 2026):
 - Stopped the homepage prayer widget from automatically requesting browser geolocation on page load.
 - Added an explicit “Use my location” button so Chrome no longer logs repeated geolocation permission warnings unless the visitor chooses to enable local timings.
 - Fallback prayer times and Qibla guidance remain visible by default.
+
+Stable Bengali and Arabic page translation fix (April 24, 2026):
+- Added a bounded page translator that fills in hardcoded English text after Bengali or Arabic is selected, then stops instead of continuously mutating the page.
+- Restores original text only when the visitor changes language, preventing the visible Bengali/English shaking loop.
+- Added client-side translation caching for the current session and Arabic support in the translation API.

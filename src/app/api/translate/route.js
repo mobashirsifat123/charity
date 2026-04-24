@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const TRANSLATION_ENDPOINT =
   "https://translate.googleapis.com/translate_a/single";
-const TARGET_LANGUAGES = new Set(["bn"]);
+const TARGET_LANGUAGES = new Set(["bn", "ar"]);
 const translationCache = new Map();
 const MAX_TEXTS_PER_REQUEST = 120;
 
