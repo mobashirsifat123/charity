@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isApprovedAdminEmail, normalizeEmail } from "@/lib/adminEmails";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const AUTH_CLIENT_OPTIONS = {
   auth: {
     autoRefreshToken: false,
@@ -166,10 +169,17 @@ export async function GET(request) {
   try {
     const profile = await loadOrCreateProfile(auth);
 
-    return NextResponse.json({
-      success: true,
-      profile,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        profile,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      },
+    );
   } catch (error) {
     console.error("Unable to load authenticated profile:", error);
     return NextResponse.json(
@@ -229,10 +239,17 @@ export async function PATCH(request) {
       desiredName: name,
     });
 
-    return NextResponse.json({
-      success: true,
-      profile,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        profile,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      },
+    );
   } catch (error) {
     console.error("Unable to update authenticated profile:", error);
     return NextResponse.json(
