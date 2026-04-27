@@ -5,6 +5,24 @@
 .env.test.local
 .env.production.local
 .env.*
+!.env.example
+!.env.sample
+
+# Secret and credential files
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+*.mobileprovision
+*.keystore
+service-account*.json
+credentials*.json
+secrets*.json
+.sentryclirc
+.vercel
+.netlify
 
 # Dependencies
 node_modules/
@@ -13,18 +31,23 @@ node_modules/
 
 # Testing
 coverage/
+test-results/
+playwright-report/
 
 # Next.js build output
 .next/
 out/
 build/
 *.tsbuildinfo
+.turbo/
 
 # Local automation / browser-debug artifacts
 .playwright-cli/
 
 # IDE and OS files
 .DS_Store
+.AppleDouble
+.LSOverride
 .vscode/
 .idea/
 *.suo
@@ -32,3 +55,19 @@ build/
 *.njsproj
 *.sln
 *.sw?
+
+# Logs and local runtime output
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+mynext.log
+out.log
+
+# Package manager caches
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz

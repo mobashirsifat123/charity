@@ -7,12 +7,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { parseJsonArraySetting } from "@/lib/siteSettings";
+import GlobalSiteDrawer from "@/components/GlobalSiteDrawer";
 
 const HeaderOne = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [search, setSearch] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [siteDrawerOpen, setSiteDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scroll, setScroll] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -176,6 +178,16 @@ const HeaderOne = () => {
             <div className="col-12">
               <div className="main-header__menu-box">
                 <nav className="navbar p-0">
+                  <button
+                    type="button"
+                    className="global-site-drawer-toggle"
+                    onClick={() => setSiteDrawerOpen(true)}
+                    aria-label="Open full site menu"
+                  >
+                    <span />
+                    <span />
+                    <span />
+                  </button>
                   <div className="navbar-logo">
                     <Link href="/" className="text-decoration-none">
                       {settings.site_logo_url ? (
@@ -206,10 +218,13 @@ const HeaderOne = () => {
                       <ul className="navbar__list">
                         <li
                           className={`navbar__item nav-fade ${
-                            pathname === "/blog-grid" ? "active" : ""
+                            pathname === "/quran" ||
+                            /^\/quran\/\d+/.test(pathname)
+                              ? "active"
+                              : ""
                           }`}
                         >
-                          <Link href="/blog-grid?subject=Quran">
+                          <Link href="/quran">
                             {settings.nav_quran_label || "Quran"}
                           </Link>
                         </li>
@@ -242,13 +257,13 @@ const HeaderOne = () => {
                         </li>
                         <li
                           className={`navbar__item nav-fade ${
-                            pathname === "/blog-grid?subject=Quran"
+                            pathname.startsWith("/quran/tafseer")
                               ? "active"
                               : ""
                           }`}
                         >
-                          <Link href="/blog-grid?subject=Quran">
-                            {settings.nav_learn_quran_label || "Learn Quran"}
+                          <Link href="/quran/tafseer">
+                            {settings.nav_learn_quran_label || "Tafseer"}
                           </Link>
                         </li>
                         <li
@@ -639,6 +654,10 @@ const HeaderOne = () => {
         }`}
         onClick={() => setMobileMenu(false)}
       ></div>
+      <GlobalSiteDrawer
+        open={siteDrawerOpen}
+        onClose={() => setSiteDrawerOpen(false)}
+      />
     </>
   );
 };

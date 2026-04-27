@@ -56,11 +56,22 @@ Main features:
 - Secure online donations
 - Articles and blog-style content
 - Fatwas and question submission
+- Quran hub with Surah directory, reading pages, recitation controls, and saved reading progress
+- Admin-managed Tafseer directory with Surah introductions, ayah-range sections, references, and publish/draft controls
+- Global site drawer for quick access to Quran, Tafseer, Articles, Fatwas, E-Books, Courses, Search, About, and Contact
 - Search and filtering
 - Newsletter signup
 - English and Arabic language support
 - User dashboard for donation history and saved items
 - Admin dashboard to manage content, donations, images, team members, and website settings
+
+Quran and Tafseer upgrade (April 27, 2026):
+- Added a real public Quran hub at /quran with all 114 Surahs, search, Juz shortcut chips, and continue-reading support for logged-in users.
+- Added Surah reading pages at /quran/[surahId] with Arabic Quran text, English translation, recitation playback, and saved progress.
+- Added a Tafseer directory at /quran/tafseer and Tafseer reading pages at /quran/tafseer/[surahId]/[sectionSlug].
+- Added a global left sidebar drawer across the public site with IRWAA branding, icon-only social links, main knowledge links, and expandable About/Scholars/Partners sections.
+- Added admin Quran/Tafseer management at /admin/quran so admins and scholars can create Surah intros, Tafseer sections, body content, references, and publish/draft states without touching code.
+- Added a Supabase SQL migration for quran_surah_metadata, quran_tafseer_sections, and quran_tafseer_content with RLS policies for public published reads and admin/scholar editing.
 
 Deep diagnosis and bug-fix update (April 8, 2026):
 - Ran a project-wide diagnosis across frontend routes, runtime fetches, auth/session boot flow, and backend startup.

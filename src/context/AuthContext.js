@@ -25,7 +25,12 @@ function buildHydratedUser(sessionUser, profileData = null) {
     fallbackEmail;
 
   const email = profileData?.email || fallbackEmail;
-  const safeRole = isApprovedAdminEmail(email) ? "admin" : "donor";
+  const profileRole = normalizeRole(profileData?.role);
+  const safeRole = isApprovedAdminEmail(email)
+    ? "admin"
+    : profileRole === "scholar"
+      ? "scholar"
+      : "donor";
 
   return {
     ...sessionUser,

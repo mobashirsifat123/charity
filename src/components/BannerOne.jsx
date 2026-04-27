@@ -57,7 +57,7 @@ const BannerOne = () => {
       title: settings.hero_card_3_title || "Quran Topics",
       color: "var(--secondary-color)",
       meta: settings.hero_card_3_meta || "Learn and reflect",
-      href: "/blog-grid?subject=Quran",
+      href: "/quran",
     },
     {
       icon: "fa-graduation-cap",

@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/server/adminAuth";
 import {
   deleteAdminResource,
+  getAdminResourceConfig,
   getAdminResource,
   updateAdminResource,
 } from "@/lib/server/adminResources";
@@ -31,12 +32,25 @@ function revalidateResource(resource, id) {
     revalidatePath("/impact");
     if (id) revalidatePath(`/cause-details/${id}`);
   }
+
+  if (resource.startsWith("quran-")) {
+    revalidatePath("/quran");
+    revalidatePath("/quran/tafseer");
+    revalidatePath("/quran/[surahId]", "page");
+    revalidatePath("/quran/tafseer/[surahId]/[sectionSlug]", "page");
+  }
+}
+
+function allowsScholar(resource) {
+  return getAdminResourceConfig(resource)?.roles?.includes("scholar") || false;
 }
 
 export async function GET(request, { params }) {
   try {
     const resolvedParams = await params;
-    const auth = await requireAdmin(request);
+    const auth = await requireAdmin(request, {
+      allowScholar: allowsScholar(resolvedParams.resource),
+    });
     if (auth.errorResponse) return auth.errorResponse;
 
     const data = await getAdminResource({
@@ -57,7 +71,9 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const resolvedParams = await params;
-    const auth = await requireAdmin(request);
+    const auth = await requireAdmin(request, {
+      allowScholar: allowsScholar(resolvedParams.resource),
+    });
     if (auth.errorResponse) return auth.errorResponse;
 
     const body = await request.json();
@@ -82,7 +98,9 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const resolvedParams = await params;
-    const auth = await requireAdmin(request);
+    const auth = await requireAdmin(request, {
+      allowScholar: allowsScholar(resolvedParams.resource),
+    });
     if (auth.errorResponse) return auth.errorResponse;
 
     await deleteAdminResource({

@@ -16,11 +16,13 @@ export const ADMIN_RESOURCE_CONFIG = {
     table: "blogs",
     orders: [{ column: "created_at", ascending: false }],
     usesAdvancedContentSave: true,
+    roles: ["admin", "scholar"],
   },
   fatwas: {
     table: "fatwas",
     orders: [{ column: "created_at", ascending: false }],
     usesAdvancedContentSave: true,
+    roles: ["admin", "scholar"],
   },
   "fatwa-requests": {
     table: "fatwa_requests",
@@ -33,10 +35,36 @@ export const ADMIN_RESOURCE_CONFIG = {
   scholars: {
     table: "scholar_profiles",
     orders: [{ column: "name", ascending: true }],
+    roles: ["admin", "scholar"],
   },
   "article-categories": {
     table: "article_categories",
     orders: [{ column: "name", ascending: true }],
+    roles: ["admin", "scholar"],
+  },
+  "quran-surah-metadata": {
+    table: "quran_surah_metadata",
+    orders: [
+      { column: "surah_id", ascending: true },
+      { column: "language", ascending: true },
+    ],
+    roles: ["admin", "scholar"],
+  },
+  "quran-tafseer-sections": {
+    table: "quran_tafseer_sections",
+    orders: [
+      { column: "surah_id", ascending: true },
+      { column: "order_index", ascending: true },
+    ],
+    roles: ["admin", "scholar"],
+  },
+  "quran-tafseer-content": {
+    table: "quran_tafseer_content",
+    orders: [
+      { column: "section_id", ascending: true },
+      { column: "language", ascending: true },
+    ],
+    roles: ["admin", "scholar"],
   },
 };
 

@@ -42,7 +42,8 @@ const createAuthSupabaseClient = () =>
 const unauthorized = (message, status = 401) =>
   NextResponse.json({ success: false, error: message }, { status });
 
-export async function requireAdmin(request) {
+export async function requireAdmin(request, options = {}) {
+  const allowScholar = options.allowScholar === true;
   const authHeader = request.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ")
     ? authHeader.slice(7).trim()
@@ -89,7 +90,9 @@ export async function requireAdmin(request) {
     };
   }
 
-  if (!isApprovedAdmin) {
+  const isScholar = profile?.role === "scholar";
+
+  if (!isApprovedAdmin && !(allowScholar && isScholar)) {
     return {
       errorResponse: unauthorized(
         "Admin privileges are required to access this resource.",
@@ -110,7 +113,7 @@ export async function requireAdmin(request) {
         email,
       role: "admin",
     };
-  } else if (safeProfile.role !== "admin") {
+  } else if (isApprovedAdmin && safeProfile.role !== "admin") {
     const { data: updatedProfile, error: updateError } = await supabase
       .from("users")
       .update({ role: "admin" })
