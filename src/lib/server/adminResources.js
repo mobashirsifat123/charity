@@ -27,6 +27,7 @@ export const ADMIN_RESOURCE_CONFIG = {
   "fatwa-requests": {
     table: "fatwa_requests",
     orders: [{ column: "created_at", ascending: false }],
+    roles: ["admin", "scholar"],
   },
   newsletter: {
     table: "newsletter_subscriptions",

@@ -1,6 +1,7 @@
 export const APPROVED_ADMIN_EMAILS = [
   "mobashirhossian08@gmail.com",
   "abdmt671@gmail.com",
+  "mahfujgazi79@gmail.com",
 ];
 
 export function normalizeEmail(value = "") {
