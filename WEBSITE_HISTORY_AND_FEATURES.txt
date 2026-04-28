@@ -648,3 +648,33 @@ Stable Bengali and Arabic page translation fix (April 24, 2026):
 - Added a bounded page translator that fills in hardcoded English text after Bengali or Arabic is selected, then stops instead of continuously mutating the page.
 - Restores original text only when the visitor changes language, preventing the visible Bengali/English shaking loop.
 - Added client-side translation caching for the current session and Arabic support in the translation API.
+
+Full bug sweep and Qibla compass stabilization (April 28, 2026):
+- Cleared stale Next.js build cache and confirmed the previous `/_document` build failure was cache-related, not a route bug.
+- Stabilized the Qibla compass by locking to the best available device-orientation source, ignoring low-quality duplicate sensor events, filtering small heading jitter, and freezing the Lottie animation so only the outer compass rotates.
+- Reduced Bengali/Arabic page flicker by stopping repeated whole-page translation passes after a language is selected.
+- Hardened translation and article-category API fallbacks so empty translation requests and missing Supabase env/table setup no longer create noisy runtime failures.
+- Replaced the stale donation-only Playwright test with desktop and mobile smoke tests for homepage, articles, fatwas, e-books, Quran, Tafseer, request-fatwa, donation, dashboard guard, admin guard, and Qibla math.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
+  - `npx playwright test --reporter=list`
+
+Premium knowledge page redesign (April 28, 2026):
+- Added a reusable compact futuristic knowledge header for Quran, Articles, Fatwas, and E-Books with breadcrumb, badge, concise intro, stats chips, and integrated search/actions.
+- Restyled knowledge search into a compact glass panel with green icon treatment, gold focus glow, and mobile-friendly stacking.
+- Added subtle premium visual depth using green mesh gradients, translucent panels, gold accent glints, floating orbs, calm reveal motion, and reduced-motion fallbacks.
+- Compressed the Articles and Quran top sections so filters, Surah search, and subject cards appear earlier with less wasted vertical space.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
+  - `npx playwright test --reporter=list`
+
+Prayer location and compact spacing fix (April 28, 2026):
+- Fixed the homepage “Use my location” prayer-time control so a stale browser `localStorage` denial can no longer keep the button permanently blocked.
+- The browser permission state is now checked live each time, allowing users to retry after resetting location permission in the browser.
+- Reduced vertical padding in the prayer widget, legacy breadcrumb headers, and premium knowledge headers so public pages waste less top-screen space.
+- Re-verified with:
+  - `npm run lint`
+  - `npm run build`
+  - `npx playwright test --reporter=list`

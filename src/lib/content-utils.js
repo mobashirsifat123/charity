@@ -85,6 +85,9 @@ export function extractIdentifierId(value = "") {
 }
 
 export function getContentPath(type, record) {
+  if (type === "quran") return `/quran/${record?.number || record?.id || ""}`;
+  if (type === "ebook") return `/ebooks/${record?.slug || record?.id || ""}`;
+
   const identifier = buildContentIdentifier(record, type);
   return type === "blog"
     ? `/blog-details/${identifier}`
@@ -92,6 +95,12 @@ export function getContentPath(type, record) {
 }
 
 export function getContentTitle(record, type) {
+  if (type === "quran") {
+    return record?.name || "Untitled Surah";
+  }
+  if (type === "ebook") {
+    return record?.title || "Untitled Book";
+  }
   if (type === "fatwa") {
     return record?.title || record?.question || "Untitled Fatwa";
   }
@@ -99,6 +108,21 @@ export function getContentTitle(record, type) {
 }
 
 export function getContentBody(record, type) {
+  if (type === "quran") {
+    return [
+      record?.englishName,
+      record?.arabicName,
+      record?.revelationType,
+      record?.ayahs ? `${record.ayahs} ayahs` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+  if (type === "ebook") {
+    return [record?.summary, record?.description, record?.highlight]
+      .filter(Boolean)
+      .join(" ");
+  }
   if (type === "fatwa") {
     return record?.answer || record?.content || "";
   }
@@ -106,7 +130,7 @@ export function getContentBody(record, type) {
 }
 
 export function getContentCategory(record) {
-  return record?.category || "General";
+  return record?.category || record?.revelationType || "General";
 }
 
 export function getAuthorName(record, fallback = "IRWA Team") {
@@ -133,9 +157,20 @@ export function matchesUnifiedSearch(record, type, query) {
     getContentBody(record, type),
     record?.question,
     record?.answer,
+    record?.summary,
+    record?.description,
+    record?.highlight,
+    record?.name,
+    record?.englishName,
+    record?.arabicName,
+    record?.number,
+    record?.ayahs,
+    record?.language,
     record?.category,
+    record?.revelationType,
     normalizeTags(record?.tags).join(" "),
     record?.author_name,
+    record?.author,
   ]
     .filter(Boolean)
     .join(" ")

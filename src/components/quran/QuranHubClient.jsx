@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import KnowledgePageHeader from "@/components/KnowledgePageHeader";
 import { JUZ_SHORTCUTS } from "@/lib/quran/surah-data";
 import { useAuth } from "@/context/AuthContext";
+import { usePersonalization } from "@/context/PersonalizationContext";
 import { supabase } from "@/lib/supabaseClient";
 
 function normalize(value) {
@@ -18,6 +20,7 @@ export default function QuranHubClient({ surahs = [] }) {
   const [activeJuz, setActiveJuz] = useState(null);
   const [progress, setProgress] = useState(null);
   const { user } = useAuth();
+  const { quranProgress, trackFeature } = usePersonalization();
 
   const filteredSurahs = useMemo(() => {
     const normalizedQuery = normalize(query);
@@ -40,8 +43,10 @@ export default function QuranHubClient({ surahs = [] }) {
     let active = true;
 
     const loadProgress = async () => {
+      const localProgress = quranProgress;
+
       if (!user || !Number.isInteger(Number(user.id))) {
-        setProgress(null);
+        setProgress(localProgress);
         return;
       }
 
@@ -53,11 +58,11 @@ export default function QuranHubClient({ surahs = [] }) {
 
       if (!active) return;
       if (error) {
-        setProgress(null);
+        setProgress(localProgress);
         return;
       }
 
-      setProgress(data || null);
+      setProgress(data || localProgress);
     };
 
     loadProgress();
@@ -65,79 +70,96 @@ export default function QuranHubClient({ surahs = [] }) {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [quranProgress, user]);
+
+  useEffect(() => {
+    trackFeature({
+      href: "/quran",
+      label: "Quran",
+      icon: "fa-book-quran",
+    });
+  }, [trackFeature]);
 
   return (
     <>
-      <section className="quran-hero section-shell">
-        <div className="container">
-          <div className="quran-hero__panel">
-            <div>
-              <span className="theme-badge-soft mb-3">Quran Learning</span>
-              <h1 className="quran-hero__title">
-                Read, reflect, and return to the Book of Allah
-              </h1>
-              <p className="quran-hero__text">
-                Browse all 114 Surahs, listen to recitation, save your place,
-                and move into Tafseer when you want deeper explanation.
-              </p>
-              <div className="d-flex flex-wrap gap-3 mt-4">
-                <Link
-                  href="/quran/1"
-                  className="btn btn-primary rounded-pill px-4"
-                >
-                  Start Al-Fatihah
-                </Link>
-                <Link
-                  href="/quran/tafseer"
-                  className="btn btn-outline-primary rounded-pill px-4"
-                >
-                  Open Tafseer
-                </Link>
-                {progress ? (
-                  <Link
-                    href={`/quran/${progress.surah_id}`}
-                    className="btn btn-light rounded-pill px-4"
-                  >
-                    Continue {progress.surah_id}:{progress.ayah_number}
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-            <div className="quran-hero__stats">
-              <div>
-                <strong>114</strong>
-                <span>Surahs</span>
-              </div>
-              <div>
-                <strong>30</strong>
-                <span>Juz</span>
-              </div>
-              <div>
-                <strong>6,236</strong>
-                <span>Ayahs</span>
-              </div>
-            </div>
-          </div>
+      <KnowledgePageHeader
+        badge="Quran Learning"
+        title="Read, reflect, and return to the Book of Allah"
+        description="Browse all 114 Surahs, listen to recitation, save your place, and move into Tafseer when you want deeper explanation."
+        links={[
+          { name: "Home", link: "/" },
+          { name: "Quran", link: "/quran" },
+        ]}
+        stats={[
+          { value: "114", label: "Surahs" },
+          { value: "30", label: "Juz" },
+          { value: "6,236", label: "Ayahs" },
+        ]}
+        actions={
+          <>
+            <Link href="/quran/1" className="btn btn-light rounded-pill px-4">
+              Start Al-Fatihah
+            </Link>
+            <Link
+              href="/quran/tafseer"
+              className="btn btn-outline-light rounded-pill px-4"
+            >
+              Open Tafseer
+            </Link>
+            {progress ? (
+              <Link
+                href={`/quran/${progress.surah_id}`}
+                className="btn btn-outline-light rounded-pill px-4"
+              >
+                Continue {progress.surah_id}:{progress.ayah_number}
+              </Link>
+            ) : null}
+          </>
+        }
+      >
+        <div className="quran-search quran-search--hero">
+          <i className="fa-solid fa-magnifying-glass" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by Surah name, Arabic name, or number"
+            aria-label="Search Surahs"
+          />
         </div>
-      </section>
+      </KnowledgePageHeader>
 
-      <section className="py-5 page-surface-alt">
+      <section className="knowledge-directory-body page-surface-alt">
         <div className="container">
+          {progress ? (
+            <Link
+              href={`/quran/${progress.surah_id}`}
+              className="mobile-continue-card d-md-none"
+            >
+              <span>
+                <small>Continue reading</small>
+                <strong>
+                  Surah {progress.surah_id}, Ayah {progress.ayah_number}
+                </strong>
+              </span>
+              <i className="fa-solid fa-arrow-right" />
+            </Link>
+          ) : null}
+
+          <div className="mobile-quran-search d-md-none">
+            <i className="fa-solid fa-magnifying-glass" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search Surah"
+            />
+          </div>
+
           <div className="quran-toolbar mb-4">
             <div>
               <span className="section-header-rail mb-2">Directory</span>
               <h2 className="fw-bold mb-0">Choose a Surah</h2>
-            </div>
-            <div className="quran-search">
-              <i className="fa-solid fa-magnifying-glass" />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by Surah name, Arabic name, or number"
-                aria-label="Search Surahs"
-              />
             </div>
           </div>
 

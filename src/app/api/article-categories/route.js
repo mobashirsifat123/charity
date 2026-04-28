@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/server/adminAuth";
 import { FALLBACK_ARTICLE_CATEGORIES } from "@/lib/content-data";
+import { hasValidSupabaseServerEnv } from "@/lib/server/env";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,6 +20,14 @@ function isMissingTableError(error) {
 
 export async function GET() {
   try {
+    if (!hasValidSupabaseServerEnv()) {
+      return NextResponse.json({
+        success: true,
+        data: FALLBACK_ARTICLE_CATEGORIES,
+        fallback: true,
+      });
+    }
+
     const supabase = createAdminSupabaseClient();
     const { data, error } = await supabase
       .from("article_categories")

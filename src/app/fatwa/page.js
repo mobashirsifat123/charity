@@ -3,11 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import KnowledgePageHeader from "@/components/KnowledgePageHeader";
 import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
+import MobileFilterBar from "@/components/mobile/MobileFilterBar";
+import { MobileTextCard } from "@/components/mobile/MobileCard";
+import MobileSectionHeader from "@/components/mobile/MobileSectionHeader";
 import { useLanguage } from "@/context/LanguageContext";
+import { usePersonalization } from "@/context/PersonalizationContext";
 import { fetchPublishedFatwas } from "@/lib/content-data";
 import {
   buildContentIdentifier,
@@ -23,12 +27,21 @@ const ITEMS_PER_PAGE = 12;
 
 export default function FatwaList() {
   const { locale, t } = useLanguage();
+  const { trackFeature } = usePersonalization();
   const [fatwas, setFatwas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("all");
   const [author, setAuthor] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    trackFeature({
+      href: "/fatwa",
+      label: "Fatwas",
+      icon: "fa-scale-balanced",
+    });
+  }, [trackFeature]);
 
   useEffect(() => {
     let active = true;
@@ -121,39 +134,106 @@ export default function FatwaList() {
   );
 
   const resetToFirstPage = () => setCurrentPage(1);
+  const categoryChips = categories.map((item) => ({
+    value: item,
+    label:
+      item === "all"
+        ? t("allTopics", "All topics")
+        : translateFatwaCategory(locale, item),
+  }));
 
   return (
     <>
       <HeaderOne />
-      <BreadcrumbOne
+      <KnowledgePageHeader
+        badge="Trusted Guidance"
         title={t("fatwasAndRulings", "Fatwas & Rulings")}
+        description={t(
+          "browseFatwasIntro",
+          "Browse answered questions, filter by topic, or submit a question for a future ruling.",
+        )}
         links={[
           { name: t("home", "Home"), link: "/" },
           { name: t("fatwa", "Fatwa"), link: "/fatwa" },
         ]}
-      />
+        stats={[
+          { value: filteredFatwas.length, label: "Rulings" },
+          { value: categories.length - 1, label: "Topics" },
+          { value: authors.length - 1, label: "Scholars" },
+        ]}
+        actions={
+          <Link
+            href="/request-fatwa"
+            className="btn btn-light rounded-pill px-4"
+          >
+            {t("requestFatwa", "Request Fatwa")}
+          </Link>
+        }
+      >
+        <KnowledgeSearchBar
+          variant="compact"
+          defaultType="fatwa"
+          value={searchTerm}
+          onChange={(nextValue) => {
+            setSearchTerm(nextValue);
+            resetToFirstPage();
+          }}
+          onSearch={() => resetToFirstPage()}
+          placeholder={t(
+            "searchFatwasPlaceholder",
+            "Search fatwas, questions, scholars, and topics...",
+          )}
+        />
+      </KnowledgePageHeader>
 
-      <section className="knowledge-page-search-strip">
+      <section className="knowledge-directory-body bg-white">
         <div className="container">
-          <KnowledgeSearchBar
-            variant="light"
-            defaultType="fatwa"
-            value={searchTerm}
-            onChange={(nextValue) => {
-              setSearchTerm(nextValue);
-              resetToFirstPage();
-            }}
-            onSearch={() => resetToFirstPage()}
-            placeholder={t(
-              "searchFatwasPlaceholder",
-              "Search fatwas, questions, scholars, and topics...",
-            )}
-          />
-        </div>
-      </section>
+          <div className="mobile-directory d-lg-none">
+            <MobileFilterBar
+              value={searchTerm}
+              onSearchChange={(nextValue) => {
+                setSearchTerm(nextValue);
+                resetToFirstPage();
+              }}
+              placeholder={t(
+                "searchFatwasPlaceholder",
+                "Search fatwas, questions, scholars, and topics...",
+              )}
+              chips={categoryChips}
+              activeChip={category}
+              onChipChange={(nextCategory) => {
+                setCategory(nextCategory);
+                resetToFirstPage();
+              }}
+              onReset={() => {
+                setSearchTerm("");
+                setCategory("all");
+                setAuthor("all");
+                resetToFirstPage();
+              }}
+            />
+            <MobileSectionHeader
+              title={t("fatwasAndRulings", "Fatwas & Rulings")}
+              actionHref="/request-fatwa"
+              actionLabel={t("requestFatwa", "Ask")}
+            />
+            <div className="mobile-stack-list">
+              {displayedFatwas.map((fatwa) => (
+                <MobileTextCard
+                  key={buildContentIdentifier(fatwa, "mobile-fatwa")}
+                  href={getContentPath("fatwa", fatwa)}
+                  title={fatwa.title || fatwa.question || "Untitled Fatwa"}
+                  excerpt={getExcerpt(fatwa.answer || fatwa.content || "", 120)}
+                  meta={[
+                    translateFatwaCategory(locale, getContentCategory(fatwa)),
+                    fatwa.author_name || "IRWA Scholar",
+                  ]}
+                  icon="fa-scale-balanced"
+                />
+              ))}
+            </div>
+          </div>
 
-      <section className="py-5 bg-white">
-        <div className="container">
           <div className="row g-4">
             <aside className="col-lg-4 col-xl-3 d-none d-lg-block">
               <div
@@ -412,6 +492,14 @@ export default function FatwaList() {
           </div>
         </div>
       </section>
+
+      <Link
+        href="/request-fatwa"
+        className="mobile-fab d-md-none"
+        aria-label="Ask Fatwa"
+      >
+        <i className="fa-solid fa-pen" />
+      </Link>
 
       <FooterOne />
     </>

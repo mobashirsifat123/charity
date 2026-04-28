@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabaseClient";
 import { calculateQiblaDirection } from "@/lib/qibla";
 
 const PRAYER_FIELDS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-const LOCATION_BLOCKED_KEY = "irwa-location-permission-blocked";
 
 function cleanTimingValue(value = "") {
   return String(value).split(" ")[0].trim();
@@ -186,24 +185,7 @@ export function usePrayerTimes(initialData) {
           setError(
             "Location permission is blocked. Showing fallback prayer times.",
           );
-          try {
-            window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
-          } catch {
-            // Ignore storage failures.
-          }
           return;
-        }
-
-        try {
-          if (window.localStorage.getItem(LOCATION_BLOCKED_KEY) === "true") {
-            setPermissionState("denied");
-            setError(
-              "Location permission is blocked. Showing fallback prayer times.",
-            );
-            return;
-          }
-        } catch {
-          // Ignore storage failures.
         }
 
         setPermissionState(state === "granted" ? "available" : "prompt");
@@ -232,11 +214,6 @@ export function usePrayerTimes(initialData) {
       setError(
         "Location permission is blocked. Showing fallback prayer times.",
       );
-      try {
-        window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
-      } catch {
-        // Ignore storage failures.
-      }
       return;
     }
 
@@ -246,11 +223,6 @@ export function usePrayerTimes(initialData) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         setPermissionState("granted");
-        try {
-          window.localStorage.removeItem(LOCATION_BLOCKED_KEY);
-        } catch {
-          // Ignore storage failures.
-        }
 
         captureLocationConsent({
           position,
@@ -281,11 +253,6 @@ export function usePrayerTimes(initialData) {
           setError(
             "Location permission denied. Showing fallback prayer times.",
           );
-          try {
-            window.localStorage.setItem(LOCATION_BLOCKED_KEY, "true");
-          } catch {
-            // Ignore storage failures.
-          }
         } else {
           setPermissionState("fallback");
           setError(

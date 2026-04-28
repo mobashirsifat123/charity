@@ -1,8 +1,11 @@
 import { supabase } from "@/lib/supabaseClient";
 import { CORE_ARTICLE_SUBJECTS } from "@/lib/article-subjects";
+import { listEbooks } from "@/lib/ebook-data";
+import { SURAH_LIST } from "@/lib/quran/surah-data";
 import {
   extractIdentifierId,
   getContentCategory,
+  getContentBody,
   getContentTitle,
   matchesUnifiedSearch,
   sortFeaturedFirst,
@@ -122,6 +125,8 @@ export function getRelatedContent(items = [], currentRecord, type, limit = 3) {
 export function getUnifiedSearchResults({
   blogs = [],
   fatwas = [],
+  ebooks = listEbooks(),
+  quran = SURAH_LIST,
   query = "",
   type = "all",
   category = "all",
@@ -147,6 +152,31 @@ export function getUnifiedSearchResults({
     return queryMatch && categoryMatch;
   });
 
+  const quranResults = (quran || []).filter((item) => {
+    const queryMatch =
+      !normalizedQuery || matchesUnifiedSearch(item, "quran", normalizedQuery);
+    const categoryMatch =
+      normalizedCategory === "all" ||
+      getContentCategory(item).toLowerCase() === normalizedCategory;
+    return queryMatch && categoryMatch;
+  });
+
+  const ebookResults = (ebooks || []).filter((item) => {
+    const queryMatch =
+      !normalizedQuery || matchesUnifiedSearch(item, "ebook", normalizedQuery);
+    const categoryMatch =
+      normalizedCategory === "all" ||
+      getContentCategory(item).toLowerCase() === normalizedCategory;
+    return queryMatch && categoryMatch;
+  });
+
+  const quranCards = quranResults.map((item) => ({
+    ...item,
+    id: item.number,
+    contentType: "quran",
+    displayTitle: getContentTitle(item, "quran"),
+    displayExcerpt: getContentBody(item, "quran"),
+  }));
   const articleCards = blogResults.map((item) => ({
     ...item,
     contentType: "blog",
@@ -157,12 +187,23 @@ export function getUnifiedSearchResults({
     contentType: "fatwa",
     displayTitle: getContentTitle(item, "fatwa"),
   }));
+  const ebookCards = ebookResults.map((item) => ({
+    ...item,
+    id: item.slug,
+    contentType: "ebook",
+    displayTitle: getContentTitle(item, "ebook"),
+    displayExcerpt: getContentBody(item, "ebook"),
+  }));
 
+  if (type === "quran") return quranCards;
   if (type === "blog") return articleCards;
   if (type === "fatwa") return fatwaCards;
+  if (type === "ebook") return ebookCards;
 
-  return [...articleCards, ...fatwaCards].sort(
-    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
+  return [...quranCards, ...articleCards, ...fatwaCards, ...ebookCards].sort(
+    (a, b) =>
+      new Date(b.created_at || b.publishedAt || 0) -
+      new Date(a.created_at || a.publishedAt || 0),
   );
 }
 

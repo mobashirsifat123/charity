@@ -11,6 +11,7 @@ import ReadabilityToolbar from "@/components/ReadabilityToolbar";
 import RelatedContentSection from "@/components/RelatedContentSection";
 import SaveContentButton from "@/components/SaveContentButton";
 import { useLanguage } from "@/context/LanguageContext";
+import { usePersonalization } from "@/context/PersonalizationContext";
 import { useReadability } from "@/context/ReadabilityContext";
 import {
   fetchBlogByIdentifier,
@@ -44,6 +45,7 @@ function formatLongDate(value, locale) {
 
 export default function BlogDetails() {
   const { locale, t } = useLanguage();
+  const { trackRecent, trackFeature } = usePersonalization();
   const { getReadingStyle } = useReadability();
   const params = useParams();
   const identifier = params?.id;
@@ -74,6 +76,18 @@ export default function BlogDetails() {
         setRelatedBlogs(getRelatedContent(allBlogs, article, "blog", 3));
         if (article) {
           incrementViewCount({ supabase, table: "blogs", record: article });
+          trackRecent({
+            type: "blog",
+            typeLabel: "Article",
+            title: article.title || "Untitled Article",
+            href: getContentPath("blog", article),
+            excerpt: getExcerpt(article.content || "", 120),
+          });
+          trackFeature({
+            href: "/blog-grid",
+            label: "Articles",
+            icon: "fa-newspaper",
+          });
         }
       } catch (error) {
         console.error("Error fetching blog details:", error.message);
@@ -89,7 +103,7 @@ export default function BlogDetails() {
     return () => {
       active = false;
     };
-  }, [identifier]);
+  }, [identifier, trackFeature, trackRecent]);
 
   const handleShare = async (platform) => {
     if (!blog) return;

@@ -20,6 +20,7 @@ import {
 export default function SearchPage() {
   const { t } = useLanguage();
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [type, setType] = useState("all");
   const [category, setCategory] = useState("all");
   const [blogs, setBlogs] = useState([]);
@@ -36,6 +37,16 @@ export default function SearchPage() {
     setType(params.get("type") || "all");
     setCategory(params.get("category") || "all");
   }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [query]);
 
   useEffect(() => {
     let active = true;
@@ -65,17 +76,66 @@ export default function SearchPage() {
     };
   }, []);
 
+  const searchTypes = [
+    { value: "all", label: t("allContent", "All content") },
+    { value: "quran", label: t("quran", "Quran") },
+    { value: "blog", label: t("articles", "Articles") },
+    { value: "fatwa", label: t("fatwas", "Fatwas") },
+    { value: "ebook", label: t("books", "Books") },
+  ];
+
   const categories = useMemo(() => {
-    const combined = [...blogs, ...fatwas].map((item) =>
-      getContentCategory(item),
-    );
+    const combined = getUnifiedSearchResults({
+      blogs,
+      fatwas,
+      query: "",
+      type: "all",
+      category: "all",
+    }).map((item) => getContentCategory(item));
     return ["all", ...Array.from(new Set(combined.filter(Boolean)))];
   }, [blogs, fatwas]);
 
   const results = useMemo(
-    () => getUnifiedSearchResults({ blogs, fatwas, query, type, category }),
-    [blogs, fatwas, query, type, category],
+    () =>
+      getUnifiedSearchResults({
+        blogs,
+        fatwas,
+        query: debouncedQuery,
+        type,
+        category,
+      }),
+    [blogs, fatwas, debouncedQuery, type, category],
   );
+
+  const groupedResults = useMemo(() => {
+    const groups = [
+      { type: "quran", label: t("quran", "Quran"), items: [] },
+      { type: "blog", label: t("articles", "Articles"), items: [] },
+      { type: "fatwa", label: t("fatwas", "Fatwas"), items: [] },
+      { type: "ebook", label: t("books", "Books"), items: [] },
+    ];
+
+    results.forEach((item) => {
+      const group = groups.find((entry) => entry.type === item.contentType);
+      if (group) group.items.push(item);
+    });
+
+    return groups.filter((group) => type === "all" || group.type === type);
+  }, [results, t, type]);
+
+  const getResultLabel = (contentType) => {
+    if (contentType === "quran") return t("quran", "Quran");
+    if (contentType === "blog") return t("article", "Article");
+    if (contentType === "fatwa") return t("fatwa", "Fatwa");
+    return t("book", "Book");
+  };
+
+  const getResultBadgeClass = (contentType) => {
+    if (contentType === "quran") return "bg-info text-dark";
+    if (contentType === "blog") return "bg-primary";
+    if (contentType === "fatwa") return "bg-success";
+    return "bg-warning text-dark";
+  };
 
   return (
     <section className="page-wrapper">
@@ -93,7 +153,7 @@ export default function SearchPage() {
             <div className="row g-3">
               <div className="col-lg-6">
                 <label className="form-label fw-semibold">
-                  {t("searchArticlesAndFatwas", "Search articles and fatwas")}
+                  {t("unifiedSearch", "Unified Search")}
                 </label>
                 <input
                   type="text"
@@ -102,7 +162,7 @@ export default function SearchPage() {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t(
                     "searchByTopic",
-                    "Search by topic, title, tag, or author...",
+                    "Search Quran, articles, fatwas, books, topics, tags, or authors...",
                   )}
                 />
               </div>
@@ -115,9 +175,11 @@ export default function SearchPage() {
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                 >
-                  <option value="all">{t("allContent", "All content")}</option>
-                  <option value="blog">{t("articles", "Articles")}</option>
-                  <option value="fatwa">{t("fatwas", "Fatwas")}</option>
+                  {searchTypes.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="col-lg-3">
@@ -139,6 +201,20 @@ export default function SearchPage() {
                 </select>
               </div>
             </div>
+            <div className="search-type-tabs mt-4" role="tablist">
+              {searchTypes.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`search-type-tab ${type === option.value ? "is-active" : ""}`}
+                  onClick={() => setType(option.value)}
+                  role="tab"
+                  aria-selected={type === option.value}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -159,55 +235,73 @@ export default function SearchPage() {
             </p>
           </div>
         ) : (
-          <div className="row g-4">
-            {results.map((item) => (
-              <div key={`${item.contentType}-${item.id}`} className="col-lg-6">
-                <div className="card border-0 shadow-sm rounded-4 h-100">
-                  <div className="card-body p-4">
-                    <div className="d-flex justify-content-between align-items-center gap-3 mb-3">
-                      <span
-                        className={`badge rounded-pill ${item.contentType === "blog" ? "bg-primary" : "bg-success"}`}
-                      >
-                        {item.contentType === "blog"
-                          ? t("article", "Article")
-                          : t("fatwa", "Fatwa")}
-                      </span>
-                      <span className="text-muted small">
-                        {getContentCategory(item)}
-                      </span>
-                    </div>
-                    <h4 className="fw-bold mb-3">{item.displayTitle}</h4>
-                    <p className="text-muted mb-3">
-                      {getExcerpt(
-                        item.contentType === "fatwa"
-                          ? item.answer || item.content || ""
-                          : item.content || "",
-                        160,
-                      )}
-                    </p>
-                    <div className="d-flex flex-wrap gap-2 mb-4">
-                      {normalizeTags(item.tags)
-                        .slice(0, 4)
-                        .map((tag) => (
-                          <span
-                            key={tag}
-                            className="badge bg-light text-dark border"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                    </div>
-                    <Link
-                      href={getContentPath(item.contentType, item)}
-                      className="fw-semibold text-decoration-none"
-                    >
-                      {t("openResult", "Open result")}{" "}
-                      <i className="fa-solid fa-arrow-right ms-2"></i>
-                    </Link>
+          <div className="search-results-grouped">
+            {groupedResults.map((group) =>
+              group.items.length ? (
+                <section key={group.type} className="mb-5">
+                  <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
+                    <h3 className="h5 fw-bold mb-0">{group.label}</h3>
+                    <span className="text-muted small">
+                      {group.items.length}
+                    </span>
                   </div>
-                </div>
-              </div>
-            ))}
+                  <div className="row g-4">
+                    {group.items.map((item) => (
+                      <div
+                        key={`${item.contentType}-${item.id}`}
+                        className="col-lg-6"
+                      >
+                        <div className="card border-0 shadow-sm rounded-4 h-100">
+                          <div className="card-body p-4">
+                            <div className="d-flex justify-content-between align-items-center gap-3 mb-3">
+                              <span
+                                className={`badge rounded-pill ${getResultBadgeClass(item.contentType)}`}
+                              >
+                                {getResultLabel(item.contentType)}
+                              </span>
+                              <span className="text-muted small">
+                                {getContentCategory(item)}
+                              </span>
+                            </div>
+                            <h4 className="fw-bold mb-3">
+                              {item.displayTitle}
+                            </h4>
+                            <p className="text-muted mb-3">
+                              {getExcerpt(
+                                item.displayExcerpt ||
+                                  (item.contentType === "fatwa"
+                                    ? item.answer || item.content || ""
+                                    : item.content || item.description || ""),
+                                160,
+                              )}
+                            </p>
+                            <div className="d-flex flex-wrap gap-2 mb-4">
+                              {normalizeTags(item.tags)
+                                .slice(0, 4)
+                                .map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="badge bg-light text-dark border"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                            </div>
+                            <Link
+                              href={getContentPath(item.contentType, item)}
+                              className="fw-semibold text-decoration-none"
+                            >
+                              {t("openResult", "Open result")}{" "}
+                              <i className="fa-solid fa-arrow-right ms-2"></i>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null,
+            )}
           </div>
         )}
       </div>

@@ -8,6 +8,11 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { parseJsonArraySetting } from "@/lib/siteSettings";
 import GlobalSiteDrawer from "@/components/GlobalSiteDrawer";
+import MobileAppShell from "@/components/mobile/MobileAppShell";
+
+const isDesktopViewport = () =>
+  typeof window === "undefined" ||
+  window.matchMedia("(min-width: 768px)").matches;
 
 const HeaderOne = () => {
   const pathname = usePathname();
@@ -34,9 +39,11 @@ const HeaderOne = () => {
     pathname === "/ebooks" || pathname.startsWith("/ebooks/");
   const isFatwaRoute = pathname === "/fatwa" || pathname.startsWith("/fatwa/");
   const handleSearch = () => {
+    if (!isDesktopViewport()) return;
     setSearch(!search);
   };
   const handleMobileMenu = () => {
+    if (!isDesktopViewport()) return;
     setMobileMenu(!mobileMenu);
   };
   const handleSearchSubmit = (e) => {
@@ -51,6 +58,8 @@ const HeaderOne = () => {
   };
 
   useEffect(() => {
+    if (!isDesktopViewport()) return;
+
     const handleScroll = () => {
       const shouldStick = window.scrollY > 150;
       setScroll((previous) =>
@@ -70,6 +79,7 @@ const HeaderOne = () => {
   const accountMenuRef = useRef(null);
 
   useEffect(() => {
+    if (!isDesktopViewport()) return;
     if (!mobileMenu || !mobileMenuListRef.current) return;
 
     const desktopMenu = document.querySelector(".navbar__menu");
@@ -147,6 +157,7 @@ const HeaderOne = () => {
   }, [pathname]);
 
   useEffect(() => {
+    if (!isDesktopViewport()) return;
     if (!accountMenuOpen) return;
 
     const handleClickOutside = (event) => {
@@ -170,6 +181,7 @@ const HeaderOne = () => {
 
   return (
     <>
+      <MobileAppShell />
       <header
         className={`header header-secondary ${scroll && "sticky-header"}`}
       >

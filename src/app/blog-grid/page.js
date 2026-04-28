@@ -12,11 +12,15 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 import { CORE_ARTICLE_SUBJECTS } from "@/lib/article-subjects";
-import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import KnowledgePageHeader from "@/components/KnowledgePageHeader";
 import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
+import MobileFilterBar from "@/components/mobile/MobileFilterBar";
+import MobileSectionHeader from "@/components/mobile/MobileSectionHeader";
+import { MobileArticleCard } from "@/components/mobile/MobileCard";
 import { useLanguage } from "@/context/LanguageContext";
+import { usePersonalization } from "@/context/PersonalizationContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import {
   fetchArticleCategories,
@@ -43,6 +47,7 @@ const QUICK_FILTERS = [
   { key: "short", label: "Short Reads", icon: "fa-mug-hot" },
   { key: "deep", label: "Deep Reads", icon: "fa-book-open" },
 ];
+const MOBILE_SUBJECT_TABS = ["all", "Aqidah", "Fiqh", "History", "Seerah"];
 
 function formatArticleDate(dateString, locale) {
   return new Date(dateString || Date.now()).toLocaleDateString(
@@ -113,6 +118,7 @@ function articleMatchesSubject(article, subjectName = "") {
 
 function BlogGridContent() {
   const { locale, t } = useLanguage();
+  const { trackFeature } = usePersonalization();
   const { settings } = useSiteSettings();
   const searchParams = useSearchParams();
   const [articles, setArticles] = useState([]);
@@ -123,6 +129,14 @@ function BlogGridContent() {
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [quickFilter, setQuickFilter] = useState("all");
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  useEffect(() => {
+    trackFeature({
+      href: "/blog-grid",
+      label: "Articles",
+      icon: "fa-newspaper",
+    });
+  }, [trackFeature]);
 
   useEffect(() => {
     let active = true;
@@ -397,50 +411,53 @@ function BlogGridContent() {
     selectedSubject !== "all"
       ? `${filteredArticles.length} ${filteredArticles.length === 1 ? "article" : "articles"} in ${selectedSubject}`
       : `${filteredArticles.length} ${filteredArticles.length === 1 ? "article" : "articles"} available`;
+  const mobileSubjectChips = MOBILE_SUBJECT_TABS.map((item) => ({
+    value: item,
+    label: item === "all" ? "All" : item,
+  }));
 
   return (
     <>
       <HeaderOne />
-      <BreadcrumbOne
-        title={settings.article_directory_title || t("articles", "Articles")}
-        links={[
-          { name: t("home", "Home"), link: "/" },
-          {
-            name: settings.article_directory_title || t("articles", "Articles"),
-            link: "/blog-grid",
-          },
-        ]}
-      />
-
       <section className="article-directory-page bg-white">
+        <KnowledgePageHeader
+          badge={settings.article_directory_badge || "Knowledge Library"}
+          title={settings.article_directory_title || t("articles", "Articles")}
+          description={
+            settings.article_directory_description ||
+            "Browse beneficial writing, scholar reflections, and practical guidance arranged in a rich editorial directory."
+          }
+          links={[
+            { name: t("home", "Home"), link: "/" },
+            {
+              name:
+                settings.article_directory_title || t("articles", "Articles"),
+              link: "/blog-grid",
+            },
+          ]}
+          stats={[
+            { value: totalArticleCount, label: "Published" },
+            {
+              value: subjectOverview.filter((subject) => subject.count > 0)
+                .length,
+              label: "Subjects",
+            },
+            { value: featuredArticleCount, label: "Featured" },
+          ]}
+        >
+          <KnowledgeSearchBar
+            variant="compact"
+            defaultType="blog"
+            value={searchTerm}
+            onChange={(nextValue) => {
+              setSearchTerm(nextValue);
+            }}
+            placeholder="Search articles, subjects, authors, and tags..."
+          />
+        </KnowledgePageHeader>
+
         <div className="article-directory-hero-band">
           <div className="container">
-            <div className="article-directory-header mb-4">
-              <span className="section-header-rail section-header-rail--light mb-3">
-                {settings.article_directory_badge || "Knowledge Library"}
-              </span>
-              <h1 className="article-directory-title article-directory-title--hero mb-3">
-                {settings.article_directory_title || t("articles", "Articles")}
-              </h1>
-              <p className="article-directory-description article-directory-description--hero mb-0">
-                {settings.article_directory_description ||
-                  "Browse beneficial writing, scholar reflections, and practical guidance arranged in a rich editorial directory."}
-              </p>
-            </div>
-
-            <KnowledgeSearchBar
-              className="mb-4"
-              variant="hero"
-              defaultType="blog"
-              value={searchTerm}
-              onChange={(nextValue) => {
-                setSearchTerm(nextValue);
-                setCurrentPage(1);
-              }}
-              onSearch={() => setCurrentPage(1)}
-              placeholder="Search articles, subjects, authors, and tags..."
-            />
-
             <div className="article-hero-subject-grid">
               {articleSubjectCards.map((subject) => (
                 <Link
@@ -518,32 +535,45 @@ function BlogGridContent() {
           </div>
         </div>
 
-        <div className="container py-5" id="article-reading-room">
-          <div className="article-directory-stats mb-4">
-            <div className="article-directory-stat-card">
-              <span className="article-directory-stat-card__value">
-                {totalArticleCount}
-              </span>
-              <span className="article-directory-stat-card__label">
-                {settings.article_directory_stats_articles_label || "Published"}
-              </span>
-            </div>
-            <div className="article-directory-stat-card">
-              <span className="article-directory-stat-card__value">
-                {subjectOverview.filter((subject) => subject.count > 0).length}
-              </span>
-              <span className="article-directory-stat-card__label">
-                {settings.article_directory_stats_subjects_label ||
-                  "Core Subjects"}
-              </span>
-            </div>
-            <div className="article-directory-stat-card">
-              <span className="article-directory-stat-card__value">
-                {featuredArticleCount}
-              </span>
-              <span className="article-directory-stat-card__label">
-                {settings.article_directory_stats_featured_label || "Featured"}
-              </span>
+        <div className="container py-4 py-lg-5" id="article-reading-room">
+          <div className="mobile-directory d-xl-none">
+            <MobileFilterBar
+              className="mobile-filter-bar--sticky"
+              value={searchTerm}
+              onSearchChange={setSearchTerm}
+              placeholder={t(
+                "searchArticlesPlaceholder",
+                "Search articles, tags, or topics...",
+              )}
+              chips={mobileSubjectChips}
+              activeChip={selectedSubject}
+              onChipChange={(nextSubject) => setSelectedSubject(nextSubject)}
+              onReset={() => {
+                setSearchTerm("");
+                setSelectedSubject("all");
+                setSelectedAuthor("all");
+                setQuickFilter("all");
+              }}
+            />
+            <MobileSectionHeader
+              title="Articles"
+              actionHref="/search?type=blog"
+            />
+            <div className="mobile-stack-list">
+              {latestArticles.slice(0, 12).map((article) => (
+                <MobileArticleCard
+                  key={buildContentIdentifier(article, "mobile-article")}
+                  href={getContentPath("blog", article)}
+                  title={article.title}
+                  excerpt={getExcerpt(article.content || "", 110)}
+                  image={article.image_url}
+                  label={getContentCategory(article)}
+                  meta={[
+                    getAuthorName(article),
+                    `${estimateReadTime(article.content || "")} min read`,
+                  ]}
+                />
+              ))}
             </div>
           </div>
 

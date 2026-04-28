@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 
 const SEARCH_TYPES = [
   { value: "all", label: "All" },
+  { value: "quran", label: "Quran" },
   { value: "blog", label: "Articles" },
   { value: "fatwa", label: "Fatwas" },
+  { value: "ebook", label: "Books" },
 ];
 
 export default function KnowledgeSearchBar({

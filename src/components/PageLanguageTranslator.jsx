@@ -283,16 +283,14 @@ export default function PageLanguageTranslator() {
       return undefined;
     }
 
-    const timers = [180, 950, 2200, 4200].map((delay) =>
-      window.setTimeout(() => {
-        translatePage().catch((error) => {
-          console.error("Unable to translate page language:", error);
-        });
-      }, delay),
-    );
+    const timer = window.setTimeout(() => {
+      translatePage().catch((error) => {
+        console.error("Unable to translate page language:", error);
+      });
+    }, 250);
 
     return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
+      window.clearTimeout(timer);
       jobRef.current += 1;
     };
   }, [isLanguageReady, locale, pathname]);

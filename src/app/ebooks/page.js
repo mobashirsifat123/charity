@@ -1,17 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import KnowledgePageHeader from "@/components/KnowledgePageHeader";
 import KnowledgeSearchBar from "@/components/KnowledgeSearchBar";
+import MobileFilterBar from "@/components/mobile/MobileFilterBar";
+import MobileSectionHeader from "@/components/mobile/MobileSectionHeader";
+import { MobileBookCard } from "@/components/mobile/MobileCard";
 import { listEbookCategories, listEbooks } from "@/lib/ebook-data";
+import { usePersonalization } from "@/context/PersonalizationContext";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function EbooksPage() {
+  const { trackFeature } = usePersonalization();
   const ebooks = useMemo(() => listEbooks(), []);
   const categories = useMemo(() => ["all", ...listEbookCategories()], []);
   const latestEbooks = useMemo(() => ebooks.slice(0, 8), [ebooks]);
@@ -19,6 +24,14 @@ export default function EbooksPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    trackFeature({
+      href: "/ebooks",
+      label: "E-books",
+      icon: "fa-book",
+    });
+  }, [trackFeature]);
 
   const filteredEbooks = useMemo(() => {
     const lowerSearch = searchTerm.trim().toLowerCase();
@@ -47,35 +60,88 @@ export default function EbooksPage() {
   );
 
   const resetToFirstPage = () => setCurrentPage(1);
+  const categoryChips = categories.map((item) => ({
+    value: item,
+    label: item === "all" ? "All" : item,
+    icon:
+      item === "Quran"
+        ? "fa-book-quran"
+        : item === "Fiqh"
+          ? "fa-scale-balanced"
+          : item === "History"
+            ? "fa-landmark"
+            : "fa-book",
+  }));
 
   return (
     <>
       <HeaderOne />
-      <BreadcrumbOne
+      <KnowledgePageHeader
+        badge="Digital Library"
         title="E-Books"
+        description="A clean reading shelf for dawah, worship, character, family, and Islamic learning."
         links={[
           { name: "Home", link: "/" },
           { name: "E-Books", link: "/ebooks" },
         ]}
-      />
+        stats={[
+          { value: filteredEbooks.length, label: "Books" },
+          { value: categories.length - 1, label: "Categories" },
+          { value: latestEbooks.length, label: "Latest" },
+        ]}
+      >
+        <KnowledgeSearchBar
+          variant="compact"
+          value={searchTerm}
+          onChange={(nextValue) => {
+            setSearchTerm(nextValue);
+            resetToFirstPage();
+          }}
+          onSearch={() => resetToFirstPage()}
+          placeholder="Search e-books, articles, fatwas, and Islamic topics..."
+        />
+      </KnowledgePageHeader>
 
-      <section className="knowledge-page-search-strip">
+      <section className="knowledge-directory-body bg-white">
         <div className="container">
-          <KnowledgeSearchBar
-            variant="light"
-            value={searchTerm}
-            onChange={(nextValue) => {
-              setSearchTerm(nextValue);
-              resetToFirstPage();
-            }}
-            onSearch={() => resetToFirstPage()}
-            placeholder="Search e-books, articles, fatwas, and Islamic topics..."
-          />
-        </div>
-      </section>
+          <div className="mobile-directory d-lg-none">
+            <MobileFilterBar
+              value={searchTerm}
+              onSearchChange={(nextValue) => {
+                setSearchTerm(nextValue);
+                resetToFirstPage();
+              }}
+              placeholder="Search e-books..."
+              chips={categoryChips}
+              activeChip={category}
+              onChipChange={(nextCategory) => {
+                setCategory(nextCategory);
+                resetToFirstPage();
+              }}
+              onReset={() => {
+                setSearchTerm("");
+                setCategory("all");
+                resetToFirstPage();
+              }}
+            />
+            <MobileSectionHeader
+              title="E-Books"
+              actionHref="/search?type=ebook"
+            />
+            <div className="mobile-book-grid">
+              {displayedEbooks.map((ebook) => (
+                <MobileBookCard
+                  key={ebook.slug}
+                  href={`/ebooks/${ebook.slug}`}
+                  title={ebook.title}
+                  author={ebook.author}
+                  category={ebook.category}
+                  pages={ebook.pages}
+                />
+              ))}
+            </div>
+          </div>
 
-      <section className="py-5 bg-white">
-        <div className="container">
           <div className="row g-4">
             <aside className="col-lg-4 col-xl-3 d-none d-lg-block">
               <div

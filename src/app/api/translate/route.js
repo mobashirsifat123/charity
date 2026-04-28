@@ -61,7 +61,7 @@ async function translateText(text, target) {
 
 export async function POST(request) {
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const texts = Array.isArray(body?.texts) ? body.texts : [];
     const target = String(body?.target || "").toLowerCase();
 

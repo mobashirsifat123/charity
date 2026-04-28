@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePersonalization } from "@/context/PersonalizationContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const MAIN_LINKS = [
@@ -25,6 +26,7 @@ const MAIN_LINKS = [
 export default function GlobalSiteDrawer({ open, onClose }) {
   const pathname = usePathname();
   const { settings } = useSiteSettings();
+  const { trackFeature } = usePersonalization();
   const [expanded, setExpanded] = useState("about");
 
   useEffect(() => {
@@ -127,6 +129,13 @@ export default function GlobalSiteDrawer({ open, onClose }) {
                   : ""
               }`}
               key={item.href}
+              onClick={() =>
+                trackFeature({
+                  href: item.href,
+                  label: item.label,
+                  icon: item.icon.replace(/^fa-(solid|regular)\s+/, ""),
+                })
+              }
             >
               <span>
                 <i className={item.icon} />

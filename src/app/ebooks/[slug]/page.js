@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import BreadcrumbOne from "@/components/BreadcrumbOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
+import TrackFeature from "@/components/personalization/TrackFeature";
+import TrackViewedItem from "@/components/personalization/TrackViewedItem";
 import { getEbookBySlug, getRelatedEbooks } from "@/lib/ebook-data";
 
 export async function generateMetadata({ params }) {
@@ -34,6 +36,22 @@ export default async function EbookDetailPage({ params }) {
 
   return (
     <>
+      <TrackFeature
+        feature={{
+          href: "/ebooks",
+          label: "E-books",
+          icon: "fa-book",
+        }}
+      />
+      <TrackViewedItem
+        item={{
+          type: "ebook",
+          typeLabel: "E-book",
+          title: ebook.title,
+          href: `/ebooks/${ebook.slug}`,
+          excerpt: ebook.summary,
+        }}
+      />
       <HeaderOne />
       <BreadcrumbOne
         title={ebook.title}
@@ -61,13 +79,25 @@ export default async function EbookDetailPage({ params }) {
                         boxShadow: "0 24px 42px rgba(11,61,46,0.12)",
                       }}
                     >
-                      <span className="badge align-self-start" style={{ background: "rgba(200,169,81,0.18)", color: "#f3e1ad" }}>
+                      <span
+                        className="badge align-self-start"
+                        style={{
+                          background: "rgba(200,169,81,0.18)",
+                          color: "#f3e1ad",
+                        }}
+                      >
                         {ebook.category}
                       </span>
                       <div>
-                        <div className="small text-white-50 mb-2">{ebook.language}</div>
-                        <h1 className="h3 fw-bold mb-3 text-white">{ebook.title}</h1>
-                        <div className="small text-white-50">{ebook.pages} pages</div>
+                        <div className="small text-white-50 mb-2">
+                          {ebook.language}
+                        </div>
+                        <h1 className="h3 fw-bold mb-3 text-white">
+                          {ebook.title}
+                        </h1>
+                        <div className="small text-white-50">
+                          {ebook.pages} pages
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -79,20 +109,44 @@ export default async function EbookDetailPage({ params }) {
                     <h2 className="fw-bold mb-3">{ebook.title}</h2>
                     <p className="lead text-muted mb-3">{ebook.summary}</p>
                     <div className="d-flex flex-wrap gap-3 mb-4 small text-muted">
-                      <span><strong className="text-dark">Author:</strong> {ebook.author}</span>
-                      <span><strong className="text-dark">Category:</strong> {ebook.category}</span>
-                      <span><strong className="text-dark">Published:</strong> {new Date(ebook.publishedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}</span>
+                      <span>
+                        <strong className="text-dark">Author:</strong>{" "}
+                        {ebook.author}
+                      </span>
+                      <span>
+                        <strong className="text-dark">Category:</strong>{" "}
+                        {ebook.category}
+                      </span>
+                      <span>
+                        <strong className="text-dark">Published:</strong>{" "}
+                        {new Date(ebook.publishedAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          },
+                        )}
+                      </span>
                     </div>
                     <p className="text-muted mb-4">{ebook.highlight}</p>
                     <div className="d-flex flex-wrap gap-3">
-                      <a href="#ebook-summary" onClick={(e) => { e.preventDefault(); document.getElementById("ebook-summary")?.scrollIntoView({ behavior: "smooth" }); }} className="btn btn-primary btn-ripple rounded-pill px-4">
+                      <a
+                        href="#ebook-summary"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document
+                            .getElementById("ebook-summary")
+                            ?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className="btn btn-primary btn-ripple rounded-pill px-4"
+                      >
                         Read Summary
                       </a>
-                      <Link href="/ebooks" className="btn btn-outline-primary btn-ripple rounded-pill px-4">
+                      <Link
+                        href="/ebooks"
+                        className="btn btn-outline-primary btn-ripple rounded-pill px-4"
+                      >
                         Browse Library
                       </Link>
                     </div>
@@ -105,8 +159,9 @@ export default async function EbookDetailPage({ params }) {
                 <div className="content-prose">
                   <p>{ebook.description}</p>
                   <p>
-                    This section is structured to feel like a lightweight Islamic ebook library:
-                    clear category browsing, simple metadata, and distraction-free reading.
+                    This section is structured to feel like a lightweight
+                    Islamic ebook library: clear category browsing, simple
+                    metadata, and distraction-free reading.
                   </p>
                 </div>
               </div>
@@ -140,13 +195,19 @@ export default async function EbookDetailPage({ params }) {
                 <ul className="islamweb-like-list">
                   {relatedEbooks.map((item) => (
                     <li key={item.slug}>
-                      <Link href={`/ebooks/${item.slug}`} className="islamweb-like-mini-link">
+                      <Link
+                        href={`/ebooks/${item.slug}`}
+                        className="islamweb-like-mini-link"
+                      >
                         {item.title}
                       </Link>
                     </li>
                   ))}
                 </ul>
-                <Link href="/ebooks" className="btn btn-outline-primary btn-ripple rounded-pill mt-4">
+                <Link
+                  href="/ebooks"
+                  className="btn btn-outline-primary btn-ripple rounded-pill mt-4"
+                >
                   Back to all ebooks
                 </Link>
               </div>

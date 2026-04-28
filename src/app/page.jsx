@@ -8,6 +8,7 @@ import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
 import HadithExplorer from "@/components/HadithExplorer";
 import PrayerTimesWidget from "@/components/home/PrayerTimesWidget";
+import MobileHomeDashboard from "@/components/mobile/MobileHomeDashboard";
 import {
   fetchPublishedBlogs,
   fetchPublishedFatwas,
@@ -55,6 +56,11 @@ const Page = async () => {
       <LiveDonationToast />
       <TopBarOne />
       <HeaderOne />
+      <MobileHomeDashboard
+        articles={initialBlogs || []}
+        fatwas={initialFatwas || []}
+        prayerData={fallbackPrayerTimes}
+      />
       <BannerOne />
       <HadithExplorer />
       <PrayerTimesWidget initialData={fallbackPrayerTimes} />

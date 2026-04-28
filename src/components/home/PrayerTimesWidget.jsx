@@ -143,9 +143,14 @@ const PRAYER_COPY = {
       "اتجاه البوصلة المباشر غير مدعوم هنا. استخدم قيمة الدرجة مع وضع الشمال في الأعلى.",
   },
 };
-const HEADING_INPUT_DEADBAND_DEGREES = 2.5;
-const HEADING_RENDER_DEADBAND_DEGREES = 0.25;
-const HEADING_SMOOTHING_FACTOR = 0.08;
+const HEADING_INPUT_DEADBAND_DEGREES = 4;
+const HEADING_RENDER_DEADBAND_DEGREES = 0.35;
+const HEADING_SMOOTHING_FACTOR = 0.12;
+const HEADING_SOURCE_RANK = {
+  fallback: 1,
+  absolute: 2,
+  webkit: 3,
+};
 
 function parseClockToSeconds(value = "00:00") {
   const [hours, minutes] = String(value).split(":").map(Number);
@@ -224,7 +229,7 @@ function formatRemainingTime(totalSeconds, locale = "en") {
   return `${seconds}${units.second}`;
 }
 
-function readHeadingFromEvent(event) {
+function readHeadingFromEvent(event, eventName = "") {
   if (!event) {
     return null;
   }
@@ -233,11 +238,26 @@ function readHeadingFromEvent(event) {
     typeof event.webkitCompassHeading === "number" &&
     Number.isFinite(event.webkitCompassHeading)
   ) {
-    return normalizeDegrees(event.webkitCompassHeading);
+    return {
+      heading: normalizeDegrees(event.webkitCompassHeading),
+      source: "webkit",
+    };
+  }
+
+  if (eventName === "deviceorientationabsolute" || event.absolute === true) {
+    if (typeof event.alpha === "number" && Number.isFinite(event.alpha)) {
+      return {
+        heading: normalizeDegrees(360 - event.alpha),
+        source: "absolute",
+      };
+    }
   }
 
   if (typeof event.alpha === "number" && Number.isFinite(event.alpha)) {
-    return normalizeDegrees(360 - event.alpha);
+    return {
+      heading: normalizeDegrees(360 - event.alpha),
+      source: "fallback",
+    };
   }
 
   return null;
@@ -251,19 +271,26 @@ function useDeviceHeading() {
   const frameRef = useRef(null);
   const listenersRef = useRef([]);
   const isListeningRef = useRef(false);
+  const sourceRef = useRef(null);
 
   const setStableTargetHeading = (nextHeading) => {
     const currentTarget = targetHeadingRef.current;
 
-    if (
-      typeof currentTarget === "number" &&
-      Math.abs(shortestAngleDelta(currentTarget, nextHeading)) <
-        HEADING_INPUT_DEADBAND_DEGREES
-    ) {
+    if (typeof currentTarget !== "number") {
+      targetHeadingRef.current = normalizeDegrees(nextHeading);
       return;
     }
 
-    targetHeadingRef.current = nextHeading;
+    const delta = shortestAngleDelta(currentTarget, nextHeading);
+
+    if (Math.abs(delta) < HEADING_INPUT_DEADBAND_DEGREES) {
+      return;
+    }
+
+    const smoothingFactor = Math.abs(delta) > 45 ? 1 : 0.45;
+    targetHeadingRef.current = normalizeDegrees(
+      currentTarget + delta * smoothingFactor,
+    );
   };
 
   useEffect(() => {
@@ -294,7 +321,7 @@ function useDeviceHeading() {
 
         animatedHeadingRef.current = shouldUpdate ? nextHeading : targetHeading;
         if (shouldUpdate) {
-          setHeading(nextHeading);
+          setHeading(normalizeDegrees(nextHeading));
         }
       }
 
@@ -328,13 +355,25 @@ function useDeviceHeading() {
         return;
       }
 
-      const handleOrientation = (event) => {
-        const nextHeading = readHeadingFromEvent(event);
-        if (typeof nextHeading !== "number") {
+      const handleOrientation = (event, eventName) => {
+        const reading = readHeadingFromEvent(event, eventName);
+        if (!reading || typeof reading.heading !== "number") {
           return;
         }
 
-        setStableTargetHeading(nextHeading);
+        const activeSource = sourceRef.current;
+        const activeRank = HEADING_SOURCE_RANK[activeSource] || 0;
+        const nextRank = HEADING_SOURCE_RANK[reading.source] || 0;
+
+        if (activeSource && nextRank < activeRank) {
+          return;
+        }
+
+        if (!activeSource || nextRank > activeRank) {
+          sourceRef.current = reading.source;
+        }
+
+        setStableTargetHeading(reading.heading);
         setPermissionState("granted");
       };
 
@@ -342,8 +381,9 @@ function useDeviceHeading() {
         "deviceorientationabsolute",
         "deviceorientation",
       ]) {
-        window.addEventListener(eventName, handleOrientation, true);
-        listenersRef.current.push([eventName, handleOrientation]);
+        const boundHandler = (event) => handleOrientation(event, eventName);
+        window.addEventListener(eventName, boundHandler, true);
+        listenersRef.current.push([eventName, boundHandler]);
       }
 
       isListeningRef.current = true;
@@ -389,13 +429,25 @@ function useDeviceHeading() {
         }
       }
 
-      const handleOrientation = (event) => {
-        const nextHeading = readHeadingFromEvent(event);
-        if (typeof nextHeading !== "number") {
+      const handleOrientation = (event, eventName) => {
+        const reading = readHeadingFromEvent(event, eventName);
+        if (!reading || typeof reading.heading !== "number") {
           return;
         }
 
-        setStableTargetHeading(nextHeading);
+        const activeSource = sourceRef.current;
+        const activeRank = HEADING_SOURCE_RANK[activeSource] || 0;
+        const nextRank = HEADING_SOURCE_RANK[reading.source] || 0;
+
+        if (activeSource && nextRank < activeRank) {
+          return;
+        }
+
+        if (!activeSource || nextRank > activeRank) {
+          sourceRef.current = reading.source;
+        }
+
+        setStableTargetHeading(reading.heading);
         setPermissionState("granted");
       };
 
@@ -404,8 +456,9 @@ function useDeviceHeading() {
           "deviceorientationabsolute",
           "deviceorientation",
         ]) {
-          window.addEventListener(eventName, handleOrientation, true);
-          listenersRef.current.push([eventName, handleOrientation]);
+          const boundHandler = (event) => handleOrientation(event, eventName);
+          window.addEventListener(eventName, boundHandler, true);
+          listenersRef.current.push([eventName, boundHandler]);
         }
         isListeningRef.current = true;
       }
@@ -424,6 +477,7 @@ function useDeviceHeading() {
 
 function PrayerCompass({ qiblaDirection = 0, copy }) {
   const { heading, permissionState, requestPermission } = useDeviceHeading();
+  const lottieRef = useRef(null);
   const normalizedQiblaDirection = normalizeDegrees(qiblaDirection);
   const currentHeading =
     typeof heading === "number" ? normalizeDegrees(heading) : null;
@@ -438,6 +492,10 @@ function PrayerCompass({ qiblaDirection = 0, copy }) {
     ? qiblaOffset
     : normalizedQiblaDirection;
 
+  useEffect(() => {
+    lottieRef.current?.goToAndStop?.(0, true);
+  }, []);
+
   return (
     <div className="d-flex flex-column align-items-center justify-content-center">
       <div className="prayer-compass-lottie" aria-hidden="true">
@@ -448,9 +506,11 @@ function PrayerCompass({ qiblaDirection = 0, copy }) {
           }}
         >
           <Lottie
+            lottieRef={lottieRef}
             animationData={qiblaCompassAnimation}
             loop={false}
             autoplay={false}
+            initialSegment={[0, 0]}
             className="prayer-compass-lottie__animation"
           />
         </div>
@@ -524,12 +584,12 @@ export default function PrayerTimesWidget({ initialData }) {
   );
 
   return (
-    <section className="py-5 page-surface-alt section-shell">
+    <section className="home-prayer-section py-4 py-lg-5 page-surface-alt section-shell">
       <div className="container position-relative">
         <div className="row g-4 align-items-stretch">
           <div className="col-xl-7">
             <div className="card border-0 shadow-sm rounded-4 h-100 system-panel glass-surface--light">
-              <div className="card-body p-4 p-lg-5">
+              <div className="card-body p-3 p-lg-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
                   <div>
                     <span className="section-header-rail mb-3">
@@ -550,11 +610,7 @@ export default function PrayerTimesWidget({ initialData }) {
                         type="button"
                         className="btn btn-sm btn-outline-primary rounded-pill"
                         onClick={requestLocalPrayerTimes}
-                        disabled={
-                          loading ||
-                          permissionState === "denied" ||
-                          permissionState === "unavailable"
-                        }
+                        disabled={loading || permissionState === "unavailable"}
                       >
                         <i className="fa-solid fa-location-crosshairs me-2" />
                         {loading ? copy.updating : copy.useLocation}
@@ -650,7 +706,7 @@ export default function PrayerTimesWidget({ initialData }) {
 
           <div className="col-xl-5">
             <div className="card border-0 shadow-sm rounded-4 h-100 system-panel glass-surface--light">
-              <div className="card-body p-4 p-lg-5 d-flex flex-column justify-content-center">
+              <div className="card-body p-3 p-lg-4 d-flex flex-column justify-content-center">
                 <span className="section-header-rail mb-3 align-self-start">
                   {copy.qibla}
                 </span>

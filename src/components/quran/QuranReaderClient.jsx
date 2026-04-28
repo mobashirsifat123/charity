@@ -1,14 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useAudioPlayer } from "@/context/AudioPlayerContext";
 import { useAuth } from "@/context/AuthContext";
+import { usePersonalization } from "@/context/PersonalizationContext";
 
 export default function QuranReaderClient({ surah, previousSurah, nextSurah }) {
-  const { setPlaylist, playTrack } = useAudioPlayer();
+  const {
+    setPlaylist,
+    playTrack,
+    currentTrack,
+    isPlaying,
+    currentTime,
+    duration,
+    togglePlayPause,
+    seekTo,
+  } = useAudioPlayer();
   const { user } = useAuth();
+  const { saveQuranProgress, trackFeature } = usePersonalization();
   const [saveState, setSaveState] = useState("");
 
   const tracks = useMemo(
@@ -26,6 +37,11 @@ export default function QuranReaderClient({ surah, previousSurah, nextSurah }) {
 
   const playAll = async () => {
     if (!tracks.length) return;
+    saveQuranProgress({
+      surah_id: surah.number,
+      ayah_number: 1,
+      last_read_at: new Date().toISOString(),
+    });
     await setPlaylist(tracks, 0, true);
   };
 
@@ -34,21 +50,31 @@ export default function QuranReaderClient({ surah, previousSurah, nextSurah }) {
       (track) => track.id === `${surah.number}:${ayahNumber}`,
     );
     if (index < 0) return;
+    saveQuranProgress({
+      surah_id: surah.number,
+      ayah_number: ayahNumber,
+      last_read_at: new Date().toISOString(),
+    });
     await playTrack(tracks[index], { playlist: tracks, index });
   };
 
   const saveProgress = async (ayahNumber) => {
     setSaveState("");
+    const progressPayload = {
+      surah_id: surah.number,
+      ayah_number: ayahNumber,
+      last_read_at: new Date().toISOString(),
+    };
+
+    saveQuranProgress(progressPayload);
 
     if (!user) {
-      setSaveState("Log in to save your reading progress.");
+      setSaveState(`Saved ${surah.name}, ayah ${ayahNumber}.`);
       return;
     }
 
     if (!Number.isInteger(Number(user.id))) {
-      setSaveState(
-        "Your member profile is still syncing. Please refresh after login.",
-      );
+      setSaveState(`Saved ${surah.name}, ayah ${ayahNumber}.`);
       return;
     }
 
@@ -69,6 +95,14 @@ export default function QuranReaderClient({ surah, previousSurah, nextSurah }) {
 
     setSaveState(`Saved ${surah.name}, ayah ${ayahNumber}.`);
   };
+
+  useEffect(() => {
+    trackFeature({
+      href: "/quran",
+      label: "Quran",
+      icon: "fa-book-quran",
+    });
+  }, [trackFeature]);
 
   return (
     <section className="py-5 page-surface-alt">
@@ -172,6 +206,27 @@ export default function QuranReaderClient({ surah, previousSurah, nextSurah }) {
           </div>
         </div>
       </div>
+      {currentTrack ? (
+        <div className="mobile-quran-audio-player d-md-none">
+          <button
+            type="button"
+            onClick={togglePlayPause}
+            aria-label={isPlaying ? "Pause recitation" : "Play recitation"}
+          >
+            <i className={`fa-solid ${isPlaying ? "fa-pause" : "fa-play"}`} />
+          </button>
+          <div>
+            <strong>{currentTrack.title}</strong>
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              value={currentTime}
+              onChange={(event) => seekTo(Number(event.target.value))}
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
