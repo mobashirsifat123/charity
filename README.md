@@ -1,75 +1,138 @@
-# IRWA
+# IRWAA
 
-IRWA is a modern Islamic knowledge and charity platform built with Next.js. Visitors can discover campaigns, donate securely, read articles, browse fatwas, explore e-books, submit new fatwa questions, and subscribe to updates. Admins can manage content, media, donations, and site settings from one dashboard.
+IRWAA is an Islamic knowledge, Quran learning, fatwa, e-book, and charity platform built with Next.js.
 
-## What The Website Does
+Live site: [https://irwaa.site](https://irwaa.site)
 
-- Shows fundraising campaigns with progress tracking and donation links
-- Publishes articles, fatwas, and e-books with search, filters, and detail pages
-- Lets visitors submit fatwa requests and newsletter subscriptions
-- Supports English and Arabic with RTL support for Arabic
-- Gives users a dashboard for donation history and saved content
-- Gives admins a control panel for campaigns, articles, fatwas, team members, inbox items, donations, images, and site copy
+Share this link with others to view the current live output:
 
-## Main Features
+```text
+https://irwaa.site
+```
 
-- Campaign discovery with search, pagination, and progress bars
-- Stripe checkout flow for donations
-- Article library with categories, tags, featured items, and related content
-- Fatwa library with categories, filters, and request submission
-- Unified search across articles and fatwas
-- Newsletter signup storage
-- Admin inbox for fatwa requests and subscribers
-- Fatwa request to draft-fatwa conversion inside admin
-- Image upload and media management
-- Editable site settings and site-builder style content editing
+## What IRWAA Provides
+
+IRWAA brings the main parts of an Islamic community platform into one website:
+
+- Quran reading and learning
+- Tafseer browsing
+- Islamic articles and research
+- Fatwas and public guidance
+- E-books and reading resources
+- Courses and structured learning
+- Prayer and Qibla tools
+- Donations and community causes
+- Member dashboard and saved content
+- Admin dashboard for managing the site
+
+## Main User Features
+
+### Mobile Experience
+
+- Mobile app-style top bar and bottom navigation
+- Mobile dashboard homepage
+- Quick access to Quran, Articles, Fatwas, E-books, Prayer/Qibla, Courses, Donate, and Profile
+- Continue reading card for Quran
+- Recently viewed content
+- Last used feature highlighting
+- Safe-area support for modern phones
+
+### Quran
+
+- Quran hub with Surah search
+- Compact mobile Surah grid
+- Continue reading support using local storage
+- Quran reader with Arabic text, translation, and recitation
+- Sticky mobile audio player
+- Tafseer entry points
+
+### Articles
+
+- Article directory with featured articles
+- Search and topic filtering
+- Category tabs on mobile
+- Image-led mobile article cards
+- Related content on article pages
+
+### Fatwas
+
+- Search-first fatwa listing
+- Category chips on mobile
+- Floating Ask Fatwa button
+- Fatwa detail pages
+- Public fatwa request form
+
+### E-Books
+
+- E-book library
+- Search-first mobile layout
+- Category filters
+- Compact mobile book cards
+- E-book detail pages
+
+### Unified Search
+
+- Search across Quran, Articles, Fatwas, and Books
+- Grouped results by content type
+- Tabs and filters
+- Clickable results with correct routing
+
+### Donations
+
+- Campaign discovery
+- Donation pages
+- Stripe checkout flow
+- Donation success handling
+- Admin donation visibility
+
+### Admin
+
+- Manage articles
+- Manage fatwas
+- Manage campaigns
+- Manage images
+- Manage courses
+- Manage Quran/Tafseer content
+- Manage site settings
+- Review inbox items and subscribers
 
 ## Tech Stack
-
-### Main App
 
 - Next.js 15
 - React 18
 - App Router
 - Supabase for database, auth, and storage
 - Stripe for payments
-- Bootstrap 5 and Sass for UI styling
-- AOS and React Slick for animations and sliders
+- Bootstrap 5
+- Sass/SCSS
+- Vercel deployment
 
-### Supporting Legacy Backend
+The main production app is the root Next.js project.
 
-- Express 5
-- PostgreSQL via `pg`
-- JWT, bcrypt, multer, cors
-
-The main live app logic is in the root Next.js project. The `backend/` folder contains an older standalone Express API that is still kept in the repository.
-
-## Development History
-
-- Started as **ChariFund**, a charity crowdfunding project
-- Added campaign management, donations, authentication, and admin tooling
-- Migrated data and uploads toward Supabase/Postgres and Supabase Storage
-- Expanded beyond fundraising to include articles, fatwas, newsletter subscriptions, and fatwa requests
-- Rebranded from **ChariFund** to **IRWA**
-- Recent work focused on merging app files into the root project and fixing deployment/build issues for Vercel
+The `backend/` directory contains an older Express backend kept for reference and legacy compatibility. The current site primarily runs through the Next.js app and Supabase.
 
 ## Project Structure
 
-- `src/app` - Next.js routes, pages, and API routes
-- `src/components` - reusable UI and admin components
-- `src/context` - auth, language, and site settings providers
-- `src/lib` - Supabase helpers, content utilities, settings, and SQL upgrades
-- `public` - static assets
-- `backend` - legacy Express API
-- `frontend` - older copied frontend snapshot kept in the repo
+```text
+src/app                 Next.js App Router pages and API routes
+src/components          Shared UI, mobile UI, admin UI, and content components
+src/components/mobile   Mobile app shell, cards, filters, dashboard, and navigation
+src/context             Auth, language, settings, audio, readability, personalization
+src/lib                 Supabase helpers, content utilities, SQL upgrades, site settings
+src/styles              Shared SCSS modules
+public                  Static assets
+backend                 Legacy Express backend
+frontend                Older frontend snapshot kept in the repo
+tests                   Playwright tests
+```
 
-## Getting Started
+## Local Development
 
 ### Requirements
 
 - Node.js 20 or 22
-- A Supabase project
-- A Stripe account for payments
+- Supabase project
+- Stripe account if testing payments
 
 ### Install
 
@@ -79,67 +142,87 @@ npm install
 
 ### Environment Variables
 
-Create `.env.local` in the project root and add the values used by the current Next.js app:
+Create `.env.local` in the project root:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=...
 STRIPE_SECRET_KEY=...
 STRIPE_WEBHOOK_SECRET=...
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=http://localhost:5050
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=...
+NEXT_PUBLIC_SITE_URL=https://irwaa.site
+NEXT_PUBLIC_API_URL=https://api.irwaa.com
 ```
 
-Notes:
+Useful notes:
 
-- `NEXT_PUBLIC_API_URL` is mainly useful when older image or backend paths are still in use.
-- `localhost:5000` is commonly occupied by AirPlay/AirTunes on macOS, so `5050` is the safer local default.
-- `STRIPE_WEBHOOK_SECRET` is strongly recommended for verified Stripe webhooks.
-- Some advanced content features expect the SQL upgrade in `src/lib/sql/content-platform-upgrade.sql`.
+- `NEXT_PUBLIC_SITE_URL` should be `https://irwaa.site` in production.
+- Supabase Auth callback URLs should include `https://irwaa.site/auth/callback`.
+- Supabase reset password redirects should point to the live domain.
+- Stripe webhook endpoint should point to `/api/stripe/webhook` on the live site.
+- Some content/admin features require SQL upgrades from `src/lib/sql`.
 
-### Run The App
+### Run Locally
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Local URL:
 
-### Optional Legacy Backend
-
-If you still need the standalone Express API:
-
-```bash
-cd backend
-npm install
-npm run dev
+```text
+http://localhost:3000
 ```
 
-## Quick Summary
+## Production Deployment
 
-IRWA is no longer just a donation site. It is a combined Islamic publishing, learning, and charity platform with a bilingual public website and a full admin back office.
+The live site is deployed on Vercel:
 
-## Deployment Checklist
+```text
+https://irwaa.site
+```
 
-Before you point your domain at the app, make sure all of these are finished:
+Recommended production environment values:
 
-1. Set every required environment variable from `.env.example` in your hosting platform.
-2. Replace all Stripe test keys with live keys for production.
-3. Set `NEXT_PUBLIC_SITE_URL` and `FRONTEND_URL` to your real domain, for example `https://irwa.org`.
-4. If you are using the legacy Express backend, set `DATABASE_URL` or the `DB_*` variables in the backend environment.
-5. In Supabase Auth:
-   - enable Google provider if you want Google sign-in
-   - add your production callback URL, for example `https://your-domain.com/auth/callback`
-   - add your reset-password redirect URL if needed
-6. In Stripe:
-   - add the production webhook endpoint for `/api/stripe/webhook`
-   - set `STRIPE_WEBHOOK_SECRET`
-7. In the admin panel, review the editable site settings so your live contact details, social links, and footer content are correct.
+```env
+NEXT_PUBLIC_SITE_URL=https://irwaa.site
+FRONTEND_URL=https://irwaa.site
+```
 
-## Production Notes
+Before deploying:
 
-- The Next.js app can build successfully even when external content services fail temporarily because some sections fall back gracefully.
-- The legacy backend intentionally returns `503` for database-backed routes if `DATABASE_URL` is not configured. That is an environment issue, not a frontend build failure.
-- The site is designed so future content, contact information, and many structural homepage changes can be managed from the admin interface without code edits.
+1. Confirm Supabase environment variables are set in Vercel.
+2. Confirm Stripe live keys are set if accepting real donations.
+3. Confirm Supabase Auth redirects use the live domain.
+4. Confirm admin site settings are correct.
+5. Run a production build locally.
+
+```bash
+npm run build
+```
+
+Deploy:
+
+```bash
+vercel deploy --prod
+```
+
+## Personalization
+
+The mobile experience uses local storage for lightweight personalization:
+
+- Last Quran reading position
+- Recently viewed Articles, Fatwas, and E-books
+- Last opened feature
+- Language preference
+
+This keeps the mobile experience fast and useful even before a visitor logs in.
+
+## Current Status
+
+IRWAA is a live Islamic platform at:
+
+[https://irwaa.site](https://irwaa.site)
+
+The site currently includes public content browsing, mobile-first navigation, Quran learning, fatwas, e-books, donations, personalization, and admin management.
